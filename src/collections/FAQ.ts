@@ -24,7 +24,7 @@ export const FAQ: CollectionConfig = {
     },
     {
       name: 'answer',
-      type: 'richText',
+      type: 'textarea',
       label: 'Ответ',
       required: true,
       localized: true,

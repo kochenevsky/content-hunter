@@ -32,8 +32,6 @@ export default buildConfig({
     },
     meta: {
       titleSuffix: ' | Content Hunter',
-      favicon: '/favicon.ico',
-      ogImage: '/og-image.jpg',
     },
     components: {
       graphics: {

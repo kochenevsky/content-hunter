@@ -5,7 +5,7 @@ import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FAQItem {
-  id: string
+  id: string | number
   question: string
   answer: string
 }
@@ -19,8 +19,8 @@ export function FAQAccordion({ items }: FAQAccordionProps) {
     <Accordion.Root type="single" collapsible className="space-y-4">
       {items.map((item) => (
         <Accordion.Item
-          key={item.id}
-          value={item.id}
+          key={String(item.id)}
+          value={String(item.id)}
           className="rounded-2xl bg-neutral-50 border border-neutral-200 overflow-hidden data-[state=open]:border-neutral-300"
         >
           <Accordion.Header>
