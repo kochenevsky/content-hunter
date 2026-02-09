@@ -19,15 +19,8 @@ export function CTASection() {
       {/* Animated background */}
       <AnimatedGrid />
       
-      {/* Glow effects */}
-      <motion.div
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.08, 0.15, 0.08],
-        }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-500 rounded-full blur-[200px]"
-      />
+      {/* Glow — статичный для производительности */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-500 rounded-full blur-[200px] opacity-10" />
 
       <div className="container relative z-10">
         <div className="max-w-3xl mx-auto text-center">

@@ -53,7 +53,7 @@ export function NichesSection() {
                       <motion.div
                         className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center mx-auto mb-4"
                         whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                        transition={{ duration: 0.2 }}
                       >
                         <Icon className="w-6 h-6 text-neutral-700" />
                       </motion.div>

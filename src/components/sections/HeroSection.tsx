@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Play, X } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { AnimatedCounter } from '@/components/animations/animated-counter'
 import { MagneticButton } from '@/components/animations/magnetic-button'
 import { WordCycle } from '@/components/animations/text-reveal'
@@ -63,10 +64,10 @@ function CardStack() {
       <AnimatePresence>
         {playing && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
             className="absolute inset-0 z-50 rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-black"
           >
             <iframe
@@ -91,56 +92,46 @@ function CardStack() {
         {visibleCards.reverse().map((card) => (
           <motion.div
             key={`${card.id}-${card.stackIndex}`}
-            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-pointer"
+            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-pointer relative"
             onClick={() => card.stackIndex === 0 && handlePlay(card.id)}
             initial={{
-              scale: 0.85,
-              y: 60,
+              scale: 0.95,
+              y: 20,
               opacity: 0,
-              rotateZ: Math.random() * 6 - 3,
             }}
             animate={{
               scale: 1 - card.stackIndex * 0.05,
               y: card.stackIndex * -16,
               x: card.stackIndex * 8,
               opacity: 1 - card.stackIndex * 0.2,
-              rotateZ: card.stackIndex * 2 - 2,
             }}
             exit={{
-              scale: 1.05,
-              y: -40,
+              scale: 1.02,
+              y: -20,
               opacity: 0,
-              rotateZ: -5,
-              transition: { duration: 0.4, ease: [0.25, 0.4, 0.25, 1] },
+              transition: { duration: 0.2 },
             }}
-            transition={{
-              type: 'spring',
-              stiffness: 120,
-              damping: 20,
-              mass: 0.8,
-            }}
-            whileHover={card.stackIndex === 0 ? { scale: 1.03 } : {}}
+            transition={{ duration: 0.25 }}
+            whileHover={card.stackIndex === 0 ? { scale: 1.02 } : {}}
             style={{ zIndex: 10 - card.stackIndex }}
           >
             {/* YouTube thumbnail — max resolution */}
-            <img
-              src={`https://img.youtube.com/vi/${card.id}/maxresdefault.jpg`}
+            <Image
+              src={`https://img.youtube.com/vi/${card.id}/sddefault.jpg`}
               alt={card.client}
+              fill
+              sizes="(max-width: 768px) 280px, 320px"
+              className="object-cover"
               loading="eager"
-              className="w-full h-full object-cover"
             />
             {/* Overlay gradient */}
             <div className={`absolute inset-0 bg-gradient-to-t ${card.color} mix-blend-overlay`} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
             {/* Play button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30"
-                whileHover={{ scale: 1.15, backgroundColor: 'rgba(255,255,255,0.3)' }}
-                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              >
+              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 hover:scale-105 hover:bg-white/30 transition-transform duration-200">
                 <Play className="w-6 h-6 text-white fill-white ml-0.5" />
-              </motion.div>
+              </div>
             </div>
             {/* Client label */}
             <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -171,13 +162,12 @@ export function HeroSection() {
           <div className="max-w-2xl flex-shrink-0">
             {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: 0.05 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-sm font-medium mb-8"
             >
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
               </span>
               Гарантия охватов в договоре
@@ -186,9 +176,9 @@ export function HeroSection() {
             {/* Headline */}
             <motion.h1
               className="heading-display text-white mb-6"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4, ease: [0.25, 0.4, 0.25, 1] }}
+              transition={{ duration: 0.3, delay: 0.1 }}
             >
               <span className="block">Контент-завод</span>
               <span className="text-primary-500">
@@ -199,9 +189,9 @@ export function HeroSection() {
             {/* Subheadline */}
             <motion.p
               className="text-xl md:text-2xl text-neutral-400 max-w-2xl mb-10"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: 0.25, delay: 0.15 }}
             >
               Разворачиваем инфраструктуру по созданию, масштабированию и массовой дистрибуции контента — от производства роликов до публикации на десятках аккаунтов.
             </motion.p>
@@ -209,9 +199,9 @@ export function HeroSection() {
             {/* CTAs */}
             <motion.div
               className="flex flex-col sm:flex-row gap-4"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
+              transition={{ duration: 0.25, delay: 0.2 }}
             >
               <MagneticButton strength={0.2}>
                 <Link
@@ -239,26 +229,21 @@ export function HeroSection() {
             {/* Animated Stats */}
             <motion.div
               className="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-neutral-800"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.25 }}
             >
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 1.2 + index * 0.15 }}
-                >
+              {stats.map((stat) => (
+                <div key={stat.label}>
                   <p className="text-3xl md:text-5xl font-bold text-white">
                     <AnimatedCounter
                       target={stat.value}
                       suffix={stat.suffix}
-                      duration={2}
+                      duration={1}
                     />
                   </p>
                   <p className="text-neutral-500 mt-2">{stat.label}</p>
-                </motion.div>
+                </div>
               ))}
             </motion.div>
           </div>
@@ -266,52 +251,25 @@ export function HeroSection() {
           {/* Right side — card stack */}
           <motion.div
             className="hidden lg:flex items-center justify-center flex-shrink-0"
-            initial={{ opacity: 0, scale: 0.9, x: 40 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.15 }}
           >
             <CardStack />
           </motion.div>
         </div>
       </div>
 
-      {/* Decorative blobs */}
-      <motion.div
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.05, 0.1, 0.05],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-primary-500 rounded-full blur-[150px]"
-      />
-      <motion.div
-        animate={{
-          scale: [1, 0.95, 1],
-          opacity: [0.08, 0.15, 0.08],
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary-500 rounded-full blur-[120px]"
-      />
+      {/* Decorative blobs — статичные для производительности */}
+      <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-primary-500 rounded-full blur-[150px] opacity-[0.07]" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary-500 rounded-full blur-[120px] opacity-10" />
 
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-6 h-10 rounded-full border-2 border-neutral-600 flex items-start justify-center p-1.5"
-        >
-          <motion.div
-            animate={{ opacity: [0.5, 1, 0.5], scaleY: [1, 1.5, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-1 h-2 bg-neutral-400 rounded-full"
-          />
-        </motion.div>
-      </motion.div>
+      {/* Scroll indicator — без анимации */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-80">
+        <div className="w-6 h-10 rounded-full border-2 border-neutral-600 flex items-start justify-center p-1.5">
+          <div className="w-1 h-2 bg-neutral-400 rounded-full mt-1" />
+        </div>
+      </div>
     </section>
   )
 }

@@ -32,13 +32,11 @@ const getVariants = (direction: Direction, duration: number): Variants => {
       opacity: 0,
       x,
       y,
-      filter: 'blur(8px)',
     },
     visible: {
       opacity: 1,
       x: 0,
       y: 0,
-      filter: 'blur(0px)',
       transition: {
         duration,
         ease: [0.25, 0.4, 0.25, 1],
@@ -51,10 +49,10 @@ export function FadeInView({
   children,
   direction = 'up',
   delay = 0,
-  duration = 0.6,
+  duration = 0.35,
   className,
   once = true,
-  amount = 0.2,
+  amount = 0.1,
   as = 'div',
 }: FadeInViewProps) {
   const Component = motion[as] as typeof motion.div
@@ -86,10 +84,10 @@ interface StaggerContainerProps {
 export function StaggerContainer({
   children,
   className,
-  stagger = 0.1,
+  stagger = 0.05,
   delay = 0,
   once = true,
-  amount = 0.2,
+  amount = 0.1,
 }: StaggerContainerProps) {
   return (
     <motion.div
@@ -119,7 +117,7 @@ export function StaggerItem({
   children,
   className,
   direction = 'up',
-  duration = 0.5,
+  duration = 0.3,
 }: StaggerItemProps) {
   return (
     <motion.div

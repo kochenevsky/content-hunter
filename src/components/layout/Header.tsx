@@ -25,9 +25,9 @@ export function Header() {
 
   return (
     <motion.header
-      initial={{ y: -100 }}
+      initial={{ y: -20 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+      transition={{ duration: 0.2 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-neutral-950/40 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10 shadow-[0_2px_20px_rgba(0,0,0,0.1)]'
@@ -83,17 +83,12 @@ export function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
+            transition={{ duration: 0.2 }}
             className="md:hidden overflow-hidden bg-black/30 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10"
           >
             <div className="container py-4 space-y-1">
-              {navigation.map((item, index) => (
-                <motion.div
-                  key={item.name}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.05 + 0.1 }}
-                >
+              {navigation.map((item) => (
+                <div key={item.name}>
                   <Link
                     href={item.href}
                     className="block py-3 text-base font-medium text-neutral-300 hover:text-white transition-colors"
@@ -101,18 +96,13 @@ export function Header() {
                   >
                     {item.name}
                   </Link>
-                </motion.div>
+                </div>
               ))}
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: navigation.length * 0.05 + 0.1 }}
-                className="pt-4 border-t border-white/10"
-              >
+              <div className="pt-4 border-t border-white/10">
                 <Button href="/contact" className="w-full">
                   Консультация
                 </Button>
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         )}

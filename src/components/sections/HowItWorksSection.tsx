@@ -65,7 +65,7 @@ export function HowItWorksSection() {
                 <motion.div
                   className="relative p-8 rounded-2xl bg-white border border-neutral-200 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full"
                   whileHover={{ y: -4 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  transition={{ duration: 0.2 }}
                 >
                   {/* Step number */}
                   <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-sm font-medium text-neutral-500">

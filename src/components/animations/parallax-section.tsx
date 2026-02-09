@@ -34,7 +34,7 @@ export function ParallaxSection({
   )
 }
 
-// Animated background grid/dots
+// Статичная сетка без анимации — быстрее загрузка
 export function AnimatedGrid({ className }: { className?: string }) {
   return (
     <div className={`absolute inset-0 overflow-hidden pointer-events-none ${className ?? ''}`}>
@@ -47,25 +47,6 @@ export function AnimatedGrid({ className }: { className?: string }) {
           `,
           backgroundSize: '60px 60px',
         }}
-      />
-      {/* Floating orbs */}
-      <motion.div
-        animate={{
-          x: [0, 30, -20, 0],
-          y: [0, -40, 20, 0],
-          scale: [1, 1.1, 0.95, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        className="absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-primary-500/5 blur-[100px]"
-      />
-      <motion.div
-        animate={{
-          x: [0, -30, 20, 0],
-          y: [0, 20, -30, 0],
-          scale: [1, 0.95, 1.1, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-        className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-primary-500/10 blur-[80px]"
       />
     </div>
   )

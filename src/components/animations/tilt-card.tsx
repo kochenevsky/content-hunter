@@ -46,7 +46,7 @@ export function TiltCard({
         rotateY: transform.rotateY,
         scale: transform.rotateX !== 0 || transform.rotateY !== 0 ? scale : 1,
       }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      transition={{ duration: 0.2 }}
       style={{ perspective, transformStyle: 'preserve-3d' }}
       className={className}
     >

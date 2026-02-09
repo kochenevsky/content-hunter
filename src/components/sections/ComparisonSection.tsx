@@ -85,7 +85,7 @@ export function ComparisonSection() {
           <motion.div
             className="p-8 rounded-2xl bg-neutral-950 text-white relative overflow-hidden"
             whileHover={{ scale: 1.005 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            transition={{ duration: 0.25 }}
           >
             {/* Subtle glow */}
             <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary-500/10 rounded-full blur-[80px]" />

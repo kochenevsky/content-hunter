@@ -12,24 +12,16 @@ interface TextRevealProps {
 }
 
 const letterVariants: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 20,
-    filter: 'blur(10px)',
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-  },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0 },
 }
 
 export function TextReveal({
   children,
   className,
   delay = 0,
-  duration = 0.4,
-  stagger = 0.03,
+  duration = 0.2,
+  stagger = 0.02,
 }: TextRevealProps) {
   const words = children.split(' ')
 
@@ -85,10 +77,10 @@ export function WordCycle({ words, className, interval = 2500 }: WordCycleProps)
       <AnimatePresence mode="wait">
         <motion.span
           key={currentIndex}
-          initial={{ y: 40, opacity: 0, filter: 'blur(8px)' }}
-          animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
-          exit={{ y: -40, opacity: 0, filter: 'blur(8px)' }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          initial={{ y: 12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -12, opacity: 0 }}
+          transition={{ duration: 0.2 }}
           className="inline-block"
         >
           {words[currentIndex]}
