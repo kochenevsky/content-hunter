@@ -25,10 +25,14 @@ const DEFAULT_PASSWORD = 'Admin123!'
 const DEFAULT_NAME = 'Администратор'
 
 async function seedAdmin() {
-  if (!process.env.DATABASE_URI || !process.env.PAYLOAD_SECRET) {
-    console.error('Ошибка: нужны переменные DATABASE_URI и PAYLOAD_SECRET.')
+  if (!process.env.DATABASE_URI && !process.env.DATABASE_URL) {
+    console.error('Ошибка: нужны переменные DATABASE_URI (или DATABASE_URL) и PAYLOAD_SECRET.')
     console.error('Добавьте их в .env.local в корне проекта (образец — .env.example).')
     console.error('PAYLOAD_SECRET сгенерируйте: openssl rand -base64 32')
+    process.exit(1)
+  }
+  if (!process.env.PAYLOAD_SECRET) {
+    console.error('Ошибка: нужна переменная PAYLOAD_SECRET.')
     process.exit(1)
   }
 

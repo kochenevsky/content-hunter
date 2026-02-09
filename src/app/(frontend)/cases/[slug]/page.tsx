@@ -1,11 +1,14 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
 import { formatNumber, formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { ArrowLeft, ArrowRight, ExternalLink, TrendingUp, Eye, FileText, Clock } from 'lucide-react'
+import type { Case } from '@/payload-types'
 
 const nicheLabels: Record<string, string> = {
   ecommerce: 'E-commerce',
@@ -19,146 +22,77 @@ const nicheLabels: Record<string, string> = {
   other: 'Другое',
 }
 
-// Временные данные для демонстрации
-const mockCases: Record<string, any> = {
-  'online-shop-clothes': {
-    id: '1',
-    title: 'Онлайн-магазин одежды',
-    slug: 'online-shop-clothes',
-    niche: 'ecommerce',
-    publications: 3656,
-    views: 14100000,
-    revenue: 1900000,
-    currency: 'RUB' as const,
-    ctr: 0.47,
-    conversion: 19,
-    duration: '2 месяца',
-    description: `
-      <h3>Задача</h3>
-      <p>Онлайн-магазин женской одежды из Москвы хотел увеличить охваты и продажи через социальные сети. До нас вели один Instagram-аккаунт с 15К подписчиками и получали 2-3 заказа в неделю с контента.</p>
-      
-      <h3>Решение</h3>
-      <p>Развернули контент-завод: 25 аккаунтов в Instagram и TikTok, 50 роликов в месяц с уникализацией под каждый профиль. Контент фокусировался на образах, лукбуках и распаковках.</p>
-      
-      <h3>Результат</h3>
-      <p>За 2 месяца работы достигли 14.1М просмотров. Конверсия в переходы на сайт — 0.47%. Выручка с контента выросла до 1.9М рублей в месяц.</p>
-    `,
-    socialLinks: [
-      { platform: 'instagram', url: '#' },
-      { platform: 'tiktok', url: '#' },
-    ],
-  },
-  'programming-school': {
-    id: '2',
-    title: 'Школа программирования',
-    slug: 'programming-school',
-    niche: 'edu',
-    publications: 2145,
-    views: 2100000,
-    revenue: 12000000,
-    currency: 'RUB' as const,
-    ctr: 0.52,
-    conversion: 24,
-    duration: '3 месяца',
-    description: `
-      <h3>Задача</h3>
-      <p>Онлайн-школа программирования искала способ снизить стоимость лида с таргетированной рекламы. CPL через Facebook Ads достигал 1500 рублей.</p>
-      
-      <h3>Решение</h3>
-      <p>Запустили контент-завод с фокусом на образовательный контент: мини-уроки, разборы кода, истории успеха выпускников. 20 аккаунтов, 40 роликов в месяц.</p>
-      
-      <h3>Результат</h3>
-      <p>2.1М просмотров за 3 месяца. 5000+ переходов на лендинг. 1200 заявок на курсы. Выручка 12М рублей. CPL снизился до 400 рублей.</p>
-    `,
-    socialLinks: [
-      { platform: 'youtube', url: '#' },
-      { platform: 'tiktok', url: '#' },
-    ],
-  },
-  'beauty-salon': {
-    id: '3',
-    title: 'Салон красоты',
-    slug: 'beauty-salon',
-    niche: 'beauty',
-    publications: 1293,
-    views: 700000,
-    revenue: 4200000,
-    currency: 'RUB' as const,
-    ctr: 0.38,
-    conversion: 15,
-    duration: '2 месяца',
-    description: `
-      <h3>Задача</h3>
-      <p>Сеть салонов красоты в Санкт-Петербурге хотела увеличить поток клиентов без увеличения бюджета на рекламу.</p>
-      
-      <h3>Решение</h3>
-      <p>Контент-завод с акцентом на до/после, процессы работы мастеров, отзывы клиентов. 15 аккаунтов, 30 роликов в месяц.</p>
-      
-      <h3>Результат</h3>
-      <p>700K просмотров за 2 месяца. 2600 переходов в директ. 390 записей на услуги. Выручка 4.2М рублей.</p>
-    `,
-    socialLinks: [
-      { platform: 'instagram', url: '#' },
-    ],
-  },
-}
-
 type Props = {
   params: Promise<{ slug: string }>
 }
 
-async function getCase(slug: string) {
+async function getCase(slug: string): Promise<Case | null> {
   try {
     const payload = await getPayload({ config })
     const result = await payload.find({
       collection: 'cases',
-      where: { 
+      where: {
         slug: { equals: slug },
         published: { equals: true },
       },
       limit: 1,
+      depth: 1,
     })
-    
+
     if (result.docs.length > 0) {
-      return result.docs[0]
+      return result.docs[0] as Case
     }
   } catch (error) {
     console.error('Error fetching case:', error)
   }
-  
-  // Возвращаем mock данные если не найдено в БД
-  return mockCases[slug] || null
+
+  return null
+}
+
+function renderCaseDescription(description: Case['description']): string {
+  if (!description || typeof description !== 'object') return ''
+  try {
+    return convertLexicalToHTML({ data: description })
+  } catch {
+    return ''
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const caseData = await getCase(slug)
-  
+
   if (!caseData) {
     return {
       title: 'Кейс не найден',
     }
   }
-  
+
+  const title = typeof caseData.title === 'string' ? caseData.title : String((caseData.title as Record<string, string> | undefined)?.ru ?? (caseData.title as Record<string, string> | undefined)?.en ?? '')
   return {
-    title: `${caseData.title} — Кейс Content Hunter`,
-    description: `${formatNumber(caseData.views)} просмотров, ${formatCurrency(caseData.revenue, caseData.currency)} выручки за ${caseData.duration}`,
+    title: `${title} — Кейс Content Hunter`,
+    description: `${formatNumber(caseData.views)} просмотров, ${formatCurrency(caseData.revenue ?? 0, caseData.currency ?? 'RUB')} выручки за ${caseData.duration ?? ''}`,
   }
 }
 
 export default async function CaseDetailPage({ params }: Props) {
   const { slug } = await params
   const caseData = await getCase(slug)
-  
+
   if (!caseData) {
     notFound()
   }
 
+  const title = typeof caseData.title === 'string' ? caseData.title : String((caseData.title as Record<string, string> | undefined)?.ru ?? (caseData.title as Record<string, string> | undefined)?.en ?? '')
+  const image = caseData.image && typeof caseData.image === 'object' ? caseData.image : null
+  const imageUrl = image?.url ?? null
+  const descriptionHtml = renderCaseDescription(caseData.description)
+
   const stats = [
     { icon: Eye, label: 'Просмотров', value: formatNumber(caseData.views) },
     { icon: FileText, label: 'Публикаций', value: formatNumber(caseData.publications) },
-    { icon: TrendingUp, label: 'Выручка', value: formatCurrency(caseData.revenue, caseData.currency) },
-    { icon: Clock, label: 'Срок', value: caseData.duration },
+    { icon: TrendingUp, label: 'Выручка', value: formatCurrency(caseData.revenue ?? 0, caseData.currency ?? 'RUB') },
+    { icon: Clock, label: 'Срок', value: caseData.duration ?? '—' },
   ]
 
   return (
@@ -173,13 +107,13 @@ export default async function CaseDetailPage({ params }: Props) {
             <ArrowLeft className="w-4 h-4" />
             Все кейсы
           </Link>
-          
+
           <div className="max-w-3xl">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-500/20 text-primary-400 text-sm font-medium mb-4">
-              {nicheLabels[caseData.niche] || caseData.niche}
+              {nicheLabels[caseData.niche] ?? caseData.niche}
             </span>
             <h1 className="heading-display text-white mb-6">
-              {caseData.title}
+              {title}
             </h1>
           </div>
 
@@ -205,27 +139,41 @@ export default async function CaseDetailPage({ params }: Props) {
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              {/* Image placeholder */}
-              <div className="aspect-video bg-neutral-100 rounded-2xl mb-8 flex items-center justify-center">
-                <span className="text-neutral-400">Изображение кейса</span>
-              </div>
-              
+              {/* Image */}
+              {imageUrl ? (
+                <div className="aspect-video relative rounded-2xl mb-8 overflow-hidden bg-neutral-100">
+                  <Image
+                    src={imageUrl}
+                    alt={title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video bg-neutral-100 rounded-2xl mb-8 flex items-center justify-center">
+                  <span className="text-neutral-400">Изображение кейса</span>
+                </div>
+              )}
+
               {/* Description */}
-              <div 
-                className="prose prose-lg max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-8 prose-h3:mb-4"
-                dangerouslySetInnerHTML={{ __html: caseData.description || '' }}
-              />
+              {descriptionHtml ? (
+                <div
+                  className="prose prose-lg max-w-none prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-8 prose-h3:mb-4"
+                  dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                />
+              ) : null}
 
               {/* Additional metrics */}
               <div className="mt-12 p-6 rounded-2xl bg-neutral-50 border border-neutral-200">
                 <h3 className="heading-4 text-neutral-900 mb-6">Детальные метрики</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
-                    <p className="text-2xl font-bold text-neutral-900">{caseData.ctr}%</p>
+                    <p className="text-2xl font-bold text-neutral-900">{caseData.ctr ?? '—'}%</p>
                     <p className="text-sm text-neutral-500">CTR</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-neutral-900">{caseData.conversion}%</p>
+                    <p className="text-2xl font-bold text-neutral-900">{caseData.conversion ?? '—'}%</p>
                     <p className="text-sm text-neutral-500">Конверсия в лид</p>
                   </div>
                   <div>
@@ -233,7 +181,7 @@ export default async function CaseDetailPage({ params }: Props) {
                     <p className="text-sm text-neutral-500">Публикаций</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-neutral-900">{caseData.duration}</p>
+                    <p className="text-2xl font-bold text-neutral-900">{caseData.duration ?? '—'}</p>
                     <p className="text-sm text-neutral-500">Срок работы</p>
                   </div>
                 </div>
@@ -264,10 +212,10 @@ export default async function CaseDetailPage({ params }: Props) {
                       Ссылки на аккаунты
                     </h3>
                     <div className="space-y-3">
-                      {caseData.socialLinks.map((link: any, index: number) => (
+                      {caseData.socialLinks.map((link, index) => (
                         <a
-                          key={index}
-                          href={link.url}
+                          key={link.id ?? index}
+                          href={link.url ?? '#'}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-3 text-neutral-600 hover:text-primary-600 transition-colors"

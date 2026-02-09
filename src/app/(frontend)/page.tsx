@@ -16,9 +16,9 @@ export default function HomePage() {
       <ProblemSection />
       <SolutionSection />
       <StatsSection />
+      <VideoExamplesSection />
       <HowItWorksSection />
       <CasesSection />
-      <VideoExamplesSection />
       <NichesSection />
       <ComparisonSection />
       <CTASection />
