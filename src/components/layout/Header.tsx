@@ -30,16 +30,14 @@ export function Header() {
       transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/90 backdrop-blur-lg border-b border-neutral-200 shadow-sm'
+          ? 'bg-neutral-950/40 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10 shadow-[0_2px_20px_rgba(0,0,0,0.1)]'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
       <nav className="container flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className={`text-xl font-bold transition-colors duration-300 ${
-            scrolled ? 'text-neutral-900' : 'text-white'
-          }`}>
+          <span className="text-xl font-bold text-white transition-colors duration-300">
             Content Hunter
           </span>
         </Link>
@@ -50,11 +48,7 @@ export function Header() {
             <Link
               key={item.name}
               href={item.href}
-              className={`relative text-sm font-medium transition-colors duration-300 group ${
-                scrolled
-                  ? 'text-neutral-600 hover:text-neutral-900'
-                  : 'text-neutral-300 hover:text-white'
-              }`}
+              className="relative text-sm font-medium text-neutral-300 hover:text-white transition-colors duration-300 group"
             >
               {item.name}
               {/* Animated underline */}
@@ -71,9 +65,7 @@ export function Header() {
         {/* Mobile Menu Button */}
         <button
           type="button"
-          className={`md:hidden p-2 transition-colors duration-300 ${
-            scrolled ? 'text-neutral-600' : 'text-white'
-          }`}
+          className="md:hidden p-2 text-white transition-colors duration-300"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? (
@@ -92,7 +84,7 @@ export function Header() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
-            className="md:hidden overflow-hidden bg-white/95 backdrop-blur-lg border-b border-neutral-200"
+            className="md:hidden overflow-hidden bg-black/30 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10"
           >
             <div className="container py-4 space-y-1">
               {navigation.map((item, index) => (
@@ -104,7 +96,7 @@ export function Header() {
                 >
                   <Link
                     href={item.href}
-                    className="block py-3 text-base font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                    className="block py-3 text-base font-medium text-neutral-300 hover:text-white transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.name}
@@ -115,7 +107,7 @@ export function Header() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: navigation.length * 0.05 + 0.1 }}
-                className="pt-4 border-t border-neutral-200"
+                className="pt-4 border-t border-white/10"
               >
                 <Button href="/contact" className="w-full">
                   Консультация

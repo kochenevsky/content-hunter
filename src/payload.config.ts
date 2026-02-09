@@ -71,6 +71,9 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI || process.env.DATABASE_URL || '',
       ssl: { rejectUnauthorized: false },
     },
+    // @ts-ignore - Force IPv4 connections
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
   }),
   
   plugins: [

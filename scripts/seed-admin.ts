@@ -9,6 +9,10 @@
  * После первого входа смените пароль в админке.
  */
 
+// Force IPv4 DNS resolution
+import dns from 'dns'
+dns.setDefaultResultOrder('ipv4first')
+
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { config as loadEnv } from 'dotenv'
