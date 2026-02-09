@@ -28,10 +28,37 @@ import { Settings } from './globals/Settings'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-// dns.setDefaultResultOrder('ipv4first') уже установлен — этого достаточно для IPv4
-const connectionString = process.env.DATABASE_URI || process.env.DATABASE_URL || ''
+function connectionStringWithIPv4(uri: string): string {
+  if (!uri || !uri.startsWith('postgres')) return uri
+  // Pooler уже даёт IPv4, не трогаем (на Vercel serverless sync DNS может быть недоступен)
+  if (uri.includes('pooler.supabase.com')) return uri
+  try {
+    const url = new URL(uri.replace(/^postgresql:\/\//, 'https://'))
+    const ipv4 = dns.lookupSync(url.hostname, { family: 4 })
+    return uri.replace(url.hostname, ipv4.address)
+  } catch {
+    return uri
+  }
+}
 
-export default buildConfig({
+function getConnectionString(override?: string): string {
+  const raw = override ?? process.env.DATABASE_URI ?? process.env.DATABASE_URL ?? ''
+  if (!raw || !raw.startsWith('postgres')) {
+    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
+      console.error(
+        '[Payload] DATABASE_URI (или DATABASE_URL) не задана или неверна. ' +
+          'В Vercel: Settings → Environment Variables → добавьте DATABASE_URI (Connection pooler, Session mode, port 5432).'
+      )
+    }
+    return raw
+  }
+  return connectionStringWithIPv4(raw)
+}
+
+/** Конфиг с опциональной строкой подключения (для seed при переборе pooler по регионам). */
+export function getConfig(connectionStringOverride?: string) {
+  const connectionString = getConnectionString(connectionStringOverride)
+  return buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -78,14 +105,17 @@ export default buildConfig({
       connectionString,
       ssl: { rejectUnauthorized: false },
     },
-    // @ts-ignore - Force IPv4 connections
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
+    // Drizzle: каталог миграций и путь к сгенерированной схеме (см. docs/database/postgres)
+    migrationDir: path.resolve(dirname, 'migrations'),
+    generateSchemaOutputFile: path.resolve(dirname, 'payload-generated-schema.ts'),
+    push: false, // используем миграции, не auto-push
   }),
   
   plugins: [
     vercelBlobStorage({
-      enabled: true,
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
       collections: {
         media: true,
       },
@@ -110,4 +140,7 @@ export default buildConfig({
     defaultLocale: 'ru',
     fallback: true,
   },
-})
+  })
+}
+
+export default getConfig()
