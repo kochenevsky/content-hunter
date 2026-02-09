@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const TO_EMAIL = 'anton@kochenevsky.ru'
+const TO_EMAIL = process.env.CONTACT_EMAIL || 'antonkochenevskiy@gmail.com'
 const FROM_EMAIL = process.env.EMAIL_FROM || 'Content Hunter <onboarding@resend.dev>'
 
 export async function POST(request: Request) {
