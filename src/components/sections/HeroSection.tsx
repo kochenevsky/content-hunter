@@ -79,10 +79,11 @@ function CardStack() {
             }}
             style={{ zIndex: 10 - card.stackIndex }}
           >
-            {/* YouTube thumbnail */}
+            {/* YouTube thumbnail — max resolution */}
             <img
-              src={`https://img.youtube.com/vi/${card.id}/mqdefault.jpg`}
+              src={`https://img.youtube.com/vi/${card.id}/maxresdefault.jpg`}
               alt={card.client}
+              loading="eager"
               className="w-full h-full object-cover"
             />
             {/* Overlay gradient */}
