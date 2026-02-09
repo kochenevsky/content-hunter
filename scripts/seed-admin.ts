@@ -19,10 +19,9 @@ import { config as loadEnv } from 'dotenv'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
+// Важно: загрузить env до импорта Payload, иначе PAYLOAD_SECRET не попадёт в process.env
 loadEnv({ path: path.join(root, '.env.local') })
-
-import { getPayload } from 'payload'
-import config from '../src/payload.config'
+loadEnv({ path: path.join(root, '.env') })
 
 const DEFAULT_EMAIL = 'admin@contenthunter.ru'
 const DEFAULT_PASSWORD = 'Admin123!'
@@ -36,10 +35,24 @@ async function seedAdmin() {
     process.exit(1)
   }
   if (!process.env.PAYLOAD_SECRET) {
-    console.error('Ошибка: нужна переменная PAYLOAD_SECRET.')
+    console.error('Ошибка: нужна переменная PAYLOAD_SECRET в .env.local или .env')
     process.exit(1)
   }
 
+  const uri = process.env.DATABASE_URI || process.env.DATABASE_URL || ''
+  try {
+    const url = new URL(uri.replace(/^postgresql:\/\//, 'https://'))
+    const host = url.hostname
+    const ipv4 = await dns.promises.lookup(host, { family: 4 })
+    const newUri = uri.replace(host, ipv4.address)
+    if (process.env.DATABASE_URI) process.env.DATABASE_URI = newUri
+    if (process.env.DATABASE_URL) process.env.DATABASE_URL = newUri
+  } catch {
+    // оставляем URI как есть, если не удалось резолвить в IPv4
+  }
+
+  const { getPayload } = await import('payload')
+  const { default: config } = await import('../src/payload.config')
   const payload = await getPayload({ config })
 
   const { totalDocs } = await payload.find({

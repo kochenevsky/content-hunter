@@ -20,6 +20,7 @@ const nextConfig = {
   },
   experimental: {
     reactCompiler: false,
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
   },
 }
 

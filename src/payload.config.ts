@@ -1,3 +1,7 @@
+// Принудительно IPv4 для подключения к Postgres (Supabase и др.) — иначе возможен EHOSTUNREACH по IPv6
+import dns from 'dns'
+dns.setDefaultResultOrder('ipv4first')
+
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -23,6 +27,9 @@ import { Settings } from './globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
+// dns.setDefaultResultOrder('ipv4first') уже установлен — этого достаточно для IPv4
+const connectionString = process.env.DATABASE_URI || process.env.DATABASE_URL || ''
 
 export default buildConfig({
   admin: {
@@ -68,7 +75,7 @@ export default buildConfig({
   
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || process.env.DATABASE_URL || '',
+      connectionString,
       ssl: { rejectUnauthorized: false },
     },
     // @ts-ignore - Force IPv4 connections
