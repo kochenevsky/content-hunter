@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Play } from 'lucide-react'
+import { ArrowRight, Play, X } from 'lucide-react'
 import Link from 'next/link'
 import { AnimatedCounter } from '@/components/animations/animated-counter'
 import { MagneticButton } from '@/components/animations/magnetic-button'
@@ -30,12 +30,25 @@ const videoCards = [
 
 function CardStack() {
   const [current, setCurrent] = useState(0)
+  const [playing, setPlaying] = useState<string | null>(null)
+  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
+    if (paused || playing) return
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % videoCards.length)
     }, 3000)
     return () => clearInterval(timer)
+  }, [paused, playing])
+
+  const handlePlay = useCallback((videoId: string) => {
+    setPlaying(videoId)
+    setPaused(true)
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setPlaying(null)
+    setPaused(false)
   }, [])
 
   // Show 4 cards in the stack: current on top, next 3 behind
@@ -46,11 +59,40 @@ function CardStack() {
 
   return (
     <div className="relative w-[280px] h-[420px] md:w-[320px] md:h-[480px]">
+      {/* Video player overlay */}
+      <AnimatePresence>
+        {playing && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+            className="absolute inset-0 z-50 rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-black"
+          >
+            <iframe
+              src={`https://www.youtube.com/embed/${playing}?autoplay=1&rel=0&modestbranding=1`}
+              title="Video player"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              className="w-full h-full"
+            />
+            <button
+              onClick={handleClose}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/20 hover:bg-black/80 transition-colors z-10"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Card stack */}
       <AnimatePresence mode="popLayout">
         {visibleCards.reverse().map((card) => (
           <motion.div
             key={`${card.id}-${card.stackIndex}`}
-            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-pointer"
+            onClick={() => card.stackIndex === 0 && handlePlay(card.id)}
             initial={{
               scale: 0.85,
               y: 60,
@@ -77,6 +119,7 @@ function CardStack() {
               damping: 20,
               mass: 0.8,
             }}
+            whileHover={card.stackIndex === 0 ? { scale: 1.03 } : {}}
             style={{ zIndex: 10 - card.stackIndex }}
           >
             {/* YouTube thumbnail — max resolution */}
@@ -91,9 +134,13 @@ function CardStack() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
             {/* Play button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+              <motion.div
+                className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30"
+                whileHover={{ scale: 1.15, backgroundColor: 'rgba(255,255,255,0.3)' }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              >
                 <Play className="w-6 h-6 text-white fill-white ml-0.5" />
-              </div>
+              </motion.div>
             </div>
             {/* Client label */}
             <div className="absolute bottom-0 left-0 right-0 p-4">
