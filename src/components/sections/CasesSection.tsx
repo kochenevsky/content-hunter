@@ -1,0 +1,104 @@
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { formatNumber, formatCurrency } from '@/lib/utils'
+
+// Временные данные, потом будут из Payload
+const cases = [
+  {
+    id: 1,
+    title: 'Онлайн-магазин одежды',
+    niche: 'E-commerce',
+    publications: 3656,
+    views: 14100000,
+    revenue: 1900000,
+    currency: 'RUB' as const,
+    slug: 'online-shop-clothes',
+  },
+  {
+    id: 2,
+    title: 'Школа программирования',
+    niche: 'Онлайн-школы',
+    publications: 2145,
+    views: 2100000,
+    revenue: 12000000,
+    currency: 'RUB' as const,
+    slug: 'programming-school',
+  },
+  {
+    id: 3,
+    title: 'Салон красоты',
+    niche: 'Beauty',
+    publications: 1293,
+    views: 700000,
+    revenue: 4200000,
+    currency: 'RUB' as const,
+    slug: 'beauty-salon',
+  },
+]
+
+export function CasesSection() {
+  return (
+    <section className="section bg-white">
+      <div className="container">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+          <div>
+            <h2 className="heading-2 text-neutral-900 mb-4">
+              Кейсы клиентов
+            </h2>
+            <p className="text-lead max-w-xl">
+              Реальные результаты в разных нишах — от e-commerce до онлайн-школ
+            </p>
+          </div>
+          <Button href="/cases" variant="ghost" className="mt-4 md:mt-0">
+            Все кейсы
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {cases.map((caseItem) => (
+            <Link
+              key={caseItem.id}
+              href={`/cases/${caseItem.slug}`}
+              className="group block"
+            >
+              <div className="rounded-2xl bg-neutral-50 border border-neutral-200 overflow-hidden hover:border-neutral-300 hover:shadow-lg transition-all duration-300">
+                {/* Image placeholder */}
+                <div className="h-48 bg-neutral-200 group-hover:bg-neutral-300 transition-colors" />
+                
+                <div className="p-6">
+                  {/* Badge */}
+                  <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-3">
+                    {caseItem.niche}
+                  </span>
+                  
+                  {/* Title */}
+                  <h3 className="heading-4 text-neutral-900 mb-4 group-hover:text-primary-600 transition-colors">
+                    {caseItem.title}
+                  </h3>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-2xl font-bold text-neutral-900">
+                        {formatNumber(caseItem.views)}
+                      </p>
+                      <p className="text-sm text-neutral-500">просмотров</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-neutral-900">
+                        {formatCurrency(caseItem.revenue, caseItem.currency)}
+                      </p>
+                      <p className="text-sm text-neutral-500">выручка</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

@@ -1,0 +1,199 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { Button } from '@/components/ui/Button'
+import { ArrowRight, Calendar, User } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Блог — Статьи о контент-маркетинге',
+  description: 'Полезные статьи о контент-заводах, SMM, продвижении в социальных сетях и создании видеоконтента.',
+}
+
+const categoryLabels: Record<string, string> = {
+  cases: 'Кейсы',
+  analysis: 'Аналитика',
+  process: 'Процессы',
+  myths: 'Разрушаем мифы',
+  guides: 'Гайды',
+}
+
+// Временные данные
+const mockPosts = [
+  {
+    id: '1',
+    title: 'Почему один блог больше не работает: математика охватов в 2024',
+    slug: 'why-one-blog-doesnt-work',
+    category: 'analysis',
+    excerpt: 'Разбираем, почему классический SMM с одним аккаунтом перестал приносить результаты и как контент-завод решает эту проблему.',
+    publishedAt: '2024-01-15',
+    author: { name: 'Кирилл Попов' },
+  },
+  {
+    id: '2',
+    title: 'Как мы сделали 14 млн просмотров для онлайн-магазина за 2 месяца',
+    slug: 'case-14m-views-ecommerce',
+    category: 'cases',
+    excerpt: 'Подробный разбор кейса: стратегия, инфраструктура, контент и результаты запуска контент-завода для e-commerce.',
+    publishedAt: '2024-01-10',
+    author: { name: 'Кирилл Попов' },
+  },
+  {
+    id: '3',
+    title: '5 мифов о контент-заводах, которые мешают вам масштабироваться',
+    slug: '5-myths-about-content-factories',
+    category: 'myths',
+    excerpt: 'Разбираем популярные заблуждения: от "это спам" до "алгоритмы заблокируют" — и объясняем, как на самом деле.',
+    publishedAt: '2024-01-05',
+    author: { name: 'Кирилл Попов' },
+  },
+  {
+    id: '4',
+    title: 'Как правильно уникализировать контент для разных аккаунтов',
+    slug: 'how-to-uniqualize-content',
+    category: 'guides',
+    excerpt: 'Пошаговый гайд по уникализации роликов: звук, визуал, текст, хештеги — всё, чтобы платформы не посчитали контент дублем.',
+    publishedAt: '2024-01-01',
+    author: { name: 'Кирилл Попов' },
+  },
+  {
+    id: '5',
+    title: 'ROI контент-завода vs таргетированная реклама: сравнение каналов',
+    slug: 'content-factory-vs-paid-ads',
+    category: 'analysis',
+    excerpt: 'Считаем экономику: когда контент-завод выгоднее таргета, а когда лучше комбинировать оба канала.',
+    publishedAt: '2023-12-25',
+    author: { name: 'Кирилл Попов' },
+  },
+  {
+    id: '6',
+    title: 'Процесс создания 50 роликов в месяц: от сценария до публикации',
+    slug: 'content-production-process',
+    category: 'process',
+    excerpt: 'Заглядываем внутрь контент-завода: как организована работа, какие инструменты используем и как масштабируем производство.',
+    publishedAt: '2023-12-20',
+    author: { name: 'Кирилл Попов' },
+  },
+]
+
+async function getBlogPosts() {
+  try {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: 'blog-posts',
+      where: { published: { equals: true } },
+      sort: '-publishedAt',
+      limit: 100,
+    })
+    
+    if (result.docs.length > 0) {
+      return result.docs
+    }
+  } catch (error) {
+    console.error('Error fetching blog posts:', error)
+  }
+  
+  return mockPosts
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+export default async function BlogPage() {
+  const posts = await getBlogPosts()
+
+  return (
+    <>
+      {/* Hero */}
+      <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-neutral-950 text-white">
+        <div className="container">
+          <div className="max-w-3xl">
+            <h1 className="heading-display text-white mb-6">
+              Блог
+            </h1>
+            <p className="text-xl text-neutral-400">
+              Полезные статьи о контент-заводах, SMM и продвижении 
+              в социальных сетях. Разборы кейсов, гайды, аналитика.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Posts Grid */}
+      <section className="section bg-white">
+        <div className="container">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post: any) => (
+              <Link
+                key={post.id}
+                href={`/blog/${post.slug}`}
+                className="group block"
+              >
+                <article className="h-full rounded-2xl bg-neutral-50 border border-neutral-200 overflow-hidden hover:border-neutral-300 hover:shadow-lg transition-all duration-300">
+                  {/* Image placeholder */}
+                  <div className="h-48 bg-gradient-to-br from-neutral-200 to-neutral-300 group-hover:from-neutral-300 group-hover:to-neutral-400 transition-colors" />
+                  
+                  <div className="p-6">
+                    {/* Category */}
+                    <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-3">
+                      {categoryLabels[post.category] || post.category}
+                    </span>
+                    
+                    {/* Title */}
+                    <h2 className="heading-4 text-neutral-900 mb-3 group-hover:text-primary-600 transition-colors line-clamp-2">
+                      {post.title}
+                    </h2>
+
+                    {/* Excerpt */}
+                    <p className="text-neutral-600 text-sm mb-4 line-clamp-3">
+                      {post.excerpt}
+                    </p>
+
+                    {/* Meta */}
+                    <div className="flex items-center gap-4 text-sm text-neutral-500">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {formatDate(post.publishedAt)}
+                      </span>
+                      {post.author && (
+                        <span className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          {post.author.name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="section bg-neutral-950 text-white">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="heading-2 text-white mb-6">
+              Хотите обсудить ваш проект?
+            </h2>
+            <p className="text-xl text-neutral-400 mb-10">
+              Получите бесплатную консультацию и узнайте, как контент-завод 
+              может работать в вашей нише.
+            </p>
+            <Button href="/contact" size="lg">
+              Получить консультацию
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
