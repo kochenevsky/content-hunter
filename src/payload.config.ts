@@ -68,7 +68,8 @@ export default buildConfig({
   
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || '',
+      connectionString: process.env.DATABASE_URI || process.env.DATABASE_URL || '',
+      ssl: { rejectUnauthorized: false },
     },
   }),
   
