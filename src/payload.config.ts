@@ -33,8 +33,10 @@ function connectionStringWithIPv4(uri: string): string {
   // Pooler уже даёт IPv4, не трогаем (на Vercel serverless sync DNS может быть недоступен)
   if (uri.includes('pooler.supabase.com')) return uri
   try {
+    const lookupSync = (dns as { lookupSync?: (host: string, opts: { family: number }) => { address: string } }).lookupSync
+    if (typeof lookupSync !== 'function') return uri
     const url = new URL(uri.replace(/^postgresql:\/\//, 'https://'))
-    const ipv4 = dns.lookupSync(url.hostname, { family: 4 })
+    const ipv4 = lookupSync(url.hostname, { family: 4 })
     return uri.replace(url.hostname, ipv4.address)
   } catch {
     return uri
@@ -104,9 +106,9 @@ export function getConfig(connectionStringOverride?: string) {
     pool: {
       connectionString,
       ssl: { rejectUnauthorized: false },
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
     },
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
     // Drizzle: каталог миграций и путь к сгенерированной схеме (см. docs/database/postgres)
     migrationDir: path.resolve(dirname, 'migrations'),
     generateSchemaOutputFile: path.resolve(dirname, 'payload-generated-schema.ts'),
