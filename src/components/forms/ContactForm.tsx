@@ -42,6 +42,7 @@ const budgets = [
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const {
     register,
@@ -54,18 +55,27 @@ export function ContactForm() {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true)
-    
+    setSubmitError(null)
+
     try {
-      // TODO: Интеграция с AmoCRM или отправка в Telegram
-      console.log('Form data:', data)
-      
-      // Имитация отправки
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      const json = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        setSubmitError(json.error || 'Не удалось отправить заявку. Попробуйте позже.')
+        return
+      }
+
       setIsSuccess(true)
       reset()
     } catch (error) {
       console.error('Error submitting form:', error)
+      setSubmitError('Ошибка сети. Проверьте интернет и попробуйте снова.')
     } finally {
       setIsSubmitting(false)
     }
@@ -93,6 +103,11 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {submitError && (
+        <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+          {submitError}
+        </div>
+      )}
       {/* Name */}
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-2">

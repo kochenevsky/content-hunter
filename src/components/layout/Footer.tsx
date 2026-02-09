@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MessageCircle, Send } from 'lucide-react'
+import { MessageCircle, Send, ExternalLink, FileSpreadsheet, Presentation } from 'lucide-react'
 
 const navigation = [
   { name: 'Услуги', href: '/services' },
@@ -8,6 +8,12 @@ const navigation = [
   { name: 'Блог', href: '/blog' },
   { name: 'О нас', href: '/about' },
   { name: 'FAQ', href: '/faq' },
+]
+
+// Ссылки из брифа (документ Content Hunter)
+const materialsFromBrief = [
+  { name: 'Презентация', href: 'https://gamma.app/docs/Content-Hunter-20-ta6xnap4ulyonku?mode=doc', icon: Presentation },
+  { name: 'Прайс и кейсы', href: 'https://docs.google.com/spreadsheets/d/1axwH_4ByTRGrBneCOP18ARJgsJNqXnzzxBXLdTFph9s/edit?gid=1037848601', icon: FileSpreadsheet },
 ]
 
 const social = [
@@ -19,7 +25,7 @@ export function Footer() {
   return (
     <footer className="bg-neutral-950 text-white">
       <div className="container py-16 md:py-20">
-        <div className="grid md:grid-cols-3 gap-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
             <h3 className="text-xl font-bold mb-4">Content Hunter</h3>
@@ -47,6 +53,32 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Материалы из брифа */}
+          <div>
+            <h4 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">
+              Материалы
+            </h4>
+            <ul className="space-y-3">
+              {materialsFromBrief.map((item) => {
+                const Icon = item.icon
+                return (
+                  <li key={item.name}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
+                    >
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      <span>{item.name}</span>
+                      <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+
           {/* Contacts */}
           <div>
             <h4 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">
@@ -67,6 +99,7 @@ export function Footer() {
                 )
               })}
             </div>
+            <p className="text-neutral-500 text-xs mt-2">Telegram-бот, Telegram-менеджер — контакт в заявке</p>
           </div>
         </div>
 

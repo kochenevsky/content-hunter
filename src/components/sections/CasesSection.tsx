@@ -1,103 +1,94 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { formatNumber, formatCurrency } from '@/lib/utils'
+import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
+import { TiltCard } from '@/components/animations/tilt-card'
+import { GlowCard } from '@/components/animations/glow-effect'
 
-// Временные данные, потом будут из Payload
+// Данные из брифа (топ-3 + разнообразие ниш)
 const cases = [
-  {
-    id: 1,
-    title: 'Онлайн-магазин одежды',
-    niche: 'E-commerce',
-    publications: 3656,
-    views: 14100000,
-    revenue: 1900000,
-    currency: 'RUB' as const,
-    slug: 'online-shop-clothes',
-  },
-  {
-    id: 2,
-    title: 'Школа программирования',
-    niche: 'Онлайн-школы',
-    publications: 2145,
-    views: 2100000,
-    revenue: 12000000,
-    currency: 'RUB' as const,
-    slug: 'programming-school',
-  },
-  {
-    id: 3,
-    title: 'Салон красоты',
-    niche: 'Beauty',
-    publications: 1293,
-    views: 700000,
-    revenue: 4200000,
-    currency: 'RUB' as const,
-    slug: 'beauty-salon',
-  },
+  { id: 1, title: 'Онлайн-магазин одежды', niche: 'E-commerce', publications: 3656, views: 14100000, revenue: 1900000, currency: 'RUB' as const, slug: 'online-shop-clothes' },
+  { id: 2, title: 'Школа программирования', niche: 'Онлайн-школы', publications: 2145, views: 2100000, revenue: 12000000, currency: 'RUB' as const, slug: 'programming-school' },
+  { id: 3, title: 'Салон красоты', niche: 'Beauty', publications: 1293, views: 700000, revenue: 4200000, currency: 'RUB' as const, slug: 'beauty-salon' },
 ]
 
 export function CasesSection() {
   return (
     <section className="section bg-white">
       <div className="container">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-          <div>
-            <h2 className="heading-2 text-neutral-900 mb-4">
-              Кейсы клиентов
-            </h2>
-            <p className="text-lead max-w-xl">
-              Реальные результаты в разных нишах — от e-commerce до онлайн-школ
-            </p>
+        <FadeInView direction="up">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+              <h2 className="heading-2 text-neutral-900 mb-4">
+                Кейсы клиентов
+              </h2>
+              <p className="text-lead max-w-xl">
+                Реальные результаты в разных нишах — от e-commerce до онлайн-школ
+              </p>
+            </div>
+            <Button href="/cases" variant="ghost" className="mt-4 md:mt-0">
+              Все кейсы
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
-          <Button href="/cases" variant="ghost" className="mt-4 md:mt-0">
-            Все кейсы
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
+        </FadeInView>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <StaggerContainer stagger={0.15} className="grid md:grid-cols-3 gap-8">
           {cases.map((caseItem) => (
-            <Link
-              key={caseItem.id}
-              href={`/cases/${caseItem.slug}`}
-              className="group block"
-            >
-              <div className="rounded-2xl bg-neutral-50 border border-neutral-200 overflow-hidden hover:border-neutral-300 hover:shadow-lg transition-all duration-300">
-                {/* Image placeholder */}
-                <div className="h-48 bg-neutral-200 group-hover:bg-neutral-300 transition-colors" />
-                
-                <div className="p-6">
-                  {/* Badge */}
-                  <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-3">
-                    {caseItem.niche}
-                  </span>
-                  
-                  {/* Title */}
-                  <h3 className="heading-4 text-neutral-900 mb-4 group-hover:text-primary-600 transition-colors">
-                    {caseItem.title}
-                  </h3>
+            <StaggerItem key={caseItem.id} direction="up">
+              <TiltCard maxTilt={5} className="h-full">
+                <GlowCard
+                  className="rounded-2xl h-full"
+                  glowColor="rgba(239, 68, 68, 0.1)"
+                  glowSize={250}
+                >
+                  <Link
+                    href={`/cases/${caseItem.slug}`}
+                    className="group block h-full"
+                  >
+                    <div className="rounded-2xl bg-neutral-50 border border-neutral-200 overflow-hidden hover:border-neutral-300 transition-all duration-300 h-full">
+                      {/* Image placeholder */}
+                      <div className="h-48 bg-neutral-200 group-hover:bg-neutral-300 transition-colors overflow-hidden">
+                        <div className="w-full h-full bg-gradient-to-br from-neutral-200 to-neutral-300 group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                      
+                      <div className="p-6">
+                        {/* Badge */}
+                        <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-3">
+                          {caseItem.niche}
+                        </span>
+                        
+                        {/* Title */}
+                        <h3 className="heading-4 text-neutral-900 mb-4 group-hover:text-primary-600 transition-colors">
+                          {caseItem.title}
+                        </h3>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-2xl font-bold text-neutral-900">
-                        {formatNumber(caseItem.views)}
-                      </p>
-                      <p className="text-sm text-neutral-500">просмотров</p>
+                        {/* Stats */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-2xl font-bold text-neutral-900">
+                              {formatNumber(caseItem.views)}
+                            </p>
+                            <p className="text-sm text-neutral-500">просмотров</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-neutral-900">
+                              {formatCurrency(caseItem.revenue, caseItem.currency)}
+                            </p>
+                            <p className="text-sm text-neutral-500">выручка</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-neutral-900">
-                        {formatCurrency(caseItem.revenue, caseItem.currency)}
-                      </p>
-                      <p className="text-sm text-neutral-500">выручка</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Link>
+                  </Link>
+                </GlowCard>
+              </TiltCard>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   )

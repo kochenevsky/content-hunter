@@ -1,3 +1,5 @@
+'use client'
+
 import { 
   ShoppingBag, 
   GraduationCap, 
@@ -8,6 +10,10 @@ import {
   Building2,
   Stethoscope
 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
+import { TiltCard } from '@/components/animations/tilt-card'
+import { GlowCard } from '@/components/animations/glow-effect'
 
 const niches = [
   { icon: ShoppingBag, name: 'E-commerce', description: 'Маркетплейсы, онлайн-магазины' },
@@ -24,36 +30,46 @@ export function NichesSection() {
   return (
     <section className="section bg-neutral-50">
       <div className="container">
-        <div className="text-center mb-16">
+        <FadeInView direction="up" className="text-center mb-16">
           <h2 className="heading-2 text-neutral-900 mb-4">
             С кем мы работаем
           </h2>
           <p className="text-lead max-w-2xl mx-auto">
             B2C-бизнес с широкой аудиторией. Бюджет на маркетинг от 200 000 ₽/мес.
           </p>
-        </div>
+        </FadeInView>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <StaggerContainer stagger={0.08} className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {niches.map((niche, index) => {
             const Icon = niche.icon
             return (
-              <div
-                key={index}
-                className="p-6 rounded-2xl bg-white border border-neutral-200 hover:border-primary-300 hover:shadow-md transition-all duration-300 text-center"
-              >
-                <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-                  <Icon className="w-6 h-6 text-neutral-700" />
-                </div>
-                <h3 className="font-semibold text-neutral-900 mb-1">
-                  {niche.name}
-                </h3>
-                <p className="text-sm text-neutral-500">
-                  {niche.description}
-                </p>
-              </div>
+              <StaggerItem key={index} direction="up">
+                <TiltCard maxTilt={6} className="h-full">
+                  <GlowCard
+                    className="rounded-2xl h-full"
+                    glowColor="rgba(239, 68, 68, 0.12)"
+                  >
+                    <div className="p-6 rounded-2xl bg-white border border-neutral-200 hover:border-primary-300 transition-colors duration-300 text-center h-full">
+                      <motion.div
+                        className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center mx-auto mb-4"
+                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                      >
+                        <Icon className="w-6 h-6 text-neutral-700" />
+                      </motion.div>
+                      <h3 className="font-semibold text-neutral-900 mb-1">
+                        {niche.name}
+                      </h3>
+                      <p className="text-sm text-neutral-500">
+                        {niche.description}
+                      </p>
+                    </div>
+                  </GlowCard>
+                </TiltCard>
+              </StaggerItem>
             )
           })}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   )

@@ -4,6 +4,7 @@ import { SolutionSection } from '@/components/sections/SolutionSection'
 import { StatsSection } from '@/components/sections/StatsSection'
 import { HowItWorksSection } from '@/components/sections/HowItWorksSection'
 import { CasesSection } from '@/components/sections/CasesSection'
+import { VideoExamplesSection } from '@/components/sections/VideoExamplesSection'
 import { NichesSection } from '@/components/sections/NichesSection'
 import { ComparisonSection } from '@/components/sections/ComparisonSection'
 import { CTASection } from '@/components/sections/CTASection'
@@ -17,6 +18,7 @@ export default function HomePage() {
       <StatsSection />
       <HowItWorksSection />
       <CasesSection />
+      <VideoExamplesSection />
       <NichesSection />
       <ComparisonSection />
       <CTASection />

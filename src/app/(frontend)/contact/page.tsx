@@ -1,31 +1,39 @@
 import type { Metadata } from 'next'
 import { ContactForm } from '@/components/forms/ContactForm'
-import { MessageCircle, Mail, MapPin, Clock } from 'lucide-react'
+import { MessageCircle, MapPin, Clock } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Консультация — Связаться с нами',
   description: 'Получите бесплатную консультацию по запуску контент-завода. Ответим в течение 2 часов.',
 }
 
+// По брифу: Telegram-бот (основной), Telegram-менеджер, WhatsApp (дополнительно) — контакты будут предоставлены
 const contacts = [
   {
     icon: MessageCircle,
-    title: 'Telegram',
-    value: '@contenthunter',
-    href: 'https://t.me/contenthunter',
-    description: 'Основной канал связи',
+    title: 'Telegram-бот',
+    value: 'Основной канал связи',
+    href: null,
+    description: 'Ссылка будет отправлена после заявки',
   },
   {
-    icon: Mail,
-    title: 'Email',
-    value: 'hello@contenthunter.ru',
-    href: 'mailto:hello@contenthunter.ru',
-    description: 'Для официальных запросов',
+    icon: MessageCircle,
+    title: 'Telegram-менеджер',
+    value: 'Персональный контакт',
+    href: null,
+    description: 'Контакт будет предоставлен',
+  },
+  {
+    icon: MessageCircle,
+    title: 'WhatsApp',
+    value: 'Дополнительно',
+    href: null,
+    description: 'Контакт будет предоставлен',
   },
   {
     icon: MapPin,
     title: 'География',
-    value: 'Россия, СНГ, MENA',
+    value: 'Россия, СНГ, MENA, LATAM, Европа, США',
     href: null,
     description: 'Работаем удалённо',
   },

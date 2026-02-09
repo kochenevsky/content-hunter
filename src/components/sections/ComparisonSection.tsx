@@ -1,4 +1,8 @@
+'use client'
+
 import { Check, X } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 
 const comparisons = [
   {
@@ -40,9 +44,9 @@ const ourAdvantages = [
 
 export function ComparisonSection() {
   return (
-    <section className="section bg-white">
+    <section className="section bg-white overflow-hidden">
       <div className="container">
-        <div className="text-center mb-16">
+        <FadeInView direction="up" className="text-center mb-16">
           <h2 className="heading-2 text-neutral-900 mb-4">
             Чем мы отличаемся
           </h2>
@@ -50,56 +54,66 @@ export function ComparisonSection() {
             Content Hunter — это не SMM-агентство и не видеопродакшен.
             Это контент-завод с гарантией результата.
           </p>
-        </div>
+        </FadeInView>
 
         {/* Competitors */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <StaggerContainer stagger={0.12} className="grid md:grid-cols-3 gap-6 mb-12">
           {comparisons.map((item, index) => (
-            <div
-              key={index}
-              className="p-6 rounded-2xl bg-neutral-50 border border-neutral-200"
-            >
-              <h3 className="heading-4 text-neutral-900 mb-2">
-                {item.title}
-              </h3>
-              <p className="text-neutral-600 text-sm mb-4">
-                {item.description}
-              </p>
-              <ul className="space-y-2">
-                {item.cons.map((con, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-neutral-500">
-                    <X className="w-4 h-4 text-red-500" />
-                    {con}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <StaggerItem key={index} direction="left">
+              <div className="p-6 rounded-2xl bg-neutral-50 border border-neutral-200 h-full">
+                <h3 className="heading-4 text-neutral-900 mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-neutral-600 text-sm mb-4">
+                  {item.description}
+                </p>
+                <ul className="space-y-2">
+                  {item.cons.map((con, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-neutral-500">
+                      <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      {con}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         {/* Our advantages */}
-        <div className="p-8 rounded-2xl bg-neutral-950 text-white">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-8">
-            <div className="lg:w-1/3">
-              <h3 className="heading-3 text-white mb-2">Content Hunter</h3>
-              <p className="text-neutral-400">
-                Системный подход к контенту с гарантией результата
-              </p>
+        <FadeInView direction="right" delay={0.3}>
+          <motion.div
+            className="p-8 rounded-2xl bg-neutral-950 text-white relative overflow-hidden"
+            whileHover={{ scale: 1.005 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          >
+            {/* Subtle glow */}
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary-500/10 rounded-full blur-[80px]" />
+            
+            <div className="flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
+              <div className="lg:w-1/3">
+                <h3 className="heading-3 text-white mb-2">Content Hunter</h3>
+                <p className="text-neutral-400">
+                  Системный подход к контенту с гарантией результата
+                </p>
+              </div>
+              <div className="lg:w-2/3">
+                <StaggerContainer stagger={0.08} className="grid md:grid-cols-2 gap-4">
+                  {ourAdvantages.map((advantage, index) => (
+                    <StaggerItem key={index} direction="right">
+                      <li className="flex items-center gap-3 list-none">
+                        <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-neutral-300">{advantage}</span>
+                      </li>
+                    </StaggerItem>
+                  ))}
+                </StaggerContainer>
+              </div>
             </div>
-            <div className="lg:w-2/3">
-              <ul className="grid md:grid-cols-2 gap-4">
-                {ourAdvantages.map((advantage, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-neutral-300">{advantage}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
+          </motion.div>
+        </FadeInView>
       </div>
     </section>
   )
