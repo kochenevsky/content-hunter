@@ -52,14 +52,15 @@ function CardStack() {
     setPaused(false)
   }, [])
 
-  // Show 4 cards in the stack: current on top, next 3 behind
+  // Show 4 cards in the stack: current on top, next 3 behind. Render back-to-front so z-index stacks correctly.
   const visibleCards = Array.from({ length: 4 }, (_, i) => {
     const index = (current + i) % videoCards.length
     return { ...videoCards[index], stackIndex: i }
   })
+  const cardsToRender = [...visibleCards].reverse() // не мутируем исходный массив
 
   return (
-    <div className="relative w-[280px] h-[420px] md:w-[320px] md:h-[480px]">
+    <div className="relative w-[280px] h-[420px] md:w-[320px] md:h-[480px] flex-shrink-0">
       {/* Video player overlay */}
       <AnimatePresence>
         {playing && (
@@ -87,12 +88,13 @@ function CardStack() {
         )}
       </AnimatePresence>
 
-      {/* Card stack */}
-      <AnimatePresence mode="popLayout">
-        {visibleCards.reverse().map((card) => (
+      {/* Card stack — рендер с задней карты к передней */}
+      <AnimatePresence mode="popLayout" initial={false}>
+        {cardsToRender.map((card) => (
           <motion.div
-            key={`${card.id}-${card.stackIndex}`}
-            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-pointer relative"
+            key={`${current}-${card.stackIndex}-${card.id}`}
+            layout
+            className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-pointer bg-neutral-800"
             onClick={() => card.stackIndex === 0 && handlePlay(card.id)}
             initial={{
               scale: 0.95,
@@ -115,26 +117,29 @@ function CardStack() {
             whileHover={card.stackIndex === 0 ? { scale: 1.02 } : {}}
             style={{ zIndex: 10 - card.stackIndex }}
           >
-            {/* YouTube thumbnail — max resolution */}
-            <Image
-              src={`https://img.youtube.com/vi/${card.id}/sddefault.jpg`}
-              alt={card.client}
-              fill
-              sizes="(max-width: 768px) 280px, 320px"
-              className="object-cover"
-              loading="eager"
-            />
+            {/* YouTube thumbnail; фон на случай ошибки загрузки */}
+            <div className="absolute inset-0 bg-neutral-700">
+              <Image
+                src={`https://img.youtube.com/vi/${card.id}/sddefault.jpg`}
+                alt={card.client}
+                fill
+                sizes="(max-width: 768px) 280px, 320px"
+                className="object-cover"
+                loading="eager"
+                unoptimized
+              />
+            </div>
             {/* Overlay gradient */}
-            <div className={`absolute inset-0 bg-gradient-to-t ${card.color} mix-blend-overlay`} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <div className={`absolute inset-0 bg-gradient-to-t ${card.color} mix-blend-overlay pointer-events-none`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
             {/* Play button */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 hover:scale-105 hover:bg-white/30 transition-transform duration-200">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:scale-105">
                 <Play className="w-6 h-6 text-white fill-white ml-0.5" />
               </div>
             </div>
             {/* Client label */}
-            <div className="absolute bottom-0 left-0 right-0 p-4">
+            <div className="absolute bottom-0 left-0 right-0 p-4 pointer-events-none">
               <p className="text-white/90 text-sm font-medium">{card.client}</p>
               <p className="text-white/50 text-xs">YouTube Shorts</p>
             </div>
