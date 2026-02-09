@@ -33,7 +33,8 @@ function connectionStringWithIPv4(uri: string): string {
   // Pooler уже даёт IPv4, не трогаем (на Vercel serverless sync DNS может быть недоступен)
   if (uri.includes('pooler.supabase.com')) return uri
   try {
-    const lookupSync = (dns as { lookupSync?: (host: string, opts: { family: number }) => { address: string } }).lookupSync
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lookupSync = (dns as any).lookupSync as ((host: string, opts: { family: number }) => { address: string }) | undefined
     if (typeof lookupSync !== 'function') return uri
     const url = new URL(uri.replace(/^postgresql:\/\//, 'https://'))
     const ipv4 = lookupSync(url.hostname, { family: 4 })
