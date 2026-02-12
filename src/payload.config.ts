@@ -5,6 +5,35 @@ import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import pg from 'pg'
+
+/**
+ * Для Supabase Transaction mode (порт 6543): убираем named prepared statements.
+ * Supavisor в Transaction mode не поддерживает их, т.к. бэкенд-соединение
+ * может меняться между запросами.
+ * Патчим и Pool.query и Client.query.
+ */
+if (process.env.VERCEL === '1') {
+  function stripPreparedName(args: unknown[]): unknown[] {
+    if (args.length > 0 && typeof args[0] === 'object' && args[0] !== null && 'name' in args[0]) {
+      delete (args[0] as Record<string, unknown>).name
+    }
+    return args
+  }
+
+  const origPoolQuery = pg.Pool.prototype.query as (...args: unknown[]) => unknown
+  // @ts-expect-error — monkey-patch
+  pg.Pool.prototype.query = function (...args: unknown[]) {
+    return origPoolQuery.apply(this, stripPreparedName(args))
+  }
+
+  const origClientQuery = pg.Client.prototype.query as (...args: unknown[]) => unknown
+  // @ts-expect-error — monkey-patch
+  pg.Client.prototype.query = function (...args: unknown[]) {
+    return origClientQuery.apply(this, stripPreparedName(args))
+  }
+}
 
 // Collections
 import { Users } from './collections/Users'
@@ -26,16 +55,14 @@ const dirname = path.dirname(filename)
 
 /**
  * Разбираем DATABASE_URI на отдельные параметры.
- * pg-pool некорректно парсит connectionString, если в username есть точка
- * (postgres.PROJECT_REF), поэтому передаём host/port/user/password напрямую.
+ * pg-pool некорректно парсит connectionString, если в username есть точка.
  */
 function parseDbConfig() {
   const uri = process.env.DATABASE_URI || process.env.DATABASE_URL || ''
 
   if (uri && uri.startsWith('postgres')) {
     try {
-      // postgresql://user:pass@host:port/database
-      const url = new URL(uri.replace(/^postgresql:\/\//, 'http://'))
+      const url = new URL(uri.replace(/^postgresql?:\/\//, 'http://'))
       return {
         host: url.hostname,
         port: Number(url.port) || 5432,
@@ -44,12 +71,10 @@ function parseDbConfig() {
         database: url.pathname.replace(/^\//, '') || 'postgres',
       }
     } catch {
-      // Если URL не парсится, пробуем как connectionString
       return { connectionString: uri }
     }
   }
 
-  // Fallback: отдельные env-переменные
   return {
     host: process.env.DB_HOST || 'localhost',
     port: Number(process.env.DB_PORT) || 5432,
@@ -129,12 +154,15 @@ export default buildConfig({
     pool: {
       ...parseDbConfig(),
       ssl: { rejectUnauthorized: false },
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
+      // Serverless: небольшой пул (Payload держит соединение после init)
+      max: process.env.VERCEL === '1' ? 3 : 10,
+      idleTimeoutMillis: process.env.VERCEL === '1' ? 5000 : 30000,
+      connectionTimeoutMillis: 15000,
     },
     migrationDir: path.resolve(dirname, 'migrations'),
     generateSchemaOutputFile: path.resolve(dirname, 'payload-generated-schema.ts'),
-    push: true, // auto-push schema (без файлов миграций) — удобно для разработки
+    push: process.env.NODE_ENV !== 'production',
+    transactionOptions: false,
   }),
 
   plugins: [

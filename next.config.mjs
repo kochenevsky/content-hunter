@@ -18,6 +18,8 @@ const nextConfig = {
       },
     ],
   },
+  // pg должен быть внешним чтобы monkey-patch для Supabase Transaction mode работал
+  serverExternalPackages: ['pg'],
   experimental: {
     reactCompiler: false,
     optimizePackageImports: ['framer-motion', 'lucide-react'],

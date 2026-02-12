@@ -1,10 +1,18 @@
 import type { GlobalConfig } from 'payload'
+import { revalidateFrontend } from '@/lib/revalidate'
 
 export const Settings: GlobalConfig = {
   slug: 'settings',
   label: 'Настройки сайта',
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [
+      async () => {
+        await revalidateFrontend()
+      },
+    ],
   },
   fields: [
     {

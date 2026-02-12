@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateFrontend } from '@/lib/revalidate'
 
 export const FAQ: CollectionConfig = {
   slug: 'faq',
@@ -13,6 +14,18 @@ export const FAQ: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [
+      async () => {
+        await revalidateFrontend()
+      },
+    ],
+    afterDelete: [
+      async () => {
+        await revalidateFrontend()
+      },
+    ],
   },
   fields: [
     {
