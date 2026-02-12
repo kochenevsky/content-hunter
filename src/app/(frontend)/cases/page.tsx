@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getCases } from '@/lib/payload-data'
 import { formatNumber, formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight } from 'lucide-react'
 import { VideoExamplesSection } from '@/components/sections/VideoExamplesSection'
+
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Кейсы — Результаты клиентов',
@@ -22,45 +23,6 @@ const nicheLabels: Record<string, string> = {
   realestate: 'Недвижимость',
   digital: 'Digital / IT',
   other: 'Другое',
-}
-
-// Данные из брифа Content Hunter (14 кейсов)
-const mockCases = [
-  { id: '1', title: 'Онлайн-магазин одежды', slug: 'online-shop-clothes', niche: 'ecommerce', publications: 3656, views: 14100000, revenue: 1900000, currency: 'RUB' as const, ctr: 0.47, conversion: 19, duration: '—' },
-  { id: '2', title: 'Школа программирования', slug: 'programming-school', niche: 'edu', publications: 2145, views: 2100000, revenue: 12000000, currency: 'RUB' as const, ctr: 1.2, conversion: 25, duration: '—' },
-  { id: '3', title: 'Салон красоты', slug: 'beauty-salon', niche: 'beauty', publications: 1293, views: 700000, revenue: 4200000, currency: 'RUB' as const, ctr: 0.8, conversion: 16, duration: '—' },
-  { id: '4', title: 'Ремонт офисов (Москва)', slug: 'office-renovation-moscow', niche: 'other', publications: 530, views: 253000, revenue: 6000000, currency: 'RUB' as const, ctr: 0.4, conversion: 7, duration: '1.5 месяца' },
-  { id: '5', title: 'Студия дизайна интерьера (Москва)', slug: 'interior-design-studio-moscow', niche: 'other', publications: 430, views: 280000, revenue: 8100000, currency: 'RUB' as const, ctr: 0.8, conversion: 11, duration: '1.5 месяца' },
-  { id: '6', title: 'Компьютерные кресла (Ozon)', slug: 'gaming-chairs-ozon', niche: 'ecommerce', publications: 1053, views: 592000, revenue: 2300000, currency: 'RUB' as const, ctr: 2, conversion: 25, duration: '2 месяца' },
-  { id: '7', title: 'Юридическое агентство (Беларусь)', slug: 'legal-agency-belarus', niche: 'other', publications: 521, views: 360000, revenue: 920000, currency: 'RUB' as const, ctr: 0.6, conversion: 13, duration: '—' },
-  { id: '8', title: 'Психолог для родителей', slug: 'psychologist-parents', niche: 'expert', publications: 346, views: 245000, revenue: 490000, currency: 'RUB' as const, ctr: 2.1, conversion: 11, duration: '1.5 месяца' },
-  { id: '9', title: 'Эксперт бизнес-партнёрства (ОАЭ)', slug: 'business-partnership-expert-uae', niche: 'expert', publications: 563, views: 320000, revenue: 1500000, currency: 'RUB' as const, ctr: 0.7, conversion: 9, duration: '—' },
-  { id: '10', title: 'Инвестиции (Великобритания)', slug: 'investments-uk', niche: 'expert', publications: 940, views: 570000, revenue: 2200000, currency: 'RUB' as const, ctr: 1.4, conversion: 8, duration: '2 месяца' },
-  { id: '11', title: 'Глэмпинг (Казань)', slug: 'glamping-kazan', niche: 'travel', publications: 540, views: 320000, revenue: 2500000, currency: 'RUB' as const, ctr: 2.5, conversion: 14, duration: '—' },
-  { id: '12', title: 'Тур-агентство (Европа)', slug: 'travel-agency-europe', niche: 'travel', publications: 1841, views: 1200000, revenue: 3000000, currency: 'RUB' as const, ctr: 1.2, conversion: 18, duration: '—' },
-  { id: '13', title: 'Digital-агентство (Астана)', slug: 'digital-agency-astana', niche: 'digital', publications: 340, views: 275000, revenue: 31000, currency: 'USD' as const, ctr: 0.8, conversion: 10, duration: '1.5 месяца' },
-  { id: '14', title: 'Школа языков (Казахстан)', slug: 'language-school-kazakhstan', niche: 'edu', publications: 985, views: 553000, revenue: 80000, currency: 'USD' as const, ctr: 1.2, conversion: 18, duration: '2.5 месяца' },
-]
-
-async function getCases() {
-  try {
-    const payload = await getPayload({ config })
-    const result = await payload.find({
-      collection: 'cases',
-      where: { published: { equals: true } },
-      sort: '-order',
-      limit: 100,
-    })
-    
-    if (result.docs.length > 0) {
-      return result.docs
-    }
-  } catch (error) {
-    console.error('Error fetching cases:', error)
-  }
-  
-  // Возвращаем mock данные если БД пустая
-  return mockCases
 }
 
 export default async function CasesPage() {

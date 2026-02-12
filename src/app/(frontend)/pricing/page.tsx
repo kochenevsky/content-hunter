@@ -1,110 +1,13 @@
 import type { Metadata } from 'next'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPricing, getFAQ } from '@/lib/payload-data'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight, Check, Star } from 'lucide-react'
+
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Тарифы — Стоимость контент-завода',
   description: 'Выберите подходящий тариф для запуска контент-завода. Гарантия результата в договоре.',
-}
-
-// Временные данные для демонстрации
-const mockPricing = [
-  {
-    id: '1',
-    name: 'Стартовый',
-    price: 150000,
-    currency: 'RUB',
-    period: 'месяц',
-    isPopular: false,
-    features: [
-      '20 роликов в месяц',
-      '10 аккаунтов',
-      '200+ публикаций',
-      '500K+ просмотров',
-      'Отчётность раз в неделю',
-      'Telegram-поддержка',
-    ],
-    order: 1,
-  },
-  {
-    id: '2',
-    name: 'Бизнес',
-    price: 300000,
-    currency: 'RUB',
-    period: 'месяц',
-    isPopular: true,
-    features: [
-      '50 роликов в месяц',
-      '20 аккаунтов',
-      '1000+ публикаций',
-      '2М+ просмотров',
-      'Отчётность 2 раза в неделю',
-      'Выделенный менеджер',
-      'A/B тестирование',
-      'Интеграция с CRM',
-    ],
-    order: 2,
-  },
-  {
-    id: '3',
-    name: 'Масштаб',
-    price: 500000,
-    currency: 'RUB',
-    period: 'месяц',
-    isPopular: false,
-    features: [
-      '100 роликов в месяц',
-      '40+ аккаунтов',
-      '4000+ публикаций',
-      '5М+ просмотров',
-      'Ежедневная отчётность',
-      'Выделенная команда',
-      'Стратегические сессии',
-      'Мультиязычный контент',
-      'Приоритетная поддержка',
-    ],
-    order: 3,
-  },
-]
-
-const faqItems = [
-  {
-    question: 'Что входит в стоимость?',
-    answer: 'Полный цикл: стратегия, сценарии, производство роликов, уникализация, публикация через сетку аккаунтов, аналитика и оптимизация.',
-  },
-  {
-    question: 'Какие гарантии?',
-    answer: 'KPI по охватам прописываем в договоре. Если не достигаем — продлеваем работу бесплатно до достижения результата.',
-  },
-  {
-    question: 'Как быстро будут результаты?',
-    answer: 'Первые публикации через 1-2 недели после старта. Стабильные охваты через 1.5 месяца работы.',
-  },
-  {
-    question: 'Можно ли масштабировать?',
-    answer: 'Да, тарифы легко масштабируются. Добавляем аккаунты, платформы, увеличиваем объём контента.',
-  },
-]
-
-async function getPricing() {
-  try {
-    const payload = await getPayload({ config })
-    const result = await payload.find({
-      collection: 'pricing',
-      sort: 'order',
-      limit: 10,
-    })
-    
-    if (result.docs.length > 0) {
-      return result.docs
-    }
-  } catch (error) {
-    console.error('Error fetching pricing:', error)
-  }
-  
-  return mockPricing
 }
 
 function formatPrice(price: number, currency: string = 'RUB'): string {
@@ -113,12 +16,19 @@ function formatPrice(price: number, currency: string = 'RUB'): string {
     USD: '$',
     EUR: '€',
   }
-  
   return price.toLocaleString('ru-RU') + ' ' + (symbols[currency] || currency)
 }
 
 export default async function PricingPage() {
-  const pricing = await getPricing()
+  const [pricing, allFAQ] = await Promise.all([
+    getPricing(),
+    getFAQ(),
+  ])
+
+  // Берём FAQ по категории pricing
+  const pricingFAQ = allFAQ
+    .filter((item: any) => item.category === 'pricing')
+    .slice(0, 4)
 
   return (
     <>
@@ -220,31 +130,32 @@ export default async function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="section bg-neutral-50">
-        <div className="container">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="heading-2 text-neutral-900 text-center mb-12">
-              Частые вопросы по тарифам
-            </h2>
-
-            <div className="space-y-6">
-              {faqItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="p-6 rounded-2xl bg-white border border-neutral-200"
-                >
-                  <h3 className="font-semibold text-neutral-900 mb-2">
-                    {item.question}
-                  </h3>
-                  <p className="text-neutral-600">
-                    {item.answer}
-                  </p>
-                </div>
-              ))}
+      {pricingFAQ.length > 0 && (
+        <section className="section bg-neutral-50">
+          <div className="container">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="heading-2 text-neutral-900 text-center mb-12">
+                Частые вопросы по тарифам
+              </h2>
+              <div className="space-y-6">
+                {pricingFAQ.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className="p-6 rounded-2xl bg-white border border-neutral-200"
+                  >
+                    <h3 className="font-semibold text-neutral-900 mb-2">
+                      {item.question}
+                    </h3>
+                    <p className="text-neutral-600">
+                      {item.answer}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="section bg-white">

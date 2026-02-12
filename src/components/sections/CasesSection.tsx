@@ -8,14 +8,27 @@ import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animatio
 import { TiltCard } from '@/components/animations/tilt-card'
 import { GlowCard } from '@/components/animations/glow-effect'
 
-// Данные из брифа (топ-3 + разнообразие ниш)
-const cases = [
-  { id: 1, title: 'Онлайн-магазин одежды', niche: 'E-commerce', publications: 3656, views: 14100000, revenue: 1900000, currency: 'RUB' as const, slug: 'online-shop-clothes' },
-  { id: 2, title: 'Школа программирования', niche: 'Онлайн-школы', publications: 2145, views: 2100000, revenue: 12000000, currency: 'RUB' as const, slug: 'programming-school' },
-  { id: 3, title: 'Салон красоты', niche: 'Beauty', publications: 1293, views: 700000, revenue: 4200000, currency: 'RUB' as const, slug: 'beauty-salon' },
-]
+const nicheLabels: Record<string, string> = {
+  ecommerce: 'E-commerce',
+  edu: 'Онлайн-школы',
+  expert: 'Эксперты',
+  horeca: 'HoReCa',
+  beauty: 'Beauty',
+  travel: 'Тревел',
+  realestate: 'Недвижимость',
+  digital: 'Digital / IT',
+  other: 'Другое',
+}
 
-export function CasesSection() {
+interface CasesSectionProps {
+  cases?: any[]
+}
+
+export function CasesSection({ cases }: CasesSectionProps) {
+  const displayCases = cases && cases.length > 0 ? cases.slice(0, 3) : []
+
+  if (displayCases.length === 0) return null
+
   return (
     <section className="section bg-white">
       <div className="container">
@@ -37,7 +50,7 @@ export function CasesSection() {
         </FadeInView>
 
         <StaggerContainer stagger={0.15} className="grid md:grid-cols-3 gap-8">
-          {cases.map((caseItem) => (
+          {displayCases.map((caseItem: any) => (
             <StaggerItem key={caseItem.id} direction="up">
               <TiltCard maxTilt={5} className="h-full">
                 <GlowCard
@@ -58,7 +71,7 @@ export function CasesSection() {
                       <div className="p-6">
                         {/* Badge */}
                         <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-3">
-                          {caseItem.niche}
+                          {nicheLabels[caseItem.niche] || caseItem.niche}
                         </span>
                         
                         {/* Title */}

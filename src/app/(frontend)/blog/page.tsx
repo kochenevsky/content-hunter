@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getBlogPosts } from '@/lib/payload-data'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight, Calendar, User } from 'lucide-react'
+
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Блог — Статьи о контент-маркетинге',
@@ -16,84 +17,6 @@ const categoryLabels: Record<string, string> = {
   process: 'Процессы',
   myths: 'Разрушаем мифы',
   guides: 'Гайды',
-}
-
-// Временные данные
-const mockPosts = [
-  {
-    id: '1',
-    title: 'Почему один блог больше не работает: математика охватов в 2024',
-    slug: 'why-one-blog-doesnt-work',
-    category: 'analysis',
-    excerpt: 'Разбираем, почему классический SMM с одним аккаунтом перестал приносить результаты и как контент-завод решает эту проблему.',
-    publishedAt: '2024-01-15',
-    author: { name: 'Кирилл Попов' },
-  },
-  {
-    id: '2',
-    title: 'Как мы сделали 14 млн просмотров для онлайн-магазина за 2 месяца',
-    slug: 'case-14m-views-ecommerce',
-    category: 'cases',
-    excerpt: 'Подробный разбор кейса: стратегия, инфраструктура, контент и результаты запуска контент-завода для e-commerce.',
-    publishedAt: '2024-01-10',
-    author: { name: 'Кирилл Попов' },
-  },
-  {
-    id: '3',
-    title: '5 мифов о контент-заводах, которые мешают вам масштабироваться',
-    slug: '5-myths-about-content-factories',
-    category: 'myths',
-    excerpt: 'Разбираем популярные заблуждения: от "это спам" до "алгоритмы заблокируют" — и объясняем, как на самом деле.',
-    publishedAt: '2024-01-05',
-    author: { name: 'Кирилл Попов' },
-  },
-  {
-    id: '4',
-    title: 'Как правильно уникализировать контент для разных аккаунтов',
-    slug: 'how-to-uniqualize-content',
-    category: 'guides',
-    excerpt: 'Пошаговый гайд по уникализации роликов: звук, визуал, текст, хештеги — всё, чтобы платформы не посчитали контент дублем.',
-    publishedAt: '2024-01-01',
-    author: { name: 'Кирилл Попов' },
-  },
-  {
-    id: '5',
-    title: 'ROI контент-завода vs таргетированная реклама: сравнение каналов',
-    slug: 'content-factory-vs-paid-ads',
-    category: 'analysis',
-    excerpt: 'Считаем экономику: когда контент-завод выгоднее таргета, а когда лучше комбинировать оба канала.',
-    publishedAt: '2023-12-25',
-    author: { name: 'Кирилл Попов' },
-  },
-  {
-    id: '6',
-    title: 'Процесс создания 50 роликов в месяц: от сценария до публикации',
-    slug: 'content-production-process',
-    category: 'process',
-    excerpt: 'Заглядываем внутрь контент-завода: как организована работа, какие инструменты используем и как масштабируем производство.',
-    publishedAt: '2023-12-20',
-    author: { name: 'Кирилл Попов' },
-  },
-]
-
-async function getBlogPosts() {
-  try {
-    const payload = await getPayload({ config })
-    const result = await payload.find({
-      collection: 'blog-posts',
-      where: { published: { equals: true } },
-      sort: '-publishedAt',
-      limit: 100,
-    })
-    
-    if (result.docs.length > 0) {
-      return result.docs
-    }
-  } catch (error) {
-    console.error('Error fetching blog posts:', error)
-  }
-  
-  return mockPosts
 }
 
 function formatDate(dateString: string): string {
@@ -164,7 +87,7 @@ export default async function BlogPage() {
                       {post.author && (
                         <span className="flex items-center gap-1">
                           <User className="w-4 h-4" />
-                          {post.author.name}
+                          {typeof post.author === 'string' ? post.author : post.author.name}
                         </span>
                       )}
                     </div>

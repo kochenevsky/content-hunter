@@ -10,6 +10,16 @@ export const Cases: CollectionConfig = {
     useAsTitle: 'title',
     group: 'Контент',
     defaultColumns: ['title', 'niche', 'views', 'revenue', 'published'],
+    livePreview: {
+      url: ({ data }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        return `${baseUrl}/cases/${data?.slug}`
+      },
+    },
+    preview: (data) => {
+      const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+      return `${baseUrl}/cases/${data?.slug}`
+    },
   },
   access: {
     read: () => true,
@@ -57,7 +67,6 @@ export const Cases: CollectionConfig = {
       type: 'upload',
       label: 'Изображение',
       relationTo: 'media',
-      required: true,
     },
     {
       type: 'row',

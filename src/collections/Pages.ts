@@ -10,6 +10,20 @@ export const Pages: CollectionConfig = {
     useAsTitle: 'title',
     group: 'Контент',
     defaultColumns: ['title', 'slug', 'updatedAt'],
+    livePreview: {
+      url: ({ data }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        const slug = data?.slug as string
+        if (slug === 'home') return baseUrl
+        return `${baseUrl}/${slug}`
+      },
+    },
+    preview: (data) => {
+      const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+      const slug = data?.slug as string
+      if (slug === 'home') return baseUrl
+      return `${baseUrl}/${slug}`
+    },
   },
   access: {
     read: () => true,

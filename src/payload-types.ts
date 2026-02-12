@@ -110,9 +110,7 @@ export interface Config {
     settings: SettingsSelect<false> | SettingsSelect<true>;
   };
   locale: 'ru' | 'en';
-  user: User & {
-    collection: 'users';
-  };
+  user: User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -161,6 +159,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -293,7 +292,7 @@ export interface Case {
   title: string;
   slug: string;
   niche: 'ecommerce' | 'edu' | 'expert' | 'horeca' | 'beauty' | 'travel' | 'realestate' | 'digital' | 'other';
-  image: number | Media;
+  image?: (number | null) | Media;
   publications: number;
   views: number;
   revenue: number;
@@ -336,10 +335,10 @@ export interface BlogPost {
   id: number;
   title: string;
   slug: string;
-  category: 'cases' | 'analysis' | 'process' | 'myths' | 'news';
+  category: 'cases' | 'analysis' | 'process' | 'myths' | 'news' | 'guides';
   excerpt: string;
-  image: number | Media;
-  content: {
+  image?: (number | null) | Media;
+  content?: {
     root: {
       type: string;
       children: {
@@ -353,7 +352,7 @@ export interface BlogPost {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   author?: (number | null) | Team;
   publishedAt?: string | null;
   published?: boolean | null;
@@ -425,7 +424,7 @@ export interface Faq {
   id: number;
   question: string;
   answer: string;
-  category?: ('general' | 'services' | 'pricing' | 'process') | null;
+  category?: ('general' | 'services' | 'pricing' | 'process' | 'results' | 'technical' | 'niches') | null;
   order?: number | null;
   updatedAt: string;
   createdAt: string;

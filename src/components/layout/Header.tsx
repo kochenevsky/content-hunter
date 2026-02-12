@@ -1,12 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
 
-const navigation = [
+const defaultNavigation = [
   { name: 'Услуги', href: '/services' },
   { name: 'Кейсы', href: '/cases' },
   { name: 'Тарифы', href: '/pricing' },
@@ -14,7 +14,14 @@ const navigation = [
   { name: 'О нас', href: '/about' },
 ]
 
-export function Header() {
+interface HeaderProps {
+  data?: {
+    navigation?: Array<{ label: string; link: string }>
+    ctaButton?: { text?: string; link?: string }
+  } | null
+}
+
+export function Header({ data }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { scrollY } = useScroll()
@@ -22,6 +29,14 @@ export function Header() {
   useMotionValueEvent(scrollY, 'change', (latest) => {
     setScrolled(latest > 50)
   })
+
+  // Используем данные из БД или фоллбэк
+  const navigation = data?.navigation?.length
+    ? data.navigation.map(item => ({ name: item.label, href: item.link }))
+    : defaultNavigation
+
+  const ctaText = data?.ctaButton?.text || 'Консультация'
+  const ctaLink = data?.ctaButton?.link || '/contact'
 
   return (
     <motion.header
@@ -59,7 +74,7 @@ export function Header() {
 
         {/* CTA Button */}
         <div className="hidden md:block">
-          <Button href="/contact">Консультация</Button>
+          <Button href={ctaLink}>{ctaText}</Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -99,8 +114,8 @@ export function Header() {
                 </div>
               ))}
               <div className="pt-4 border-t border-white/10">
-                <Button href="/contact" className="w-full">
-                  Консультация
+                <Button href={ctaLink} className="w-full">
+                  {ctaText}
                 </Button>
               </div>
             </div>

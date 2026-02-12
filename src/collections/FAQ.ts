@@ -38,6 +38,9 @@ export const FAQ: CollectionConfig = {
         { label: 'Услуги', value: 'services' },
         { label: 'Тарифы', value: 'pricing' },
         { label: 'Процесс работы', value: 'process' },
+        { label: 'Результаты', value: 'results' },
+        { label: 'Технические', value: 'technical' },
+        { label: 'Ниши', value: 'niches' },
       ],
       defaultValue: 'general',
       admin: {

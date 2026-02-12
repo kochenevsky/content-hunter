@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import '../globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { LivePreviewListener } from '@/components/LivePreviewListener'
+import { getHeader, getFooter } from '@/lib/payload-data'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
@@ -29,17 +31,25 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export const revalidate = 60
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [headerData, footerData] = await Promise.all([
+    getHeader(),
+    getFooter(),
+  ])
+
   return (
     <html lang="ru">
       <body className={inter.className}>
-        <Header />
+        <LivePreviewListener />
+        <Header data={headerData} />
         <main className="min-h-screen">{children}</main>
-        <Footer />
+        <Footer data={footerData} />
       </body>
     </html>
   )

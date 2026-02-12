@@ -10,6 +10,16 @@ export const BlogPosts: CollectionConfig = {
     useAsTitle: 'title',
     group: 'Контент',
     defaultColumns: ['title', 'category', 'author', 'publishedAt', 'published'],
+    livePreview: {
+      url: ({ data }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        return `${baseUrl}/blog/${data?.slug}`
+      },
+    },
+    preview: (data) => {
+      const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+      return `${baseUrl}/blog/${data?.slug}`
+    },
   },
   access: {
     read: () => true,
@@ -43,6 +53,7 @@ export const BlogPosts: CollectionConfig = {
         { label: 'Процессы', value: 'process' },
         { label: 'Анти-мифы', value: 'myths' },
         { label: 'Новости', value: 'news' },
+        { label: 'Гайды', value: 'guides' },
       ],
       admin: {
         position: 'sidebar',
@@ -60,13 +71,11 @@ export const BlogPosts: CollectionConfig = {
       type: 'upload',
       label: 'Изображение',
       relationTo: 'media',
-      required: true,
     },
     {
       name: 'content',
       type: 'richText',
       label: 'Контент',
-      required: true,
       localized: true,
     },
     {

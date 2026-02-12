@@ -1,7 +1,3 @@
-// Принудительно IPv4 для подключения к Postgres (Supabase и др.) — иначе возможен EHOSTUNREACH по IPv6
-import dns from 'dns'
-dns.setDefaultResultOrder('ipv4first')
-
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -28,40 +24,42 @@ import { Settings } from './globals/Settings'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-function connectionStringWithIPv4(uri: string): string {
-  if (!uri || !uri.startsWith('postgres')) return uri
-  // Pooler уже даёт IPv4, не трогаем (на Vercel serverless sync DNS может быть недоступен)
-  if (uri.includes('pooler.supabase.com')) return uri
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lookupSync = (dns as any).lookupSync as ((host: string, opts: { family: number }) => { address: string }) | undefined
-    if (typeof lookupSync !== 'function') return uri
-    const url = new URL(uri.replace(/^postgresql:\/\//, 'https://'))
-    const ipv4 = lookupSync(url.hostname, { family: 4 })
-    return uri.replace(url.hostname, ipv4.address)
-  } catch {
-    return uri
-  }
-}
+/**
+ * Разбираем DATABASE_URI на отдельные параметры.
+ * pg-pool некорректно парсит connectionString, если в username есть точка
+ * (postgres.PROJECT_REF), поэтому передаём host/port/user/password напрямую.
+ */
+function parseDbConfig() {
+  const uri = process.env.DATABASE_URI || process.env.DATABASE_URL || ''
 
-function getConnectionString(override?: string): string {
-  const raw = override ?? process.env.DATABASE_URI ?? process.env.DATABASE_URL ?? ''
-  if (!raw || !raw.startsWith('postgres')) {
-    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
-      console.error(
-        '[Payload] DATABASE_URI (или DATABASE_URL) не задана или неверна. ' +
-          'В Vercel: Settings → Environment Variables → добавьте DATABASE_URI (Connection pooler, Session mode, port 5432).'
-      )
+  if (uri && uri.startsWith('postgres')) {
+    try {
+      // postgresql://user:pass@host:port/database
+      const url = new URL(uri.replace(/^postgresql:\/\//, 'http://'))
+      return {
+        host: url.hostname,
+        port: Number(url.port) || 5432,
+        user: decodeURIComponent(url.username),
+        password: decodeURIComponent(url.password),
+        database: url.pathname.replace(/^\//, '') || 'postgres',
+      }
+    } catch {
+      // Если URL не парсится, пробуем как connectionString
+      return { connectionString: uri }
     }
-    return raw
   }
-  return connectionStringWithIPv4(raw)
+
+  // Fallback: отдельные env-переменные
+  return {
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT) || 5432,
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'postgres',
+  }
 }
 
-/** Конфиг с опциональной строкой подключения (для seed при переборе pooler по регионам). */
-export function getConfig(connectionStringOverride?: string) {
-  const connectionString = getConnectionString(connectionStringOverride)
-  return buildConfig({
+export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
@@ -76,8 +74,32 @@ export function getConfig(connectionStringOverride?: string) {
         Icon: '@/components/admin/Icon',
       },
     },
+    livePreview: {
+      url: ({ data, collectionConfig }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        if (collectionConfig?.slug === 'pages') {
+          const slug = (data as Record<string, unknown>)?.slug as string
+          if (slug === 'home') return baseUrl
+          return `${baseUrl}/${slug}`
+        }
+        if (collectionConfig?.slug === 'cases') {
+          return `${baseUrl}/cases/${(data as Record<string, unknown>)?.slug}`
+        }
+        if (collectionConfig?.slug === 'blog-posts') {
+          return `${baseUrl}/blog/${(data as Record<string, unknown>)?.slug}`
+        }
+        return baseUrl
+      },
+      breakpoints: [
+        { label: 'Mobile', name: 'mobile', width: 375, height: 667 },
+        { label: 'Tablet', name: 'tablet', width: 768, height: 1024 },
+        { label: 'Desktop', name: 'desktop', width: 1440, height: 900 },
+      ],
+      collections: ['pages', 'cases', 'blog-posts'],
+      globals: ['header', 'footer', 'settings'],
+    },
   },
-  
+
   collections: [
     Users,
     Media,
@@ -88,34 +110,33 @@ export function getConfig(connectionStringOverride?: string) {
     FAQ,
     Team,
   ],
-  
+
   globals: [
     Header,
     Footer,
     Settings,
   ],
-  
+
   editor: lexicalEditor(),
-  
-  secret: process.env.PAYLOAD_SECRET || '',
-  
+
+  secret: process.env.PAYLOAD_SECRET || 'default-secret-change-me-in-production',
+
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  
+
   db: postgresAdapter({
     pool: {
-      connectionString,
+      ...parseDbConfig(),
       ssl: { rejectUnauthorized: false },
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
     },
-    // Drizzle: каталог миграций и путь к сгенерированной схеме (см. docs/database/postgres)
     migrationDir: path.resolve(dirname, 'migrations'),
     generateSchemaOutputFile: path.resolve(dirname, 'payload-generated-schema.ts'),
-    push: false, // используем миграции, не auto-push
+    push: true, // auto-push schema (без файлов миграций) — удобно для разработки
   }),
-  
+
   plugins: [
     vercelBlobStorage({
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
@@ -125,10 +146,9 @@ export function getConfig(connectionStringOverride?: string) {
       token: process.env.BLOB_READ_WRITE_TOKEN || '',
     }),
   ],
-  
+
   sharp,
-  
-  // Localization (русский + английский на будущее)
+
   localization: {
     locales: [
       {
@@ -143,7 +163,4 @@ export function getConfig(connectionStringOverride?: string) {
     defaultLocale: 'ru',
     fallback: true,
   },
-  })
-}
-
-export default getConfig()
+})

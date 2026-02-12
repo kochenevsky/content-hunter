@@ -1,41 +1,14 @@
 import type { Metadata } from 'next'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getTeam } from '@/lib/payload-data'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight, MapPin, Users, Target, Zap } from 'lucide-react'
+
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'О нас — Команда Content Hunter',
   description: 'Команда Content Hunter: эксперты по контент-заводам и массовой дистрибуции видеоконтента.',
 }
-
-// По брифу: Кирилл Попов, Роман Абрамов, Олег Ежков
-const mockTeam = [
-  {
-    id: '1',
-    name: 'Кирилл Попов',
-    role: 'Основатель, публичное лицо бренда',
-    bio: 'Публичное лицо Content Hunter. Точки контакта: личный Telegram, Telegram-менеджер, Telegram-бот.',
-    telegram: undefined,
-    order: 1,
-  },
-  {
-    id: '2',
-    name: 'Роман Абрамов',
-    role: 'Техническая часть',
-    bio: 'Отвечает за технологическую инфраструктуру контент-заводов и дистрибуции.',
-    telegram: undefined,
-    order: 2,
-  },
-  {
-    id: '3',
-    name: 'Олег Ежков',
-    role: 'Маркетинг, смыслы',
-    bio: 'Маркетинг и контент-стратегии. Смыслы и позиционирование бренда.',
-    telegram: undefined,
-    order: 3,
-  },
-]
 
 const values = [
   {
@@ -67,7 +40,6 @@ const stats = [
   { value: '8', label: 'Стран присутствия' },
 ]
 
-// По брифу: Россия, СНГ, MENA, LATAM, Европа, США
 const geography = [
   'Россия',
   'СНГ (Казахстан, Беларусь)',
@@ -76,25 +48,6 @@ const geography = [
   'Европа',
   'США',
 ]
-
-async function getTeam() {
-  try {
-    const payload = await getPayload({ config })
-    const result = await payload.find({
-      collection: 'team',
-      sort: 'order',
-      limit: 20,
-    })
-    
-    if (result.docs.length > 0) {
-      return result.docs
-    }
-  } catch (error) {
-    console.error('Error fetching team:', error)
-  }
-  
-  return mockTeam
-}
 
 export default async function AboutPage() {
   const team = await getTeam()
@@ -143,8 +96,8 @@ export default async function AboutPage() {
               <div className="space-y-4 text-neutral-600">
                 <p>
                   Content Hunter появился из практики. Мы годами занимались SMM 
-                  и видеопродакшеном, пока не поняли: классический подход "один блог — 
-                  надежда на вирусность" больше не работает.
+                  и видеопродакшеном, пока не поняли: классический подход &quot;один блог — 
+                  надежда на вирусность&quot; больше не работает.
                 </p>
                 <p>
                   Алгоритмы платформ стали жёстче, конкуренция за внимание выросла 
@@ -234,9 +187,11 @@ export default async function AboutPage() {
                 <p className="text-primary-600 text-sm mb-3">
                   {member.role}
                 </p>
-                <p className="text-neutral-600 text-sm mb-3">
-                  {member.bio}
-                </p>
+                {member.bio && typeof member.bio === 'string' && (
+                  <p className="text-neutral-600 text-sm mb-3">
+                    {member.bio}
+                  </p>
+                )}
                 {member.telegram && (
                   <a
                     href={`https://t.me/${member.telegram.replace('@', '')}`}

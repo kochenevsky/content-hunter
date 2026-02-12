@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { MessageCircle, Send, ExternalLink, FileSpreadsheet, Presentation } from 'lucide-react'
 
-const navigation = [
+const defaultNavigation = [
   { name: 'Услуги', href: '/services' },
   { name: 'Кейсы', href: '/cases' },
   { name: 'Тарифы', href: '/pricing' },
@@ -16,12 +16,39 @@ const materialsFromBrief = [
   { name: 'Прайс и кейсы', href: 'https://docs.google.com/spreadsheets/d/1axwH_4ByTRGrBneCOP18ARJgsJNqXnzzxBXLdTFph9s/edit?gid=1037848601', icon: FileSpreadsheet },
 ]
 
-const social = [
-  { name: 'Telegram', href: '#', icon: Send },
-  { name: 'WhatsApp', href: '#', icon: MessageCircle },
-]
+const socialIcons: Record<string, typeof Send> = {
+  telegram: Send,
+  whatsapp: MessageCircle,
+}
 
-export function Footer() {
+interface FooterProps {
+  data?: {
+    description?: string
+    navigation?: Array<{ label: string; link: string }>
+    social?: Array<{ platform: string; url: string }>
+    copyright?: string
+  } | null
+}
+
+export function Footer({ data }: FooterProps) {
+  // Используем данные из БД или фоллбэк
+  const navigation = data?.navigation?.length
+    ? data.navigation.map(item => ({ name: item.label, href: item.link }))
+    : defaultNavigation
+
+  const description = data?.description || 'Контент-завод под ключ. Масштабируем охваты через сетку аккаунтов.'
+
+  const social = data?.social?.length
+    ? data.social.map(item => ({
+        name: item.platform,
+        href: item.url || '#',
+        icon: socialIcons[item.platform] || Send,
+      }))
+    : [
+        { name: 'Telegram', href: '#', icon: Send },
+        { name: 'WhatsApp', href: '#', icon: MessageCircle },
+      ]
+
   return (
     <footer className="bg-neutral-950 text-white">
       <div className="container py-16 md:py-20">
@@ -30,7 +57,7 @@ export function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-4">Content Hunter</h3>
             <p className="text-neutral-400 max-w-xs">
-              Контент-завод под ключ. Масштабируем охваты через сетку аккаунтов.
+              {description}
             </p>
           </div>
 
@@ -106,7 +133,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-neutral-500 text-sm">
-            © {new Date().getFullYear()} Content Hunter. Все права защищены.
+            {data?.copyright || `© ${new Date().getFullYear()} Content Hunter. Все права защищены.`}
           </p>
           <p className="text-neutral-500 text-sm">
             ОАО «Дженго»
