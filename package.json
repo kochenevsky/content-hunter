@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS='--dns-result-order=ipv4first' next dev",
-    "build": "pnpm ensure:settings && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "generate:types": "payload generate:types",
