@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import { ContactForm } from '@/components/forms/ContactForm'
 import { MessageCircle, MapPin, Clock } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Консультация — Связаться с нами',
-  description: 'Получите бесплатную консультацию по запуску контент-завода. Ответим в течение 2 часов.',
+  title: 'Контакты — Связаться с нами',
+  description: 'Свяжитесь с нами по Telegram, WhatsApp. Ответим в течение 2 часов.',
 }
 
 // По брифу: Telegram-бот (основной), Telegram-менеджер, WhatsApp (дополнительно) — контакты будут предоставлены
@@ -66,31 +65,17 @@ export default function ContactPage() {
               <span className="text-primary-500">консультацию</span>
             </h1>
             <p className="text-xl text-neutral-400">
-              Расскажите о вашем проекте, и мы подготовим индивидуальное 
+              Свяжитесь с нами по Telegram или WhatsApp — подготовим индивидуальное 
               предложение с расчётом потенциальных охватов и стоимости.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Form Section */}
+      {/* Contacts Section */}
       <section className="section bg-white">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-16">
-            {/* Form */}
-            <div>
-              <h2 className="heading-2 text-neutral-900 mb-6">
-                Оставьте заявку
-              </h2>
-              <p className="text-neutral-600 mb-8">
-                Заполните форму, и мы свяжемся с вами в течение 2 часов 
-                в рабочее время.
-              </p>
-              
-              <ContactForm />
-            </div>
-
-            {/* Sidebar */}
+          <div className="max-w-2xl">
             <div className="space-y-8">
               {/* Contacts */}
               <div className="p-8 rounded-2xl bg-neutral-50 border border-neutral-200">
