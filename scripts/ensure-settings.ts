@@ -41,7 +41,7 @@ async function main() {
     process.exit(0)
   }
   const config = parseDbConfig()
-  const pool = new pg.Pool(config)
+  const pool = new pg.Pool({ ...config, connectionTimeoutMillis: 5000 })
   try {
     const res = await pool.query(
       `INSERT INTO public.settings (site_name)
@@ -55,8 +55,8 @@ async function main() {
       console.log('✓ settings: строка уже существует')
     }
   } catch (e: any) {
-    console.error('✗ Ошибка:', e.message)
-    process.exit(1)
+    console.warn('ensure:settings: предупреждение (не блокируем билд):', e.message)
+    // Не падаем — билд должен пройти, можно вручную выполнить pnpm ensure:settings
   } finally {
     await pool.end()
   }
