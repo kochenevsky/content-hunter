@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { getCases } from '@/lib/payload-data'
 import { formatNumber, formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
@@ -58,9 +59,21 @@ export default async function CasesPage() {
                 className="group block"
               >
                 <div className="rounded-2xl bg-neutral-50 border border-neutral-200 overflow-hidden hover:border-neutral-300 hover:shadow-lg transition-all duration-300">
-                  {/* Image placeholder */}
-                  <div className="h-48 bg-gradient-to-br from-neutral-200 to-neutral-300 group-hover:from-neutral-300 group-hover:to-neutral-400 transition-colors flex items-center justify-center">
-                    <span className="text-neutral-500 text-sm">Изображение</span>
+                  {/* Обложка */}
+                  <div className="h-48 relative bg-neutral-200 overflow-hidden">
+                    {caseItem.image && typeof caseItem.image === 'object' && caseItem.image.url ? (
+                      <Image
+                        src={caseItem.image.url}
+                        alt={typeof caseItem.title === 'string' ? caseItem.title : String(caseItem.title?.ru ?? caseItem.title?.en ?? '')}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-neutral-200 to-neutral-300 group-hover:from-neutral-300 group-hover:to-neutral-400 flex items-center justify-center">
+                        <span className="text-neutral-500 text-sm">Изображение</span>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-6">

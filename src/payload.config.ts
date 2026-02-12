@@ -1,7 +1,9 @@
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor, BlocksFeature, CodeBlock } from '@payloadcms/richtext-lexical'
-import { s3Storage } from '@payloadcms/storage-s3'
+import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
+import type { Adapter } from '@payloadcms/plugin-cloud-storage/types'
+import { createSupabaseStorageAdapter } from './lib/supabase-storage-adapter'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -205,20 +207,14 @@ export default buildConfig({
   }),
 
   plugins: [
-    // S3/Supabase Storage — включаем только при настроенных credentials (иначе 500 при /api/media)
-    ...(process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY && process.env.S3_ENDPOINT
+    // Supabase Storage (REST API) — загрузка через Supabase JS, без S3
+    ...(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
       ? [
-          s3Storage({
-            collections: { media: true },
-            bucket: process.env.S3_BUCKET || 'media',
-            config: {
-              credentials: {
-                accessKeyId: process.env.S3_ACCESS_KEY_ID,
-                secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+          cloudStoragePlugin({
+            collections: {
+              media: {
+                adapter: createSupabaseStorageAdapter() as Adapter,
               },
-              region: process.env.S3_REGION || 'eu-west-1',
-              endpoint: process.env.S3_ENDPOINT,
-              forcePathStyle: true,
             },
           }),
         ]

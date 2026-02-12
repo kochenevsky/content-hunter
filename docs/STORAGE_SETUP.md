@@ -1,42 +1,29 @@
 # Supabase Storage — настройка загрузки медиа
 
-Payload использует Supabase Storage через S3-совместимый API.
-
-## 0. Включите S3 в Supabase
-
-1. **Project Settings** → **Storage** → найдите **S3 protocol**
-2. Включите опцию **Enable S3 connection** (если она есть)
-3. Без этого S3-запросы будут возвращать ошибки
+Payload использует Supabase Storage через **REST API** (не S3).
 
 ## 1. Создайте bucket в Supabase
 
 1. Откройте [Supabase Dashboard](https://supabase.com/dashboard) → ваш проект
 2. **Storage** → **New bucket**
 3. Имя: `media`
-4. **Public bucket**: включить (чтобы изображения отдавались по URL)
+4. **Public bucket**: включить
 5. **File size limit**: 5 MB (или больше)
-6. **Allowed MIME types**: `image/*`, `video/*` (или оставить пустым для любых)
+6. **Allowed MIME types**: `image/*`, `video/*`
 
-## 2. Сгенерируйте S3 Access Keys
+## 2. Переменные окружения
 
-1. **Project Settings** → **Storage** → **S3 Access Keys**
-2. Нажмите **Generate new key**
-3. Сохраните **Access Key ID** и **Secret Access Key** — они показываются только один раз
-
-## 3. Переменные окружения
-
-Добавьте в `.env.local` и в Vercel (Settings → Environment Variables):
+Добавьте в `.env.local` и в Vercel:
 
 ```
-S3_BUCKET=media
-S3_ENDPOINT=https://YOUR_PROJECT_REF.storage.supabase.co/storage/v1/s3
-S3_ACCESS_KEY_ID=ваш_access_key_id
-S3_SECRET_ACCESS_KEY=ваш_secret_access_key
-S3_REGION=eu-west-1
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=ваш_service_role_key
+SUPABASE_STORAGE_BUCKET=media
 ```
 
-**YOUR_PROJECT_REF** — это поддомен вашего проекта (например, `feytgokjblyqzymadfym` из URL `https://feytgokjblyqzymadfym.supabase.co`).
+**Service Role Key** — Project Settings → API → `service_role` (secret).  
+**SUPABASE_STORAGE_BUCKET** — по умолчанию `media` (опционально).
 
-## 4. RLS политики (опционально)
+## 3. RLS (опционально)
 
-Для S3 Access Keys RLS не применяется — ключи дают полный доступ. Если используете только REST API с JWT, настройте политики в Storage → Policies.
+При использовании Service Role Key RLS не применяется. Для JWT-доступа настройте политики в Storage → Policies.

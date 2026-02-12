@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { formatNumber, formatCurrency } from '@/lib/utils'
@@ -63,9 +64,19 @@ export function CasesSection({ cases }: CasesSectionProps) {
                     className="group block h-full"
                   >
                     <div className="rounded-2xl bg-neutral-50 border border-neutral-200 overflow-hidden hover:border-neutral-300 transition-all duration-300 h-full">
-                      {/* Image placeholder */}
-                      <div className="h-48 bg-neutral-200 group-hover:bg-neutral-300 transition-colors overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-br from-neutral-200 to-neutral-300 group-hover:scale-105 transition-transform duration-500" />
+                      {/* Обложка */}
+                      <div className="h-48 relative bg-neutral-200 overflow-hidden">
+                        {caseItem.image && typeof caseItem.image === 'object' && caseItem.image.url ? (
+                          <Image
+                            src={caseItem.image.url}
+                            alt={typeof caseItem.title === 'string' ? caseItem.title : String(caseItem.title?.ru ?? caseItem.title?.en ?? '')}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-neutral-200 to-neutral-300 group-hover:scale-105 transition-transform duration-500" />
+                        )}
                       </div>
                       
                       <div className="p-6">

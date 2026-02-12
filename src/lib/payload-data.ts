@@ -20,6 +20,7 @@ export async function getCases(limit = 100) {
       where: { published: { equals: true } },
       sort: '-order',
       limit,
+      depth: 1, // для обложки image с url
     })
     return result.docs
   } catch (error) {
