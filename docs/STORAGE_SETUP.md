@@ -2,6 +2,12 @@
 
 Payload использует Supabase Storage через S3-совместимый API.
 
+## 0. Включите S3 в Supabase
+
+1. **Project Settings** → **Storage** → найдите **S3 protocol**
+2. Включите опцию **Enable S3 connection** (если она есть)
+3. Без этого S3-запросы будут возвращать ошибки
+
 ## 1. Создайте bucket в Supabase
 
 1. Откройте [Supabase Dashboard](https://supabase.com/dashboard) → ваш проект

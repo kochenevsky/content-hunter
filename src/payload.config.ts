@@ -205,21 +205,24 @@ export default buildConfig({
   }),
 
   plugins: [
-    s3Storage({
-      collections: {
-        media: true,
-      },
-      bucket: process.env.S3_BUCKET || 'media',
-      config: {
-        credentials: {
-          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
-        },
-        region: process.env.S3_REGION || 'eu-west-1',
-        endpoint: process.env.S3_ENDPOINT,
-        forcePathStyle: true,
-      },
-    }),
+    // S3/Supabase Storage — включаем только при настроенных credentials (иначе 500 при /api/media)
+    ...(process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY && process.env.S3_ENDPOINT
+      ? [
+          s3Storage({
+            collections: { media: true },
+            bucket: process.env.S3_BUCKET || 'media',
+            config: {
+              credentials: {
+                accessKeyId: process.env.S3_ACCESS_KEY_ID,
+                secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+              },
+              region: process.env.S3_REGION || 'eu-west-1',
+              endpoint: process.env.S3_ENDPOINT,
+              forcePathStyle: true,
+            },
+          }),
+        ]
+      : []),
   ],
 
   sharp,
