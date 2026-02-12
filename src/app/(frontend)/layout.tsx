@@ -47,9 +47,9 @@ export default async function RootLayout({
     <html lang="ru">
       <body className={inter.className}>
         <LivePreviewListener />
-        <Header data={headerData} />
+        <Header data={headerData as any} />
         <main className="min-h-screen">{children}</main>
-        <Footer data={footerData} />
+        <Footer data={footerData as any} />
       </body>
     </html>
   )
