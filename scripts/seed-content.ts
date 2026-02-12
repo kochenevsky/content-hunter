@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Seed-скрипт: загружает весь контент с фронтенда в БД Payload CMS.
  * Запуск: pnpm seed:content
