@@ -66,12 +66,12 @@ async function seedAdmin() {
   }
 
   const { getPayload } = await import('payload')
-  const { getConfig } = await import('../src/payload.config')
+  const payloadConfig = (await import('../src/payload.config')).default
   const uri = process.env.DATABASE_URI || process.env.DATABASE_URL || ''
 
   let payload: Awaited<ReturnType<typeof getPayload>> | null = null
   try {
-    payload = await getPayload({ config: getConfig() })
+    payload = await getPayload({ config: payloadConfig })
   } catch (firstErr) {
     const err = firstErr instanceof Error ? firstErr : new Error(String(firstErr))
     if (!isConnectionError(err)) throw err
@@ -82,7 +82,8 @@ async function seedAdmin() {
     }
     for (const poolerUri of poolerUris) {
       try {
-        payload = await getPayload({ config: getConfig(poolerUri) })
+        process.env.DATABASE_URI = poolerUri
+        payload = await getPayload({ config: payloadConfig })
         break
       } catch {
         continue
