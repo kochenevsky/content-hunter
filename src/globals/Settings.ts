@@ -82,17 +82,27 @@ export const Settings: GlobalConfig = {
     {
       name: 'analytics',
       type: 'group',
-      label: 'Аналитика',
+      label: 'Аналитика и head',
       fields: [
         {
           name: 'googleAnalyticsId',
           type: 'text',
-          label: 'Google Analytics ID',
+          label: 'Google Analytics ID (G-XXXXXXXXXX)',
+          admin: { description: 'Оставьте пустым, если не используется' },
         },
         {
           name: 'yandexMetrikaId',
           type: 'text',
           label: 'Яндекс.Метрика ID',
+          admin: { description: 'Только число, например 12345678' },
+        },
+        {
+          name: 'customHeadScripts',
+          type: 'textarea',
+          label: 'Дополнительные скрипты в <head>',
+          admin: {
+            description: 'HTML-код (скрипты, мета-теги). Вставляется перед </head>. Например: <script>...</script>',
+          },
         },
       ],
     },

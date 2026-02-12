@@ -893,8 +893,18 @@ export interface Setting {
     email?: string | null;
   };
   analytics?: {
+    /**
+     * Оставьте пустым, если не используется
+     */
     googleAnalyticsId?: string | null;
+    /**
+     * Только число, например 12345678
+     */
     yandexMetrikaId?: string | null;
+    /**
+     * HTML-код (скрипты, мета-теги). Вставляется перед </head>. Например: <script>...</script>
+     */
+    customHeadScripts?: string | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1347,6 +1357,7 @@ export interface SettingsSelect<T extends boolean = true> {
     | {
         googleAnalyticsId?: T;
         yandexMetrikaId?: T;
+        customHeadScripts?: T;
       };
   updatedAt?: T;
   createdAt?: T;

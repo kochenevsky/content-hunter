@@ -4,7 +4,8 @@ import '../globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { getHeader, getFooter } from '@/lib/payload-data'
+import { AnalyticsHead } from '@/components/AnalyticsHead'
+import { getHeader, getFooter, getSettings } from '@/lib/payload-data'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
@@ -38,14 +39,22 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [headerData, footerData] = await Promise.all([
+  const [headerData, footerData, settings] = await Promise.all([
     getHeader(),
     getFooter(),
+    getSettings(),
   ])
+
+  const analytics = (settings as any)?.analytics
 
   return (
     <html lang="ru">
       <body className={inter.className}>
+        <AnalyticsHead
+          googleAnalyticsId={analytics?.googleAnalyticsId}
+          yandexMetrikaId={analytics?.yandexMetrikaId}
+          customHeadScripts={analytics?.customHeadScripts}
+        />
         <LivePreviewListener />
         <Header data={headerData as any} />
         <main className="min-h-screen">{children}</main>
