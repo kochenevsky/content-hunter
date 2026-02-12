@@ -10,13 +10,21 @@ import { MagneticButton } from '@/components/animations/magnetic-button'
 import { WordCycle } from '@/components/animations/text-reveal'
 import { AnimatedGrid } from '@/components/animations/parallax-section'
 
-const stats = [
+const DEFAULT_STATS = [
   { value: 50, suffix: '+', label: 'Проектов' },
   { value: 20, suffix: 'М+', label: 'Просмотров/мес' },
   { value: 8, suffix: '', label: 'Стран' },
 ]
 
-const cycleWords = ['под ключ', 'с гарантией', 'для бизнеса', 'на масштаб']
+const DEFAULT_CYCLE_WORDS = ['под ключ', 'с гарантией', 'для бизнеса', 'на масштаб']
+
+export type HeroSectionProps = {
+  headline?: string | null
+  subheadline?: string | null
+  stats?: Array<{ value?: number; suffix?: string; label?: string }> | null
+  cycleWords?: Array<{ word?: string } | string> | null
+  badge?: string | null
+}
 
 // YouTube Shorts thumbnails from real client projects
 const videoCards = [
@@ -150,7 +158,14 @@ function CardStack() {
   )
 }
 
-export function HeroSection() {
+export function HeroSection({ headline, subheadline, stats, cycleWords, badge }: HeroSectionProps = {}) {
+  const statsList = stats?.length ? stats.map(s => {
+    const v = s.value
+    const num = typeof v === 'number' ? v : parseInt(String(v || '0'), 10)
+    return { value: isNaN(num) ? 0 : num, suffix: String(s.suffix || ''), label: String(s.label || '') }
+  }) : DEFAULT_STATS
+  const words = cycleWords?.length ? cycleWords.map(w => (typeof w === 'string' ? w : (w as { word?: string }).word || '')).filter(Boolean) : DEFAULT_CYCLE_WORDS
+
   return (
     <section className="relative min-h-screen bg-neutral-950 text-white flex items-center overflow-hidden">
       {/* Animated gradient background */}
@@ -175,7 +190,7 @@ export function HeroSection() {
               <span className="relative flex h-2 w-2">
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
               </span>
-              Гарантия охватов в договоре
+              {badge ?? 'Гарантия охватов в договоре'}
             </motion.div>
 
             {/* Headline */}
@@ -185,10 +200,12 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <span className="block">Контент-завод</span>
+              <span className="block">{headline || 'Контент-завод'}</span>
+              {words.length > 0 && (
               <span className="text-primary-500">
-                <WordCycle words={cycleWords} interval={2500} />
+                <WordCycle words={words} interval={2500} />
               </span>
+              )}
             </motion.h1>
 
             {/* Subheadline */}
@@ -198,7 +215,7 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, delay: 0.15 }}
             >
-              Разворачиваем инфраструктуру по созданию, масштабированию и массовой дистрибуции контента — от производства роликов до публикации на десятках аккаунтов.
+              {subheadline || 'Разворачиваем инфраструктуру по созданию, масштабированию и массовой дистрибуции контента — от производства роликов до публикации на десятках аккаунтов.'}
             </motion.p>
 
             {/* CTAs */}
@@ -238,7 +255,7 @@ export function HeroSection() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.25 }}
             >
-              {stats.map((stat) => (
+              {statsList.map((stat) => (
                 <div key={stat.label}>
                   <p className="text-3xl md:text-5xl font-bold text-white">
                     <AnimatedCounter

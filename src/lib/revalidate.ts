@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 export async function revalidateFrontend() {
   try {
     revalidatePath('/', 'layout')
+    revalidatePath('/', 'page')
     revalidatePath('/about', 'page')
     revalidatePath('/cases', 'layout')
     revalidatePath('/blog', 'layout')

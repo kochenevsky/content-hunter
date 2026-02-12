@@ -135,3 +135,53 @@ export async function getSettings() {
     return null
   }
 }
+
+export async function getHomePage() {
+  try {
+    const payload = await getPayloadClient()
+    return await payload.findGlobal({ slug: 'home-page' })
+  } catch (error) {
+    console.error('Error fetching home page:', error)
+    return null
+  }
+}
+
+export async function getServicesPage() {
+  try {
+    const payload = await getPayloadClient()
+    return await payload.findGlobal({ slug: 'services-page' })
+  } catch (error) {
+    console.error('Error fetching services page:', error)
+    return null
+  }
+}
+
+export async function getAboutPage() {
+  try {
+    const payload = await getPayloadClient()
+    return await payload.findGlobal({ slug: 'about-page' })
+  } catch (error) {
+    console.error('Error fetching about page:', error)
+    return null
+  }
+}
+
+export async function getPricingPage() {
+  try {
+    const payload = await getPayloadClient()
+    return await payload.findGlobal({ slug: 'pricing-page' })
+  } catch (error) {
+    console.error('Error fetching pricing page:', error)
+    return null
+  }
+}
+
+export async function getFAQPage() {
+  try {
+    const payload = await getPayloadClient()
+    return await payload.findGlobal({ slug: 'faq-page' })
+  } catch (error) {
+    console.error('Error fetching FAQ page:', error)
+    return null
+  }
+}

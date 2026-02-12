@@ -1,49 +1,59 @@
 import type { Metadata } from 'next'
 import { MessageCircle, MapPin, Clock } from 'lucide-react'
+import { getPageBySlug, getSettings } from '@/lib/payload-data'
 
-export const metadata: Metadata = {
-  title: 'Контакты — Связаться с нами',
-  description: 'Свяжитесь с нами по Telegram, WhatsApp. Ответим в течение 2 часов.',
+export const revalidate = 60
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPageBySlug('contact')
+  const meta = (page as any)?.meta
+  const title = meta?.title ?? 'Контакты — Связаться с нами'
+  const description = meta?.description ?? 'Свяжитесь с нами по Telegram, WhatsApp. Ответим в течение 2 часов.'
+  const image = meta?.ogImage && typeof meta.ogImage === 'object' ? (meta.ogImage as { url?: string }).url : undefined
+  return { title, description, openGraph: { title, description, images: image ? [image] : undefined } }
 }
 
-// По брифу: Telegram-бот (основной), Telegram-менеджер, WhatsApp (дополнительно) — контакты будут предоставлены
-const contacts = [
-  {
-    icon: MessageCircle,
-    title: 'Telegram-бот',
-    value: 'Основной канал связи',
-    href: null,
-    description: 'Ссылка будет отправлена после заявки',
-  },
-  {
-    icon: MessageCircle,
-    title: 'Telegram-менеджер',
-    value: 'Персональный контакт',
-    href: null,
-    description: 'Контакт будет предоставлен',
-  },
-  {
-    icon: MessageCircle,
-    title: 'WhatsApp',
-    value: 'Дополнительно',
-    href: null,
-    description: 'Контакт будет предоставлен',
-  },
-  {
-    icon: MapPin,
-    title: 'География',
-    value: 'Россия, СНГ, MENA, LATAM, Европа, США',
-    href: null,
-    description: 'Работаем удалённо',
-  },
-  {
-    icon: Clock,
-    title: 'Время ответа',
-    value: 'До 2 часов',
-    href: null,
-    description: 'В рабочее время',
-  },
-]
+function buildContacts(settings: Awaited<ReturnType<typeof getSettings>>) {
+  const c = settings?.contacts
+  const fmt = (v: string) => v?.replace(/^@/, '').trim() || null
+  return [
+    {
+      icon: MessageCircle,
+      title: 'Telegram-бот',
+      value: c?.telegramBot ? (c.telegramBot.startsWith('http') ? c.telegramBot : `@${fmt(c.telegramBot)}`) : 'Основной канал связи',
+      href: c?.telegramBot ? (c.telegramBot.startsWith('http') ? c.telegramBot : `https://t.me/${fmt(c.telegramBot)}`) : null,
+      description: c?.telegramBot ? 'Основной канал связи' : 'Ссылка будет отправлена после заявки',
+    },
+    {
+      icon: MessageCircle,
+      title: 'Telegram-менеджер',
+      value: c?.telegram ? (c.telegram.startsWith('http') ? 'Telegram' : `@${fmt(c.telegram)}`) : 'Персональный контакт',
+      href: c?.telegram ? (c.telegram.startsWith('http') ? c.telegram : `https://t.me/${fmt(c.telegram)}`) : null,
+      description: c?.telegram ? 'Персональный контакт' : 'Контакт будет предоставлен',
+    },
+    {
+      icon: MessageCircle,
+      title: 'WhatsApp',
+      value: c?.whatsapp ? (c.whatsapp.startsWith('http') ? 'WhatsApp' : c.whatsapp) : 'Дополнительно',
+      href: c?.whatsapp ? (c.whatsapp.startsWith('http') ? c.whatsapp : `https://wa.me/${c.whatsapp.replace(/\D/g, '')}`) : null,
+      description: c?.whatsapp ? 'Дополнительно' : 'Контакт будет предоставлен',
+    },
+    {
+      icon: MapPin,
+      title: 'География',
+      value: 'Россия, СНГ, MENA, LATAM, Европа, США',
+      href: null,
+      description: 'Работаем удалённо',
+    },
+    {
+      icon: Clock,
+      title: 'Время ответа',
+      value: 'До 2 часов',
+      href: null,
+      description: 'В рабочее время',
+    },
+  ]
+}
 
 const guarantees = [
   'Бесплатный аудит вашего контента',
@@ -52,7 +62,15 @@ const guarantees = [
   'KPI в договоре',
 ]
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const [page, settings] = await Promise.all([
+    getPageBySlug('contact'),
+    getSettings(),
+  ])
+
+  const heroHeadline = (page as any)?.hero?.headline
+  const heroSubheadline = (page as any)?.hero?.subheadline
+  const contacts = buildContacts(settings)
   return (
     <>
       {/* Hero */}
@@ -60,13 +78,18 @@ export default function ContactPage() {
         <div className="container">
           <div className="max-w-3xl">
             <h1 className="heading-display text-white mb-6">
-              Получите
-              <br />
-              <span className="text-primary-500">консультацию</span>
+              {typeof heroHeadline === 'string' ? (
+                heroHeadline
+              ) : (
+                <>
+                  Получите
+                  <br />
+                  <span className="text-primary-500">консультацию</span>
+                </>
+              )}
             </h1>
             <p className="text-xl text-neutral-400">
-              Свяжитесь с нами по Telegram или WhatsApp — подготовим индивидуальное 
-              предложение с расчётом потенциальных охватов и стоимости.
+              {heroSubheadline || 'Свяжитесь с нами по Telegram или WhatsApp — подготовим индивидуальное предложение с расчётом потенциальных охватов и стоимости.'}
             </p>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { lexicalEditor, BlocksFeature, CodeBlock } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -49,6 +49,11 @@ import { Team } from './collections/Team'
 import { Header } from './globals/Header'
 import { Footer } from './globals/Footer'
 import { Settings } from './globals/Settings'
+import { HomePage } from './globals/HomePage'
+import { ServicesPage } from './globals/ServicesPage'
+import { AboutPage } from './globals/AboutPage'
+import { PricingPage } from './globals/PricingPage'
+import { FAQPage } from './globals/FAQPage'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -100,8 +105,18 @@ export default buildConfig({
       },
     },
     livePreview: {
-      url: ({ data, collectionConfig }) => {
+      url: ({ data, collectionConfig, globalConfig }) => {
         const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        if (globalConfig) {
+          const slug = globalConfig.slug
+          if (slug === 'home-page') return baseUrl
+          if (slug === 'services-page') return `${baseUrl}/services`
+          if (slug === 'about-page') return `${baseUrl}/about`
+          if (slug === 'pricing-page') return `${baseUrl}/pricing`
+          if (slug === 'faq-page') return `${baseUrl}/faq`
+          if (slug === 'header' || slug === 'footer' || slug === 'settings') return baseUrl
+          return baseUrl
+        }
         if (collectionConfig?.slug === 'pages') {
           const slug = (data as Record<string, unknown>)?.slug as string
           if (slug === 'home') return baseUrl
@@ -121,7 +136,7 @@ export default buildConfig({
         { label: 'Desktop', name: 'desktop', width: 1440, height: 900 },
       ],
       collections: ['pages', 'cases', 'blog-posts'],
-      globals: ['header', 'footer', 'settings'],
+      globals: ['header', 'footer', 'settings', 'home-page', 'services-page', 'about-page', 'pricing-page', 'faq-page'],
     },
   },
 
@@ -140,9 +155,33 @@ export default buildConfig({
     Header,
     Footer,
     Settings,
+    HomePage,
+    ServicesPage,
+    AboutPage,
+    PricingPage,
+    FAQPage,
   ],
 
-  editor: lexicalEditor(),
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [
+      ...defaultFeatures,
+      BlocksFeature({
+        blocks: [
+          CodeBlock({
+            defaultLanguage: 'html',
+            languages: {
+              plaintext: 'Plain Text',
+              html: 'HTML',
+              css: 'CSS',
+              js: 'JavaScript',
+              ts: 'TypeScript',
+              json: 'JSON',
+            },
+          }),
+        ],
+      }),
+    ],
+  }),
 
   secret: process.env.PAYLOAD_SECRET || 'default-secret-change-me-in-production',
 
@@ -166,12 +205,20 @@ export default buildConfig({
   }),
 
   plugins: [
-    vercelBlobStorage({
-      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    s3Storage({
       collections: {
         media: true,
       },
-      token: process.env.BLOB_READ_WRITE_TOKEN || '',
+      bucket: process.env.S3_BUCKET || 'media',
+      config: {
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+        },
+        region: process.env.S3_REGION || 'eu-west-1',
+        endpoint: process.env.S3_ENDPOINT,
+        forcePathStyle: true,
+      },
     }),
   ],
 

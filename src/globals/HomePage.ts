@@ -1,0 +1,157 @@
+import type { GlobalConfig } from 'payload'
+import { revalidateFrontend } from '@/lib/revalidate'
+
+export const HomePage: GlobalConfig = {
+  slug: 'home-page',
+  label: 'Главная страница',
+  access: { read: () => true },
+  hooks: {
+    afterChange: [async () => { await revalidateFrontend() }],
+  },
+  fields: [
+    {
+      name: 'hero',
+      type: 'group',
+      label: 'Hero',
+      fields: [
+        { name: 'headline', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'subheadline', type: 'textarea', label: 'Подзаголовок', localized: true },
+        { name: 'stats', type: 'array', label: 'Статистика', fields: [
+          { name: 'value', type: 'text', label: 'Значение (50)' },
+          { name: 'suffix', type: 'text', label: 'Суффикс (+)' },
+          { name: 'label', type: 'text', label: 'Подпись' },
+        ]},
+        { name: 'cycleWords', type: 'array', label: 'Слова в цикле', fields: [{ name: 'word', type: 'text' }]},
+      ],
+    },
+    {
+      name: 'problem',
+      type: 'group',
+      label: 'Блок «Проблема»',
+      fields: [
+        { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'text', type: 'textarea', label: 'Текст', localized: true },
+        { name: 'items', type: 'array', label: 'Пункты', fields: [
+          { name: 'icon', type: 'text', label: 'Иконка (TrendingDown, Clock, AlertTriangle)' },
+          { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+          { name: 'description', type: 'textarea', label: 'Описание', localized: true },
+        ]},
+      ],
+    },
+    {
+      name: 'solution',
+      type: 'group',
+      label: 'Блок «Решение»',
+      fields: [
+        { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'titleHighlight', type: 'text', label: 'Выделение в заголовке', localized: true },
+        { name: 'formula', type: 'text', label: 'Формула', localized: true },
+        { name: 'text', type: 'textarea', label: 'Текст', localized: true },
+        { name: 'checklist', type: 'array', label: 'Чеклист', fields: [{ name: 'item', type: 'text', localized: true }]},
+        { name: 'formulaStats', type: 'array', label: 'Статистика формулы', fields: [
+          { name: 'value', type: 'number', label: 'Значение' },
+          { name: 'label', type: 'text', label: 'Подпись' },
+        ]},
+      ],
+    },
+    {
+      name: 'stats',
+      type: 'group',
+      label: 'Блок статистики',
+      fields: [
+        { name: 'items', type: 'array', label: 'Показатели', fields: [
+          { name: 'value', type: 'number', label: 'Значение' },
+          { name: 'suffix', type: 'text', label: 'Суффикс' },
+          { name: 'label', type: 'text', label: 'Подпись' },
+        ]},
+      ],
+    },
+    {
+      name: 'howItWorks',
+      type: 'group',
+      label: 'Как работает',
+      fields: [
+        { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'subtitle', type: 'text', label: 'Подзаголовок', localized: true },
+        { name: 'steps', type: 'array', label: 'Шаги', fields: [
+          { name: 'icon', type: 'text', label: 'Иконка' },
+          { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+          { name: 'description', type: 'textarea', label: 'Описание', localized: true },
+        ]},
+      ],
+    },
+    {
+      name: 'videoExamples',
+      type: 'group',
+      label: 'Примеры работ',
+      fields: [
+        { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'subtitle', type: 'text', label: 'Подзаголовок', localized: true },
+        { name: 'items', type: 'array', label: 'Примеры', fields: [
+          { name: 'client', type: 'text', label: 'Клиент', localized: true },
+          { name: 'format', type: 'text', label: 'Формат', localized: true },
+          { name: 'instagramIds', type: 'array', label: 'Instagram Reels', fields: [
+            { name: 'id', type: 'text', label: 'ID' },
+            { name: 'label', type: 'text', label: 'Подпись' },
+          ]},
+          { name: 'youtubeIds', type: 'array', label: 'YouTube Shorts', fields: [
+            { name: 'id', type: 'text', label: 'ID' },
+            { name: 'label', type: 'text', label: 'Подпись' },
+          ]},
+        ]},
+      ],
+    },
+    {
+      name: 'niches',
+      type: 'group',
+      label: 'Ниши',
+      fields: [
+        { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'subtitle', type: 'text', label: 'Подзаголовок', localized: true },
+        { name: 'items', type: 'array', label: 'Ниши', fields: [
+          { name: 'icon', type: 'text', label: 'Иконка' },
+          { name: 'name', type: 'text', label: 'Название', localized: true },
+          { name: 'description', type: 'text', label: 'Описание', localized: true },
+        ]},
+      ],
+    },
+    {
+      name: 'comparison',
+      type: 'group',
+      label: 'Сравнение',
+      fields: [
+        { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'subtitle', type: 'textarea', label: 'Подзаголовок', localized: true },
+        { name: 'competitors', type: 'array', label: 'Конкуренты', fields: [
+          { name: 'title', type: 'text', label: 'Заголовок', localized: true },
+          { name: 'description', type: 'textarea', label: 'Описание', localized: true },
+          { name: 'cons', type: 'array', label: 'Минусы', fields: [{ name: 'item', type: 'text', localized: true }]},
+        ]},
+        { name: 'ourAdvantages', type: 'array', label: 'Наши преимущества', fields: [{ name: 'item', type: 'text', localized: true }]},
+      ],
+    },
+    {
+      name: 'cta',
+      type: 'group',
+      label: 'Призыв к действию',
+      fields: [
+        { name: 'headline', type: 'text', label: 'Заголовок', localized: true },
+        { name: 'headlineHighlight', type: 'text', label: 'Выделение', localized: true },
+        { name: 'text', type: 'textarea', label: 'Текст', localized: true },
+        { name: 'guarantees', type: 'array', label: 'Гарантии', fields: [{ name: 'item', type: 'text', localized: true }]},
+        { name: 'primaryButtonText', type: 'text', label: 'Текст кнопки', localized: true },
+        { name: 'telegramLink', type: 'text', label: 'Ссылка Telegram' },
+      ],
+    },
+    {
+      name: 'meta',
+      type: 'group',
+      label: 'SEO',
+      fields: [
+        { name: 'title', type: 'text', label: 'Meta Title', localized: true },
+        { name: 'description', type: 'textarea', label: 'Meta Description', localized: true },
+        { name: 'ogImage', type: 'upload', relationTo: 'media', label: 'OG Image' },
+      ],
+    },
+  ],
+}

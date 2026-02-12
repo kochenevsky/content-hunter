@@ -4,20 +4,31 @@ import { Check, ArrowRight } from 'lucide-react'
 import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 import { AnimatedCounter } from '@/components/animations/animated-counter'
 
-const checklist = [
+const DEFAULT_CHECKLIST = [
   'Один ролик превращаем в несколько уникальных версий',
   'Публикуем через сетку из 20+ аккаунтов',
   'Охватываем все платформы: Reels, Shorts, TikTok',
   'Получаем стабильный поток целевых просмотров',
 ]
 
-const formulaStats = [
+const DEFAULT_FORMULA_STATS = [
   { value: 50, label: 'роликов/мес' },
   { value: 20, label: 'аккаунтов' },
   { value: 1000, label: 'публикаций' },
 ]
 
-export function SolutionSection() {
+export type SolutionSectionProps = {
+  title?: string | null
+  titleHighlight?: string | null
+  formula?: string | null
+  text?: string | null
+  checklist?: Array<{ item?: string } | string> | null
+  formulaStats?: Array<{ value?: number; label?: string }> | null
+}
+
+export function SolutionSection({ title, titleHighlight, formula, text, checklist, formulaStats }: SolutionSectionProps = {}) {
+  const checklistItems = checklist?.length ? checklist.map(c => typeof c === 'string' ? c : (c as { item?: string }).item || '').filter(Boolean) : DEFAULT_CHECKLIST
+  const stats = formulaStats?.length ? formulaStats.map(s => ({ value: Number(s.value) || 0, label: s.label || '' })) : DEFAULT_FORMULA_STATS
   return (
     <section className="section bg-neutral-950 text-white overflow-hidden">
       <div className="container">
@@ -26,22 +37,22 @@ export function SolutionSection() {
           <FadeInView direction="left">
             <div>
               <h2 className="heading-2 text-white mb-6">
-                Холодная математика
+                {title || 'Холодная математика'}
                 <br />
-                <span className="text-primary-500">вместо надежды</span>
+                <span className="text-primary-500">{titleHighlight || 'вместо надежды'}</span>
               </h2>
               
               <div className="space-y-6 mb-8">
                 <p className="text-xl text-neutral-300">
-                  1000 роликов × 1000 просмотров = 1 000 000 гарантированных просмотров
+                  {formula || '1000 роликов × 1000 просмотров = 1 000 000 гарантированных просмотров'}
                 </p>
                 <p className="text-xl text-white font-semibold">
-                  Один ролик → несколько копий → несколько аккаунтов → несколько платформ. Масштабируем не производство ради производства, а охваты, трафик и результат.
+                  {text || 'Один ролик → несколько копий → несколько аккаунтов → несколько платформ. Масштабируем не производство ради производства, а охваты, трафик и результат.'}
                 </p>
               </div>
 
               <StaggerContainer stagger={0.1} className="space-y-4">
-                {checklist.map((item, index) => (
+                {checklistItems.map((item, index) => (
                   <StaggerItem key={index} direction="left">
                     <li className="flex items-start gap-3 list-none">
                       <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
@@ -76,7 +87,7 @@ export function SolutionSection() {
 
                 {/* Monthly stats with animated counters */}
                 <div className="grid grid-cols-2 gap-4 pt-8 border-t border-neutral-800">
-                  {formulaStats.map((stat, index) => (
+                  {stats.slice(0, 3).map((stat, index) => (
                     <div key={index} className="text-center p-4 rounded-xl bg-neutral-800/50">
                       <p className="text-3xl font-bold text-white">
                         <AnimatedCounter target={stat.value} />
@@ -84,12 +95,21 @@ export function SolutionSection() {
                       <p className="text-sm text-neutral-500">{stat.label}</p>
                     </div>
                   ))}
-                  <div className="text-center p-4 rounded-xl bg-primary-500/20 border border-primary-500/30">
-                    <p className="text-3xl font-bold text-primary-500">
-                      <AnimatedCounter target={1} suffix="М+" />
-                    </p>
-                    <p className="text-sm text-primary-400">просмотров</p>
-                  </div>
+                  {stats.length >= 4 ? (
+                    <div className="text-center p-4 rounded-xl bg-primary-500/20 border border-primary-500/30">
+                      <p className="text-3xl font-bold text-primary-500">
+                        <AnimatedCounter target={stats[3].value} suffix={stats[3].value === 1 ? 'М+' : ''} />
+                      </p>
+                      <p className="text-sm text-primary-400">{stats[3].label}</p>
+                    </div>
+                  ) : (
+                    <div className="text-center p-4 rounded-xl bg-primary-500/20 border border-primary-500/30">
+                      <p className="text-3xl font-bold text-primary-500">
+                        <AnimatedCounter target={1} suffix="М+" />
+                      </p>
+                      <p className="text-sm text-primary-400">просмотров</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

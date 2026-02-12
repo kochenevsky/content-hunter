@@ -5,85 +5,46 @@ import { InstagramEmbed } from '@/components/ui/InstagramEmbed'
 import { Instagram, Youtube } from 'lucide-react'
 import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 
-/** Примеры роликов из брифа: клиенты и ссылки на Reels/Shorts */
-const videoExamples = [
-  {
-    client: 'Витаминная крышка Booster Cap',
-    format: 'Распаковка и обзорные ролики',
-    instagram: [
-      { id: 'DSup4OVjRYf', label: 'Reel 1' },
-      { id: 'DTaSfgqDRdy', label: 'Reel 2' },
-    ],
-    youtube: [
-      { id: 'gLKgolZi_do', label: 'Shorts 1' },
-      { id: '_KbGGubr6_Q', label: 'Shorts 2' },
-    ],
-  },
-  {
-    client: 'Бренд одежды Relisme',
-    format: 'Распаковка и обзорные ролики',
-    instagram: [
-      { id: 'DTdG-HzAtTV', label: 'Reel 1' },
-      { id: 'DTfk7UhjU4J', label: 'Reel 2' },
-    ],
-    youtube: [
-      { id: 'BRA7KSecCYQ', label: 'Shorts 1' },
-      { id: 'I-eocyqs368', label: 'Shorts 2' },
-    ],
-  },
-  {
-    client: 'Агентство недвижимости, Санкт-Петербург',
-    format: 'Обзорные и продающие ролики',
-    instagram: [
-      { id: 'DTaoMp_DEab', label: 'Reel 1' },
-      { id: 'DTNQBqpgjCo', label: 'Reel 2' },
-    ],
-    youtube: [
-      { id: 'jcazjbT-n4w', label: 'Shorts 1' },
-      { id: 'BRA7KSecCYQ', label: 'Shorts 2' },
-    ],
-  },
-  {
-    client: 'Клиника, Дубай',
-    format: 'Обзорные и продающие ролики',
-    instagram: [
-      { id: 'DSFEgVTjISQ', label: 'Reel 1' },
-      { id: 'DSpsSUFjapm', label: 'Reel 2' },
-    ],
-    youtube: [
-      { id: 'djdXr49DC-Q', label: 'Shorts 1' },
-      { id: 'LN0R2ko8lCY', label: 'Shorts 2' },
-    ],
-  },
-  {
-    client: 'Ресторан, Дубай',
-    format: 'Обзорные и продающие ролики',
-    instagram: [
-      { id: 'DTH6DVLDM-s', label: 'Reel 1' },
-      { id: 'DS4lfjWjNJp', label: 'Reel 2' },
-    ],
-    youtube: [
-      { id: '6TodhymWsFQ', label: 'Shorts 1' },
-      { id: 'mhw1BUwW0XM', label: 'Shorts 2' },
-    ],
-  },
+const DEFAULT_EXAMPLES = [
+  { client: 'Витаминная крышка Booster Cap', format: 'Распаковка и обзорные ролики', instagram: [{ id: 'DSup4OVjRYf', label: 'Reel 1' }, { id: 'DTaSfgqDRdy', label: 'Reel 2' }], youtube: [{ id: 'gLKgolZi_do', label: 'Shorts 1' }, { id: '_KbGGubr6_Q', label: 'Shorts 2' }] },
+  { client: 'Бренд одежды Relisme', format: 'Распаковка и обзорные ролики', instagram: [{ id: 'DTdG-HzAtTV', label: 'Reel 1' }, { id: 'DTfk7UhjU4J', label: 'Reel 2' }], youtube: [{ id: 'BRA7KSecCYQ', label: 'Shorts 1' }, { id: 'I-eocyqs368', label: 'Shorts 2' }] },
+  { client: 'Агентство недвижимости, Санкт-Петербург', format: 'Обзорные и продающие ролики', instagram: [{ id: 'DTaoMp_DEab', label: 'Reel 1' }, { id: 'DTNQBqpgjCo', label: 'Reel 2' }], youtube: [{ id: 'jcazjbT-n4w', label: 'Shorts 1' }, { id: 'BRA7KSecCYQ', label: 'Shorts 2' }] },
+  { client: 'Клиника, Дубай', format: 'Обзорные и продающие ролики', instagram: [{ id: 'DSFEgVTjISQ', label: 'Reel 1' }, { id: 'DSpsSUFjapm', label: 'Reel 2' }], youtube: [{ id: 'djdXr49DC-Q', label: 'Shorts 1' }, { id: 'LN0R2ko8lCY', label: 'Shorts 2' }] },
+  { client: 'Ресторан, Дубай', format: 'Обзорные и продающие ролики', instagram: [{ id: 'DTH6DVLDM-s', label: 'Reel 1' }, { id: 'DS4lfjWjNJp', label: 'Reel 2' }], youtube: [{ id: '6TodhymWsFQ', label: 'Shorts 1' }, { id: 'mhw1BUwW0XM', label: 'Shorts 2' }] },
 ]
 
-export function VideoExamplesSection() {
+export type VideoExamplesSectionProps = {
+  title?: string | null
+  subtitle?: string | null
+  items?: Array<{
+    client?: string
+    format?: string
+    instagramIds?: Array<{ id?: string; label?: string }>
+    youtubeIds?: Array<{ id?: string; label?: string }>
+  }> | null
+}
+
+export function VideoExamplesSection({ title, subtitle, items }: VideoExamplesSectionProps = {}) {
+  const examples = items?.length ? items.map(p => ({
+    client: p.client || '',
+    format: p.format || '',
+    instagram: (p.instagramIds || []).map(i => ({ id: i.id || '', label: i.label || '' })).filter(i => i.id),
+    youtube: (p.youtubeIds || []).map(i => ({ id: i.id || '', label: i.label || '' })).filter(i => i.id),
+  })).filter(p => p.instagram.length || p.youtube.length) : DEFAULT_EXAMPLES
   return (
     <section className="section bg-neutral-50">
       <div className="container">
         <FadeInView direction="up" className="text-center mb-10 md:mb-16 px-2 sm:px-0">
           <h2 className="heading-2 text-neutral-900 mb-4">
-            Примеры работ
+            {title || 'Примеры работ'}
           </h2>
           <p className="text-lead max-w-2xl mx-auto text-neutral-600">
-            Реальные ролики наших клиентов: Instagram Reels и YouTube Shorts
+            {subtitle || 'Реальные ролики наших клиентов: Instagram Reels и YouTube Shorts'}
           </p>
         </FadeInView>
 
         <div className="space-y-12 md:space-y-20">
-          {videoExamples.map((project, projectIndex) => (
+          {examples.map((project, projectIndex) => (
             <FadeInView key={projectIndex} direction="up" delay={projectIndex * 0.05}>
               <div className="mb-4 md:mb-8 px-2 sm:px-0">
                 <h3 className="text-lg sm:text-xl md:heading-3 text-neutral-900 mb-1 font-semibold md:font-bold">

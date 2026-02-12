@@ -103,11 +103,21 @@ export interface Config {
     header: Header;
     footer: Footer;
     settings: Setting;
+    'home-page': HomePage;
+    'services-page': ServicesPage;
+    'about-page': AboutPage;
+    'pricing-page': PricingPage;
+    'faq-page': FaqPage;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     settings: SettingsSelect<false> | SettingsSelect<true>;
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
+    'services-page': ServicesPageSelect<false> | ServicesPageSelect<true>;
+    'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
+    'pricing-page': PricingPageSelect<false> | PricingPageSelect<true>;
+    'faq-page': FaqPageSelect<false> | FaqPageSelect<true>;
   };
   locale: 'ru' | 'en';
   user: User;
@@ -891,6 +901,379 @@ export interface Setting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  hero?: {
+    headline?: string | null;
+    subheadline?: string | null;
+    stats?:
+      | {
+          value?: string | null;
+          suffix?: string | null;
+          label?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    cycleWords?:
+      | {
+          word?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  problem?: {
+    title?: string | null;
+    text?: string | null;
+    items?:
+      | {
+          icon?: string | null;
+          title?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  solution?: {
+    title?: string | null;
+    titleHighlight?: string | null;
+    formula?: string | null;
+    text?: string | null;
+    checklist?:
+      | {
+          item?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    formulaStats?:
+      | {
+          value?: number | null;
+          label?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  stats?: {
+    items?:
+      | {
+          value?: number | null;
+          suffix?: string | null;
+          label?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  howItWorks?: {
+    title?: string | null;
+    subtitle?: string | null;
+    steps?:
+      | {
+          icon?: string | null;
+          title?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  videoExamples?: {
+    title?: string | null;
+    subtitle?: string | null;
+    items?:
+      | {
+          client?: string | null;
+          format?: string | null;
+          instagramIds?:
+            | {
+                id?: string | null;
+                label?: string | null;
+              }[]
+            | null;
+          youtubeIds?:
+            | {
+                id?: string | null;
+                label?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  niches?: {
+    title?: string | null;
+    subtitle?: string | null;
+    items?:
+      | {
+          icon?: string | null;
+          name?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  comparison?: {
+    title?: string | null;
+    subtitle?: string | null;
+    competitors?:
+      | {
+          title?: string | null;
+          description?: string | null;
+          cons?:
+            | {
+                item?: string | null;
+                id?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+    ourAdvantages?:
+      | {
+          item?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  cta?: {
+    headline?: string | null;
+    headlineHighlight?: string | null;
+    text?: string | null;
+    guarantees?:
+      | {
+          item?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    primaryButtonText?: string | null;
+    telegramLink?: string | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-page".
+ */
+export interface ServicesPage {
+  id: number;
+  hero?: {
+    headline?: string | null;
+    headlineHighlight?: string | null;
+    subheadline?: string | null;
+    primaryButtonText?: string | null;
+    secondaryButtonText?: string | null;
+  };
+  whatIs?: {
+    title?: string | null;
+    paragraphs?:
+      | {
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    benefits?:
+      | {
+          item?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    formulaValues?:
+      | {
+          value?: string | null;
+          label?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  formats?: {
+    title?: string | null;
+    subtitle?: string | null;
+    items?:
+      | {
+          icon?: string | null;
+          title?: string | null;
+          description?: string | null;
+          platforms?:
+            | {
+                name?: string | null;
+                id?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  stages?: {
+    title?: string | null;
+    subtitle?: string | null;
+    items?:
+      | {
+          number?: string | null;
+          title?: string | null;
+          description?: string | null;
+          duration?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  scaling?: {
+    title?: string | null;
+    subtitle?: string | null;
+    items?:
+      | {
+          icon?: string | null;
+          title?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  cta?: {
+    headline?: string | null;
+    headlineHighlight?: string | null;
+    text?: string | null;
+    primaryButtonText?: string | null;
+    secondaryButtonText?: string | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page".
+ */
+export interface AboutPage {
+  id: number;
+  hero?: {
+    headline?: string | null;
+    subheadline?: string | null;
+  };
+  stats?: {
+    items?:
+      | {
+          value?: string | null;
+          label?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  story?: {
+    title?: string | null;
+    paragraphs?:
+      | {
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  values?: {
+    title?: string | null;
+    subtitle?: string | null;
+    items?:
+      | {
+          icon?: string | null;
+          title?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  geography?: {
+    title?: string | null;
+    text?: string | null;
+    regions?:
+      | {
+          name?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  company?: {
+    title?: string | null;
+    companyName?: string | null;
+    brand?: string | null;
+    founder?: string | null;
+    year?: string | null;
+  };
+  cta?: {
+    headline?: string | null;
+    text?: string | null;
+    buttonText?: string | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pricing-page".
+ */
+export interface PricingPage {
+  id: number;
+  hero?: {
+    headline?: string | null;
+    subheadline?: string | null;
+  };
+  cta?: {
+    headline?: string | null;
+    text?: string | null;
+    buttonText?: string | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-page".
+ */
+export interface FaqPage {
+  id: number;
+  hero?: {
+    headline?: string | null;
+    headlineHighlight?: string | null;
+    subheadline?: string | null;
+    buttonText?: string | null;
+  };
+  cta?: {
+    headline?: string | null;
+    text?: string | null;
+    buttonText?: string | null;
+  };
+  categories?:
+    | {
+        id?: string | null;
+        label?: string | null;
+      }[]
+    | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -964,6 +1347,441 @@ export interface SettingsSelect<T extends boolean = true> {
     | {
         googleAnalyticsId?: T;
         yandexMetrikaId?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        headline?: T;
+        subheadline?: T;
+        stats?:
+          | T
+          | {
+              value?: T;
+              suffix?: T;
+              label?: T;
+              id?: T;
+            };
+        cycleWords?:
+          | T
+          | {
+              word?: T;
+              id?: T;
+            };
+      };
+  problem?:
+    | T
+    | {
+        title?: T;
+        text?: T;
+        items?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+      };
+  solution?:
+    | T
+    | {
+        title?: T;
+        titleHighlight?: T;
+        formula?: T;
+        text?: T;
+        checklist?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+        formulaStats?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+      };
+  stats?:
+    | T
+    | {
+        items?:
+          | T
+          | {
+              value?: T;
+              suffix?: T;
+              label?: T;
+              id?: T;
+            };
+      };
+  howItWorks?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        steps?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+      };
+  videoExamples?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        items?:
+          | T
+          | {
+              client?: T;
+              format?: T;
+              instagramIds?:
+                | T
+                | {
+                    id?: T;
+                    label?: T;
+                  };
+              youtubeIds?:
+                | T
+                | {
+                    id?: T;
+                    label?: T;
+                  };
+              id?: T;
+            };
+      };
+  niches?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        items?:
+          | T
+          | {
+              icon?: T;
+              name?: T;
+              description?: T;
+              id?: T;
+            };
+      };
+  comparison?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        competitors?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              cons?:
+                | T
+                | {
+                    item?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        ourAdvantages?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+      };
+  cta?:
+    | T
+    | {
+        headline?: T;
+        headlineHighlight?: T;
+        text?: T;
+        guarantees?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+        primaryButtonText?: T;
+        telegramLink?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-page_select".
+ */
+export interface ServicesPageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        headline?: T;
+        headlineHighlight?: T;
+        subheadline?: T;
+        primaryButtonText?: T;
+        secondaryButtonText?: T;
+      };
+  whatIs?:
+    | T
+    | {
+        title?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        benefits?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+        formulaValues?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+      };
+  formats?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        items?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              description?: T;
+              platforms?:
+                | T
+                | {
+                    name?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+      };
+  stages?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        items?:
+          | T
+          | {
+              number?: T;
+              title?: T;
+              description?: T;
+              duration?: T;
+              id?: T;
+            };
+      };
+  scaling?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        items?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+      };
+  cta?:
+    | T
+    | {
+        headline?: T;
+        headlineHighlight?: T;
+        text?: T;
+        primaryButtonText?: T;
+        secondaryButtonText?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page_select".
+ */
+export interface AboutPageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        headline?: T;
+        subheadline?: T;
+      };
+  stats?:
+    | T
+    | {
+        items?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+      };
+  story?:
+    | T
+    | {
+        title?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
+  values?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        items?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+      };
+  geography?:
+    | T
+    | {
+        title?: T;
+        text?: T;
+        regions?:
+          | T
+          | {
+              name?: T;
+              id?: T;
+            };
+      };
+  company?:
+    | T
+    | {
+        title?: T;
+        companyName?: T;
+        brand?: T;
+        founder?: T;
+        year?: T;
+      };
+  cta?:
+    | T
+    | {
+        headline?: T;
+        text?: T;
+        buttonText?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pricing-page_select".
+ */
+export interface PricingPageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        headline?: T;
+        subheadline?: T;
+      };
+  cta?:
+    | T
+    | {
+        headline?: T;
+        text?: T;
+        buttonText?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-page_select".
+ */
+export interface FaqPageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        headline?: T;
+        headlineHighlight?: T;
+        subheadline?: T;
+        buttonText?: T;
+      };
+  cta?:
+    | T
+    | {
+        headline?: T;
+        text?: T;
+        buttonText?: T;
+      };
+  categories?:
+    | T
+    | {
+        id?: T;
+        label?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
       };
   updatedAt?: T;
   createdAt?: T;

@@ -3,14 +3,24 @@
 import { FadeInView } from '@/components/animations/fade-in-view'
 import { AnimatedCounter } from '@/components/animations/animated-counter'
 
-const stats = [
+const DEFAULT_STATS = [
   { value: 50, suffix: '+', label: 'Запущенных проектов' },
   { value: 20, suffix: 'М+', label: 'Просмотров в месяц' },
   { value: 15, suffix: '+', label: 'Ниш клиентов' },
   { value: 8, suffix: '', label: 'Стран присутствия' },
 ]
 
-export function StatsSection() {
+export type StatsSectionProps = {
+  items?: Array<{ value?: number; suffix?: string; label?: string }> | null
+}
+
+export function StatsSection({ items }: StatsSectionProps = {}) {
+  const stats = items?.length ? items.map(s => ({
+    value: Number(s.value) || 0,
+    suffix: String(s.suffix || ''),
+    label: String(s.label || ''),
+  })) : DEFAULT_STATS
+
   return (
     <section className="py-16 bg-white border-y border-neutral-200">
       <div className="container">

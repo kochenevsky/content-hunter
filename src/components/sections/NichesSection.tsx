@@ -1,21 +1,13 @@
 'use client'
 
-import { 
-  ShoppingBag, 
-  GraduationCap, 
-  User, 
-  Utensils, 
-  Sparkles, 
-  Plane,
-  Building2,
-  Stethoscope
-} from 'lucide-react'
+import { ShoppingBag, GraduationCap, User, Utensils, Sparkles, Plane, Building2, Stethoscope } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 import { TiltCard } from '@/components/animations/tilt-card'
 import { GlowCard } from '@/components/animations/glow-effect'
+import { getIcon } from '@/lib/icon-map'
 
-const niches = [
+const DEFAULT_NICHES = [
   { icon: ShoppingBag, name: 'E-commerce', description: 'Маркетплейсы, онлайн-магазины' },
   { icon: GraduationCap, name: 'Онлайн-школы', description: 'Курсы, образовательные проекты' },
   { icon: User, name: 'Эксперты', description: 'Коучи, консультанты, психологи' },
@@ -26,22 +18,34 @@ const niches = [
   { icon: Stethoscope, name: 'Клиники', description: 'Медицинские центры, стоматологии' },
 ]
 
-export function NichesSection() {
+export type NichesSectionProps = {
+  title?: string | null
+  subtitle?: string | null
+  items?: Array<{ icon?: string; name?: string; description?: string }> | null
+}
+
+export function NichesSection({ title, subtitle, items }: NichesSectionProps = {}) {
+  const niches = items?.length ? items.map(n => ({
+    Icon: getIcon(n.icon) ?? ShoppingBag,
+    name: n.name || '',
+    description: n.description || '',
+  })) : DEFAULT_NICHES.map(n => ({ Icon: n.icon, name: n.name, description: n.description }))
+
   return (
     <section className="section bg-neutral-50">
       <div className="container">
         <FadeInView direction="up" className="text-center mb-16">
           <h2 className="heading-2 text-neutral-900 mb-4">
-            С кем мы работаем
+            {title || 'С кем мы работаем'}
           </h2>
           <p className="text-lead max-w-2xl mx-auto">
-            B2C-бизнес с широкой аудиторией. Бюджет на маркетинг от 200 000 ₽/мес.
+            {subtitle || 'B2C-бизнес с широкой аудиторией. Бюджет на маркетинг от 200 000 ₽/мес.'}
           </p>
         </FadeInView>
 
         <StaggerContainer stagger={0.08} className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {niches.map((niche, index) => {
-            const Icon = niche.icon
+            const { Icon } = niche
             return (
               <StaggerItem key={index} direction="up">
                 <TiltCard maxTilt={6} className="h-full">

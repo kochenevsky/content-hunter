@@ -5,15 +5,21 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 import { MagneticButton } from '@/components/animations/magnetic-button'
-import { ParallaxSection, AnimatedGrid } from '@/components/animations/parallax-section'
+import { AnimatedGrid } from '@/components/animations/parallax-section'
 
-const guarantees = [
-  'KPI по охватам в договоре',
-  'Бесплатный аудит',
-  'Первые результаты через 1.5 месяца',
-]
+const DEFAULT_GUARANTEES = ['KPI по охватам в договоре', 'Бесплатный аудит', 'Первые результаты через 1.5 месяца']
 
-export function CTASection() {
+export type CTASectionProps = {
+  headline?: string | null
+  headlineHighlight?: string | null
+  text?: string | null
+  guarantees?: Array<{ item?: string } | string> | null
+  primaryButtonText?: string | null
+  telegramLink?: string | null
+}
+
+export function CTASection({ headline, headlineHighlight, text, guarantees: g, primaryButtonText, telegramLink }: CTASectionProps = {}) {
+  const guarantees = g?.length ? g.map(x => typeof x === 'string' ? x : (x as { item?: string }).item || '').filter(Boolean) : DEFAULT_GUARANTEES
   return (
     <section className="relative section-hero bg-neutral-950 text-white overflow-hidden">
       {/* Animated background */}
@@ -26,16 +32,15 @@ export function CTASection() {
         <div className="max-w-3xl mx-auto text-center">
           <FadeInView direction="up">
             <h2 className="heading-1 text-white mb-6">
-              Готовы запустить
+              {headline || 'Готовы запустить'}
               <br />
-              <span className="text-primary-500">контент-завод?</span>
+              <span className="text-primary-500">{headlineHighlight || 'контент-завод?'}</span>
             </h2>
           </FadeInView>
 
           <FadeInView direction="up" delay={0.15}>
             <p className="text-xl text-neutral-400 mb-10">
-              Получите бесплатную консультацию и узнайте, сколько просмотров 
-              и лидов вы можете получать ежемесячно.
+              {text || 'Получите бесплатную консультацию и узнайте, сколько просмотров и лидов вы можете получать ежемесячно.'}
             </p>
           </FadeInView>
 
@@ -48,14 +53,14 @@ export function CTASection() {
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <span className="relative flex items-center">
-                    Получить консультацию
+                    {primaryButtonText || 'Получить консультацию'}
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Link>
               </MagneticButton>
               <MagneticButton strength={0.15}>
                 <Link
-                  href="https://t.me/contenthunter_bot"
+                  href={telegramLink || 'https://t.me/contenthunter_bot'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg border border-neutral-700 text-white hover:border-neutral-500 bg-transparent transition-colors"
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />

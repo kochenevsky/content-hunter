@@ -1,13 +1,17 @@
 import type { Metadata } from 'next'
-import { getPricing, getFAQ } from '@/lib/payload-data'
+import { getPricing, getFAQ, getPricingPage } from '@/lib/payload-data'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight, Check, Star } from 'lucide-react'
 
 export const revalidate = 60
 
-export const metadata: Metadata = {
-  title: 'Тарифы — Стоимость контент-завода',
-  description: 'Выберите подходящий тариф для запуска контент-завода. Гарантия результата в договоре.',
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPricingPage()
+  const meta = (page as any)?.meta
+  const title = meta?.title ?? 'Тарифы — Стоимость контент-завода'
+  const description = meta?.description ?? 'Выберите подходящий тариф для запуска контент-завода. Гарантия результата в договоре.'
+  const image = meta?.ogImage && typeof meta.ogImage === 'object' ? (meta.ogImage as { url?: string }).url : undefined
+  return { title, description, openGraph: { title, description, images: image ? [image] : undefined } }
 }
 
 function formatPrice(price: number, currency: string = 'RUB'): string {
@@ -20,10 +24,15 @@ function formatPrice(price: number, currency: string = 'RUB'): string {
 }
 
 export default async function PricingPage() {
-  const [pricing, allFAQ] = await Promise.all([
+  const [pricing, allFAQ, page] = await Promise.all([
     getPricing(),
     getFAQ(),
+    getPricingPage(),
   ])
+
+  const p = page as any
+  const hero = p?.hero
+  const cta = p?.cta
 
   // Берём FAQ по категории pricing
   const pricingFAQ = allFAQ
@@ -37,11 +46,10 @@ export default async function PricingPage() {
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="heading-display text-white mb-6">
-              Тарифы
+              {hero?.headline || 'Тарифы'}
             </h1>
             <p className="text-xl text-neutral-400">
-              Выберите подходящий тариф для вашего бизнеса. 
-              Все тарифы включают гарантию результата в договоре.
+              {hero?.subheadline || 'Выберите подходящий тариф для вашего бизнеса. Все тарифы включают гарантию результата в договоре.'}
             </p>
           </div>
         </div>
@@ -162,13 +170,13 @@ export default async function PricingPage() {
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="heading-1 text-neutral-900 mb-6">
-              Готовы начать?
+              {cta?.headline || 'Готовы начать?'}
             </h2>
             <p className="text-xl text-neutral-600 mb-10">
-              Получите бесплатную консультацию и расчёт под ваш проект.
+              {cta?.text || 'Получите бесплатную консультацию и расчёт под ваш проект.'}
             </p>
             <Button href="/contact" size="lg">
-              Получить консультацию
+              {cta?.buttonText || 'Получить консультацию'}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>

@@ -4,37 +4,13 @@ import { Check, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 
-const comparisons = [
-  {
-    title: 'SMM-агентства',
-    description: 'Ведут 1-2 блога, публикуют 1-2 поста в день и надеются на «вирусный» эффект',
-    cons: [
-      'Долго ждать результата',
-      'Непредсказуемые охваты',
-      'Часто нецелевая аудитория',
-    ],
-  },
-  {
-    title: 'Видеопродакшены',
-    description: 'Создают только видеоконтент без дистрибуции и аналитики',
-    cons: [
-      'Нет публикации',
-      'Нет прогрева аккаунтов',
-      'Нет работы на результат',
-    ],
-  },
-  {
-    title: 'Фрилансеры',
-    description: 'Нет технологической инфраструктуры и системного подхода',
-    cons: [
-      'Хаотичные публикации',
-      'Нестабильное качество',
-      'Нет масштабирования',
-    ],
-  },
+const DEFAULT_COMPARISONS = [
+  { title: 'SMM-агентства', description: 'Ведут 1-2 блога, публикуют 1-2 поста в день и надеются на «вирусный» эффект', cons: ['Долго ждать результата', 'Непредсказуемые охваты', 'Часто нецелевая аудитория'] },
+  { title: 'Видеопродакшены', description: 'Создают только видеоконтент без дистрибуции и аналитики', cons: ['Нет публикации', 'Нет прогрева аккаунтов', 'Нет работы на результат'] },
+  { title: 'Фрилансеры', description: 'Нет технологической инфраструктуры и системного подхода', cons: ['Хаотичные публикации', 'Нестабильное качество', 'Нет масштабирования'] },
 ]
 
-const ourAdvantages = [
+const DEFAULT_ADVANTAGES = [
   'Массовая дистрибуция через сетку аккаунтов',
   'Полный цикл: от стратегии до аналитики',
   'Гарантия охватов в договоре',
@@ -42,17 +18,30 @@ const ourAdvantages = [
   'Быстрый старт: первые публикации через 1-2 недели',
 ]
 
-export function ComparisonSection() {
+export type ComparisonSectionProps = {
+  title?: string | null
+  subtitle?: string | null
+  competitors?: Array<{ title?: string; description?: string; cons?: Array<{ item?: string } | string> }> | null
+  ourAdvantages?: Array<{ item?: string } | string> | null
+}
+
+export function ComparisonSection({ title, subtitle, competitors, ourAdvantages: adv }: ComparisonSectionProps = {}) {
+  const comparisons = competitors?.length ? competitors.map(c => ({
+    title: c.title || '',
+    description: c.description || '',
+    cons: (c.cons || []).map(x => typeof x === 'string' ? x : (x as { item?: string }).item || '').filter(Boolean),
+  })) : DEFAULT_COMPARISONS
+  const ourAdvantages = adv?.length ? adv.map(a => typeof a === 'string' ? a : (a as { item?: string }).item || '').filter(Boolean) : DEFAULT_ADVANTAGES
+
   return (
     <section className="section bg-white overflow-hidden">
       <div className="container">
         <FadeInView direction="up" className="text-center mb-16">
           <h2 className="heading-2 text-neutral-900 mb-4">
-            Чем мы отличаемся
+            {title || 'Чем мы отличаемся'}
           </h2>
           <p className="text-lead max-w-2xl mx-auto">
-            Content Hunter — это не SMM-агентство и не видеопродакшен.
-            Это контент-завод с гарантией результата.
+            {subtitle || 'Content Hunter — это не SMM-агентство и не видеопродакшен. Это контент-завод с гарантией результата.'}
           </p>
         </FadeInView>
 
