@@ -1,5 +1,5 @@
 // @ts-nocheck
-/** Сидит главную через pg (без Payload). Запуск: pnpm seed:home:sql */
+/** Сидит главную + FAQ и др. глобалы через pg (без Payload). Запуск: pnpm seed:home:sql */
 import 'dotenv/config'
 import pg from 'pg'
 import { randomUUID } from 'crypto'
@@ -161,7 +161,210 @@ async function main() {
       }
     }
 
-    console.log('✓ home_page_locales, hero_stats, hero_cycle_words, video_examples записаны')
+    // faq_page_locales — Hero + CTA для ru
+    const faqId = 1
+    const faqRows = [
+      'Частые', 'вопросы', // hero_headline, hero_headline_highlight
+      'Ответы на вопросы о контент-заводе, процессе работы, гарантиях и стоимости.',
+      'Перейти к вопросам', // hero_button_text
+      'Остались вопросы?', // cta_headline
+      'Получите бесплатный аудит и стратегию. Расскажем, как масштабировать охваты и дистрибуцию.',
+      'Получить консультацию', // cta_button_text
+      'FAQ — Частые вопросы', // meta_title
+      'Ответы на частые вопросы о контент-заводе, процессе работы, гарантиях и стоимости.',
+    ]
+    const faqUpd = await client.query(`
+      UPDATE faq_page_locales SET
+        hero_headline = $1, hero_headline_highlight = $2, hero_subheadline = $3, hero_button_text = $4,
+        cta_headline = $5, cta_text = $6, cta_button_text = $7, meta_title = $8, meta_description = $9
+      WHERE _locale = 'ru'::_locales AND _parent_id = $10
+    `, [...faqRows, faqId])
+    if (faqUpd.rowCount === 0) {
+      await client.query(`
+        INSERT INTO faq_page_locales (hero_headline, hero_headline_highlight, hero_subheadline, hero_button_text, cta_headline, cta_text, cta_button_text, meta_title, meta_description, _locale, _parent_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ru'::_locales, $10)
+      `, [...faqRows, faqId])
+    }
+
+    // faq_page_categories — категории для группировки
+    const faqCats = [
+      { id: 'general', label: 'Общие вопросы' },
+      { id: 'process', label: 'Процесс работы' },
+      { id: 'results', label: 'Результаты и гарантии' },
+      { id: 'pricing', label: 'Стоимость' },
+      { id: 'technical', label: 'Технические вопросы' },
+      { id: 'niches', label: 'Ниши и клиенты' },
+    ]
+    for (let i = 0; i < faqCats.length; i++) {
+      await client.query(
+        `INSERT INTO faq_page_categories (_order, _parent_id, id, label) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET label = $4`,
+        [i, faqId, faqCats[i].id, faqCats[i].label]
+      )
+    }
+
+    // services_page_locales
+    const servId = 1
+    const servRows = [
+      'Контент-завод', 'под ключ', // hero
+      'Разворачиваем систему массовой дистрибуции коротких видео. Полный цикл от стратегии до аналитики.',
+      'Получить консультацию', 'Смотреть кейсы', // hero buttons
+      'Что такое контент-завод', // what_is_title
+      'Форматы контента', 'Reels, Shorts, TikTok — все платформы из одной системы',
+      'Этапы работы', 'От аудита до масштабирования — прозрачный процесс',
+      'Масштабирование', 'От 20 аккаунтов до миллионов просмотров — без потери качества',
+      'Готовы запустить', 'контент-завод?', // cta
+      'Получите бесплатный аудит и стратегию.',
+      'Получить консультацию', 'Смотреть тарифы',
+      'Услуги — Контент-завод под ключ',
+      'Запускаем контент-заводы для бизнеса. Полный цикл от стратегии до публикации на десятках аккаунтов.',
+    ]
+    const servUpd = await client.query(`
+      UPDATE services_page_locales SET hero_headline=$1, hero_headline_highlight=$2, hero_subheadline=$3, hero_primary_button_text=$4, hero_secondary_button_text=$5,
+        what_is_title=$6, formats_title=$7, formats_subtitle=$8, stages_title=$9, stages_subtitle=$10, scaling_title=$11, scaling_subtitle=$12,
+        cta_headline=$13, cta_headline_highlight=$14, cta_text=$15, cta_primary_button_text=$16, cta_secondary_button_text=$17,
+        meta_title=$18, meta_description=$19
+      WHERE _locale='ru'::_locales AND _parent_id=$20
+    `, [...servRows, servId])
+    if (servUpd.rowCount === 0) {
+      await client.query(`
+        INSERT INTO services_page_locales (hero_headline, hero_headline_highlight, hero_subheadline, hero_primary_button_text, hero_secondary_button_text,
+          what_is_title, formats_title, formats_subtitle, stages_title, stages_subtitle, scaling_title, scaling_subtitle,
+          cta_headline, cta_headline_highlight, cta_text, cta_primary_button_text, cta_secondary_button_text,
+          meta_title, meta_description, _locale, _parent_id)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'ru'::_locales,$20)
+      `, [...servRows, servId])
+    }
+
+    // about_page_locales + company
+    const aboutId = 1
+    await client.query(`UPDATE about_page SET company_company_name='ОАО «Дженго»', company_brand='Content Hunter', company_founder='Content Hunter', company_year='2024' WHERE id=$1`, [aboutId])
+    const aboutRows = [
+      'О нас', 'Content Hunter — конструктор контент-заводов и контент-ферм «под ключ». Любой бизнес или эксперт может прийти к нам, и мы возьмём на себя всю систему контента и трафика.',
+      'История', 'Принципы', 'Результат, а не процесс. Системный подход. Партнёрство. Глобальность.',
+      'География', 'Работаем с клиентами из России, СНГ, MENA, LATAM и Европы. Контент на любых языках.',
+      'Реквизиты', 'Остались вопросы?', 'Получите бесплатный аудит и стратегию.', 'Получить консультацию',
+      'О нас — Команда Content Hunter',
+      'Команда Content Hunter: эксперты по контент-заводам и массовой дистрибуции видеоконтента.',
+    ]
+    const aboutUpd = await client.query(`
+      UPDATE about_page_locales SET hero_headline=$1, hero_subheadline=$2, story_title=$3, values_title=$4, values_subtitle=$5,
+        geography_title=$6, geography_text=$7, company_title=$8, cta_headline=$9, cta_text=$10, cta_button_text=$11, meta_title=$12, meta_description=$13
+      WHERE _locale='ru'::_locales AND _parent_id=$14
+    `, [...aboutRows, aboutId])
+    if (aboutUpd.rowCount === 0) {
+      await client.query(`
+        INSERT INTO about_page_locales (hero_headline, hero_subheadline, story_title, values_title, values_subtitle, geography_title, geography_text, company_title, cta_headline, cta_text, cta_button_text, meta_title, meta_description, _locale, _parent_id)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'ru'::_locales,$14)
+      `, [...aboutRows, aboutId])
+    }
+
+    // about_page_stats_items (очищаем перед вставкой)
+    await client.query(`DELETE FROM about_page_stats_items WHERE _parent_id=$1`, [aboutId])
+    const aboutStats = [
+      { v: '50+', l: 'Запущенных проектов' },
+      { v: '20М+', l: 'Просмотров в месяц' },
+      { v: '15+', l: 'Ниш клиентов' },
+      { v: '8', l: 'Стран присутствия' },
+    ]
+    for (let i = 0; i < aboutStats.length; i++) {
+      const sid = uid()
+      await client.query(`INSERT INTO about_page_stats_items (_order, _parent_id, id, value, label) VALUES ($1, $2, $3, $4, $5)`, [i, aboutId, sid, aboutStats[i].v, aboutStats[i].l])
+    }
+
+    // about_page_geography_regions (очищаем перед вставкой)
+    await client.query(`DELETE FROM about_page_geography_regions WHERE _parent_id=$1`, [aboutId])
+    const regions = ['Россия', 'СНГ (Казахстан, Беларусь)', 'MENA (ОАЭ, Дубай)', 'LATAM', 'Европа', 'США']
+    for (let i = 0; i < regions.length; i++) {
+      const rid = uid()
+      await client.query(`INSERT INTO about_page_geography_regions (_order, _parent_id, id, name) VALUES ($1, $2, $3, $4)`, [i, aboutId, rid, regions[i]])
+    }
+
+    // pricing_page_locales
+    const pricingId = 1
+    const pricingRows = [
+      'Тарифы', 'Выберите подходящий тариф для вашего бизнеса. Все тарифы включают гарантию результата в договоре.',
+      'Остались вопросы?', 'Получите бесплатный аудит и стратегию.', 'Получить консультацию',
+      'Тарифы — Стоимость контент-завода',
+      'Выберите подходящий тариф для запуска контент-завода. Гарантия результата в договоре.',
+    ]
+    const pricingUpd = await client.query(`
+      UPDATE pricing_page_locales SET hero_headline=$1, hero_subheadline=$2, cta_headline=$3, cta_text=$4, cta_button_text=$5, meta_title=$6, meta_description=$7 WHERE _locale='ru'::_locales AND _parent_id=$8
+    `, [...pricingRows, pricingId])
+    if (pricingUpd.rowCount === 0) {
+      await client.query(`INSERT INTO pricing_page_locales (hero_headline, hero_subheadline, cta_headline, cta_text, cta_button_text, meta_title, meta_description, _locale, _parent_id) VALUES ($1,$2,$3,$4,$5,$6,$7,'ru'::_locales,$8)`, [...pricingRows, pricingId])
+    }
+
+    // header — navigation + cta (удаляем старые nav, вставляем свежие)
+    const headerId = 1
+    await client.query(`UPDATE header SET cta_button_link='/contact' WHERE id=$1`, [headerId])
+    await client.query(`DELETE FROM header_navigation WHERE _parent_id=$1`, [headerId])
+    const headerNav = [
+      { label: 'Кейсы', link: '/cases' }, { label: 'Услуги', link: '/services' }, { label: 'Тарифы', link: '/pricing' },
+      { label: 'Блог', link: '/blog' }, { label: 'О нас', link: '/about' }, { label: 'FAQ', link: '/faq' },
+    ]
+    for (let i = 0; i < headerNav.length; i++) {
+      const nid = uid()
+      await client.query(`INSERT INTO header_navigation (_order, _parent_id, id, link) VALUES ($1, $2, $3, $4)`, [i, headerId, nid, headerNav[i].link])
+      await client.query(`INSERT INTO header_navigation_locales (label, _locale, _parent_id) VALUES ($1, 'ru'::_locales, $2)`, [headerNav[i].label, nid])
+    }
+    const headerLoc = await client.query(`SELECT 1 FROM header_locales WHERE _locale='ru'::_locales AND _parent_id=$1`, [headerId])
+    if (headerLoc.rowCount === 0) {
+      await client.query(`INSERT INTO header_locales (cta_button_text, _locale, _parent_id) VALUES ('Получить консультацию', 'ru'::_locales, $1)`, [headerId])
+    } else {
+      await client.query(`UPDATE header_locales SET cta_button_text='Получить консультацию' WHERE _locale='ru'::_locales AND _parent_id=$1`, [headerId])
+    }
+
+    // footer — navigation, social, locales (удаляем старые nav/social)
+    const footerId = 1
+    await client.query(`DELETE FROM footer_navigation WHERE _parent_id=$1`, [footerId])
+    await client.query(`DELETE FROM footer_social WHERE _parent_id=$1`, [footerId])
+    const footerNav = [
+      { label: 'Кейсы', link: '/cases' }, { label: 'Услуги', link: '/services' }, { label: 'Тарифы', link: '/pricing' },
+      { label: 'Блог', link: '/blog' }, { label: 'О нас', link: '/about' }, { label: 'FAQ', link: '/faq' }, { label: 'Контакты', link: '/contact' },
+    ]
+    for (let i = 0; i < footerNav.length; i++) {
+      const nid = uid()
+      await client.query(`INSERT INTO footer_navigation (_order, _parent_id, id, link) VALUES ($1, $2, $3, $4)`, [i, footerId, nid, footerNav[i].link])
+      await client.query(`INSERT INTO footer_navigation_locales (label, _locale, _parent_id) VALUES ($1, 'ru'::_locales, $2)`, [footerNav[i].label, nid])
+    }
+    const footerSocial = [
+      { platform: 'telegram', url: 'https://t.me/contenthunter_bot' },
+      { platform: 'instagram', url: 'https://instagram.com/contenthunter' },
+      { platform: 'youtube', url: 'https://youtube.com/@contenthunter' },
+    ]
+    for (let i = 0; i < footerSocial.length; i++) {
+      const sid = uid()
+      await client.query(`INSERT INTO footer_social (_order, _parent_id, id, platform, url) VALUES ($1, $2, $3, $4::enum_footer_social_platform, $5)`, [i, footerId, sid, footerSocial[i].platform, footerSocial[i].url])
+    }
+    const footerLoc = await client.query(`SELECT 1 FROM footer_locales WHERE _locale='ru'::_locales AND _parent_id=$1`, [footerId])
+    if (footerLoc.rowCount === 0) {
+      await client.query(`INSERT INTO footer_locales (description, copyright, _locale, _parent_id) VALUES ($1, $2, 'ru'::_locales, $3)`, [
+        'Content Hunter — конструктор контент-заводов и контент-ферм «под ключ». Гарантия охватов в договоре.',
+        '© 2024 Content Hunter. ОАО «Дженго»', footerId
+      ])
+    } else {
+      await client.query(`UPDATE footer_locales SET description=$1, copyright=$2 WHERE _locale='ru'::_locales AND _parent_id=$3`, [
+        'Content Hunter — конструктор контент-заводов и контент-ферм «под ключ». Гарантия охватов в договоре.',
+        '© 2024 Content Hunter. ОАО «Дженго»', footerId
+      ])
+    }
+
+    // settings — contacts + locales
+    const settingsId = 1
+    await client.query(`UPDATE settings SET contacts_telegram_bot='https://t.me/contenthunter_bot' WHERE id=$1`, [settingsId])
+    const settRows = [
+      'Конструктор контент-заводов и контент-ферм «под ключ». Гарантия охватов в договоре.',
+      'Content Hunter — Контент-завод под ключ',
+      'Разворачиваем инфраструктуру по созданию и массовой дистрибуции коротких видео. 50+ проектов, 20М+ просмотров, гарантия в договоре.',
+    ]
+    const settLoc = await client.query(`SELECT 1 FROM settings_locales WHERE _locale='ru'::_locales AND _parent_id=$1`, [settingsId])
+    if (settLoc.rowCount === 0) {
+      await client.query(`INSERT INTO settings_locales (site_description, default_meta_title, default_meta_description, _locale, _parent_id) VALUES ($1,$2,$3,'ru'::_locales,$4)`, [...settRows, settingsId])
+    } else {
+      await client.query(`UPDATE settings_locales SET site_description=$1, default_meta_title=$2, default_meta_description=$3 WHERE _locale='ru'::_locales AND _parent_id=$4`, [...settRows, settingsId])
+    }
+
+    console.log('✓ home_page, faq_page, services_page, about_page, pricing_page, header, footer, settings — записаны')
   } finally {
     client.release()
     await pool.end()
