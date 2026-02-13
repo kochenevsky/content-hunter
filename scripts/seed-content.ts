@@ -262,6 +262,120 @@ async function seed() {
     console.log('  ✓ Settings обновлены')
   } catch (e: any) { console.log(`  ✗ Settings: ${e.message}`) }
 
+  // 9. Globals — Главная страница (контент из хардкода)
+  console.log('\n🏠 Главная страница...')
+  const homePageData = {
+    hero: {
+      headline: 'Контент-завод для бизнеса',
+      subheadline: 'Разворачиваем систему массовой дистрибуции коротких видео. Один ролик → десятки уникальных версий → миллионы просмотров.',
+      stats: [
+        { value: '50', suffix: '+', label: 'Проектов' },
+        { value: '20', suffix: 'М+', label: 'Просмотров/мес' },
+        { value: '8', suffix: '', label: 'Стран' },
+      ],
+      cycleWords: [{ word: 'под ключ' }, { word: 'с гарантией' }, { word: 'для бизнеса' }, { word: 'на масштаб' }],
+    },
+    problem: {
+      title: 'Почему ваш SMM не приносит результатов',
+      text: 'Контент перестал быть дефицитом. Его слишком много. Все ждут один вирусный ролик, надеются на «залёт», хотят миллион просмотров в одном аккаунте. Вероятность сделать ролик на миллион — 0,00001%.',
+      items: [
+        { icon: 'TrendingDown', title: 'Охваты падают', description: 'Контента стало слишком много. Один аккаунт не даёт нужного охвата.' },
+        { icon: 'Clock', title: 'Ждёте вирусного ролика', description: 'Вероятность «залёта» — 0,00001%. Это лотерея, а не стратегия.' },
+        { icon: 'AlertTriangle', title: 'SMM не окупается', description: 'Бюджет уходит, а лидов и продаж с контента нет.' },
+      ],
+    },
+    solution: {
+      title: 'Холодная математика',
+      titleHighlight: 'вместо надежды',
+      formula: '50 роликов × 20 аккаунтов = 1000 публикаций в месяц',
+      text: 'Вместо лотереи — производство. Один сценарий превращаем в десятки уникальных версий. Публикуем через сетку аккаунтов. Охваты становятся предсказуемыми.',
+      checklist: [
+        { item: 'Один ролик превращаем в несколько уникальных версий' },
+        { item: 'Публикуем через сетку из 20+ аккаунтов' },
+        { item: 'Охватываем все платформы: Reels, Shorts, TikTok' },
+        { item: 'Получаем стабильный поток целевых просмотров' },
+      ],
+      formulaStats: [
+        { value: 50, label: 'роликов/мес' },
+        { value: 20, label: 'аккаунтов' },
+        { value: 1000, label: 'публикаций' },
+      ],
+    },
+    stats: {
+      items: [
+        { value: 50, suffix: '+', label: 'Запущенных проектов' },
+        { value: 20, suffix: 'М+', label: 'Просмотров в месяц' },
+        { value: 15, suffix: '+', label: 'Ниш клиентов' },
+        { value: 8, suffix: '', label: 'Стран присутствия' },
+      ],
+    },
+    howItWorks: {
+      title: 'Как работает контент-завод',
+      subtitle: 'Полный цикл от идеи до публикации и аналитики',
+      steps: [
+        { icon: 'Target', title: 'Стратегия', description: 'Анализируем нишу, конкурентов, строим архитектуру контент-системы' },
+        { icon: 'FileText', title: 'Сценарии', description: 'AI + редактура: создаём сценарии, адаптированные под каждую платформу' },
+        { icon: 'Video', title: 'Съёмка', description: 'Производим контент: живая съёмка, аватары или AI-генерация' },
+        { icon: 'Scissors', title: 'Монтаж', description: 'Профессиональный монтаж с уникализацией под каждый аккаунт' },
+        { icon: 'Share2', title: 'Публикация', description: 'Массовая публикация через сетку аккаунтов на всех платформах' },
+        { icon: 'BarChart3', title: 'Аналитика', description: 'Отслеживаем метрики, оптимизируем стратегию под результат' },
+      ],
+    },
+    videoExamples: {
+      title: 'Примеры работ',
+      subtitle: 'Реальные ролики наших клиентов: Instagram Reels и YouTube Shorts',
+      items: [
+        { client: 'Витаминная крышка Booster Cap', format: 'Распаковка и обзорные ролики', instagramIds: [{ id: 'DSup4OVjRYf', label: 'Reel 1' }, { id: 'DTaSfgqDRdy', label: 'Reel 2' }], youtubeIds: [{ id: 'gLKgolZi_do', label: 'Shorts 1' }, { id: '_KbGGubr6_Q', label: 'Shorts 2' }] },
+        { client: 'Бренд одежды Relisme', format: 'Распаковка и обзорные ролики', instagramIds: [{ id: 'DTdG-HzAtTV', label: 'Reel 1' }, { id: 'DTfk7UhjU4J', label: 'Reel 2' }], youtubeIds: [{ id: 'BRA7KSecCYQ', label: 'Shorts 1' }, { id: 'I-eocyqs368', label: 'Shorts 2' }] },
+        { client: 'Агентство недвижимости, Санкт-Петербург', format: 'Обзорные и продающие ролики', instagramIds: [{ id: 'DTaoMp_DEab', label: 'Reel 1' }, { id: 'DTNQBqpgjCo', label: 'Reel 2' }], youtubeIds: [{ id: 'jcazjbT-n4w', label: 'Shorts 1' }, { id: 'BRA7KSecCYQ', label: 'Shorts 2' }] },
+        { client: 'Клиника, Дубай', format: 'Обзорные и продающие ролики', instagramIds: [{ id: 'DSFEgVTjISQ', label: 'Reel 1' }, { id: 'DSpsSUFjapm', label: 'Reel 2' }], youtubeIds: [{ id: 'djdXr49DC-Q', label: 'Shorts 1' }, { id: 'LN0R2ko8lCY', label: 'Shorts 2' }] },
+        { client: 'Ресторан, Дубай', format: 'Обзорные и продающие ролики', instagramIds: [{ id: 'DTH6DVLDM-s', label: 'Reel 1' }, { id: 'DS4lfjWjNJp', label: 'Reel 2' }], youtubeIds: [{ id: '6TodhymWsFQ', label: 'Shorts 1' }, { id: 'mhw1BUwW0XM', label: 'Shorts 2' }] },
+      ],
+    },
+    niches: {
+      title: 'С кем мы работаем',
+      subtitle: 'B2C-бизнес с широкой аудиторией. Бюджет на маркетинг от 200 000 ₽/мес.',
+      items: [
+        { icon: 'ShoppingBag', name: 'E-commerce', description: 'Маркетплейсы, онлайн-магазины' },
+        { icon: 'GraduationCap', name: 'Онлайн-школы', description: 'Курсы, образовательные проекты' },
+        { icon: 'User', name: 'Эксперты', description: 'Коучи, консультанты, психологи' },
+        { icon: 'Utensils', name: 'HoReCa', description: 'Рестораны, кафе, отели' },
+        { icon: 'Sparkles', name: 'Beauty', description: 'Салоны красоты, косметология' },
+        { icon: 'Plane', name: 'Тревел', description: 'Туризм, глэмпинги, агентства' },
+        { icon: 'Building2', name: 'Недвижимость', description: 'Агентства, застройщики' },
+        { icon: 'Stethoscope', name: 'Клиники', description: 'Медицинские центры, стоматологии' },
+      ],
+    },
+    comparison: {
+      title: 'Чем мы отличаемся',
+      subtitle: 'Content Hunter — это не SMM-агентство и не видеопродакшен. Это контент-завод с гарантией результата.',
+      competitors: [
+        { title: 'SMM-агентства', description: 'Ведут 1-2 блога, публикуют 1-2 поста в день и надеются на «вирусный» эффект', cons: [{ item: 'Долго ждать результата' }, { item: 'Непредсказуемые охваты' }, { item: 'Часто нецелевая аудитория' }] },
+        { title: 'Видеопродакшены', description: 'Создают только видеоконтент без дистрибуции и аналитики', cons: [{ item: 'Нет публикации' }, { item: 'Нет прогрева аккаунтов' }, { item: 'Нет работы на результат' }] },
+        { title: 'Фрилансеры', description: 'Нет технологической инфраструктуры и системного подхода', cons: [{ item: 'Хаотичные публикации' }, { item: 'Нестабильное качество' }, { item: 'Нет масштабирования' }] },
+      ],
+      ourAdvantages: [
+        { item: 'Массовая дистрибуция через сетку аккаунтов' },
+        { item: 'Полный цикл: от стратегии до аналитики' },
+        { item: 'Гарантия охватов в договоре' },
+        { item: 'Фабричный подход = предсказуемый результат' },
+        { item: 'Быстрый старт: первые публикации через 1-2 недели' },
+      ],
+    },
+    cta: {
+      headline: 'Готовы запустить',
+      headlineHighlight: 'контент-завод?',
+      text: 'Получите бесплатный аудит и стратегию. Расскажем, как масштабировать охваты и дистрибуцию.',
+      guarantees: [{ item: 'KPI по охватам в договоре' }, { item: 'Бесплатный аудит' }, { item: 'Первые результаты через 1.5 месяца' }],
+      primaryButtonText: 'Получить консультацию',
+      telegramLink: 'https://t.me/contenthunter_bot',
+    },
+  }
+  try {
+    await payload.updateGlobal({ slug: 'home-page', data: homePageData as any })
+    console.log('  ✓ Главная страница заполнена')
+  } catch (e: any) { console.log(`  ✗ Главная страница: ${e.message}`) }
+
   console.log('\n✅ Заполнение БД завершено!\n')
   process.exit(0)
 }

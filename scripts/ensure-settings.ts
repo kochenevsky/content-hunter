@@ -1,8 +1,8 @@
 // @ts-nocheck
 /**
- * Гарантирует наличие строки в settings (Payload глобал «Настройки сайта»).
+ * Гарантирует наличие строк в глобальных таблицах Payload (header, footer, settings).
+ * Без хотя бы одной строки админка показывает "Nothing found".
  * Запуск: pnpm ensure:settings
- * Подгружает .env из корня проекта при наличии.
  */
 import 'dotenv/config'
 import pg from 'pg'
@@ -42,21 +42,22 @@ async function main() {
   }
   const config = parseDbConfig()
   const pool = new pg.Pool({ ...config, connectionTimeoutMillis: 5000 })
+  const inserts = [
+    { table: 'header', sql: `INSERT INTO public.header (logo_id) SELECT NULL FROM (SELECT 1) x WHERE NOT EXISTS (SELECT 1 FROM public.header LIMIT 1) RETURNING id` },
+    { table: 'footer', sql: `INSERT INTO public.footer SELECT nextval('footer_id_seq'), now(), now() FROM (SELECT 1) x WHERE NOT EXISTS (SELECT 1 FROM public.footer LIMIT 1) RETURNING id` },
+    { table: 'settings', sql: `INSERT INTO public.settings (site_name) SELECT 'Content Hunter' WHERE NOT EXISTS (SELECT 1 FROM public.settings LIMIT 1) RETURNING id` },
+  ]
   try {
-    const res = await pool.query(
-      `INSERT INTO public.settings (site_name)
-       SELECT 'Content Hunter'
-       WHERE NOT EXISTS (SELECT 1 FROM public.settings LIMIT 1)
-       RETURNING id`
-    )
-    if (res.rowCount && res.rowCount > 0) {
-      console.log('✓ settings: добавлена строка по умолчанию')
-    } else {
-      console.log('✓ settings: строка уже существует')
+    for (const { table, sql } of inserts) {
+      try {
+        const res = await pool.query(sql)
+        if (res.rowCount && res.rowCount > 0) {
+          console.log(`✓ ${table}: добавлена строка`)
+        }
+      } catch (e: any) {
+        console.warn(`ensure:settings: ${table}:`, e.message)
+      }
     }
-  } catch (e: any) {
-    console.warn('ensure:settings: предупреждение (не блокируем билд):', e.message)
-    // Не падаем — билд должен пройти, можно вручную выполнить pnpm ensure:settings
   } finally {
     await pool.end()
   }
