@@ -14,9 +14,11 @@
     "migrate": "payload migrate",
     "migrate:create": "payload migrate:create",
     "seed:admin": "NODE_OPTIONS='--dns-result-order=ipv4first' payload run scripts/seed-admin.ts",
+    "seed:home": "NODE_OPTIONS='--dns-result-order=ipv4first' payload run scripts/seed-home-only.ts",
     "seed:content": "NODE_OPTIONS='--dns-result-order=ipv4first' payload run scripts/seed-content.ts",
     "apply:prod": "NODE_OPTIONS='--dns-result-order=ipv4first' npx tsx scripts/apply-page-globals-to-prod.ts",
-    "ensure:settings": "NODE_OPTIONS='--dns-result-order=ipv4first' npx tsx scripts/ensure-settings.ts"
+    "ensure:settings": "NODE_OPTIONS='--dns-result-order=ipv4first' npx tsx scripts/ensure-settings.ts",
+    "seed:home:sql": "NODE_OPTIONS='--dns-result-order=ipv4first' npx tsx scripts/seed-home-sql.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
