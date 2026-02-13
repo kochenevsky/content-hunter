@@ -26,13 +26,50 @@ function parseDbConfig() {
   }
 }
 
+async function ensureSchema(client: pg.PoolClient) {
+  const alters = [
+    `ALTER TABLE home_page ADD COLUMN IF NOT EXISTS hero_primary_button_link varchar`,
+    `ALTER TABLE home_page ADD COLUMN IF NOT EXISTS hero_secondary_button_link varchar`,
+    `ALTER TABLE home_page ADD COLUMN IF NOT EXISTS cta_primary_button_link varchar`,
+    `ALTER TABLE home_page ADD COLUMN IF NOT EXISTS cta_telegram_link varchar`,
+    `ALTER TABLE home_page_locales ADD COLUMN IF NOT EXISTS hero_primary_button_text varchar`,
+    `ALTER TABLE home_page_locales ADD COLUMN IF NOT EXISTS hero_secondary_button_text varchar`,
+    `ALTER TABLE home_page_locales ADD COLUMN IF NOT EXISTS cta_secondary_button_text varchar`,
+    `ALTER TABLE services_page ADD COLUMN IF NOT EXISTS hero_primary_button_link varchar`,
+    `ALTER TABLE services_page ADD COLUMN IF NOT EXISTS hero_secondary_button_link varchar`,
+    `ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_primary_button_link varchar`,
+    `ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_secondary_button_link varchar`,
+  ]
+  for (const q of alters) {
+    try { await client.query(q) } catch (e: any) { if (e.code !== '42701') throw e }
+  }
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS footer_materials (
+      _order integer NOT NULL, _parent_id integer NOT NULL, id varchar PRIMARY KEY, link varchar NOT NULL
+    )
+  `)
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS footer_materials_locales (
+      label varchar NOT NULL, id serial PRIMARY KEY, _locale _locales NOT NULL, _parent_id varchar NOT NULL
+    )
+  `)
+  try {
+    await client.query(`ALTER TABLE footer_materials ADD CONSTRAINT footer_materials_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES footer(id) ON DELETE CASCADE`)
+  } catch (e: any) { if (e.code !== '42P07') throw e }
+  try {
+    await client.query(`ALTER TABLE footer_materials_locales ADD CONSTRAINT footer_materials_locales_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES footer_materials(id) ON DELETE CASCADE`)
+  } catch (e: any) { if (e.code !== '42P07') throw e }
+}
+
 async function main() {
   const pool = new pg.Pool(parseDbConfig())
   const client = await pool.connect()
   try {
+    await ensureSchema(client)
     const homeId = 1
 
     // home_page_locales — основной контент для локали ru (update or insert)
+    await client.query(`UPDATE home_page SET hero_primary_button_link='/contact', hero_secondary_button_link='/cases', cta_primary_button_link='/contact', cta_telegram_link='https://t.me/contenthunter_bot' WHERE id=$1`, [homeId])
     const localeRows = ['Контент-завод для бизнеса',
       'Разворачиваем систему массовой дистрибуции коротких видео. Один ролик → десятки уникальных версий → миллионы просмотров.',
       'Почему ваш SMM не приносит результатов',
@@ -41,12 +78,13 @@ async function main() {
       '50 роликов × 20 аккаунтов = 1000 публикаций в месяц',
       'Вместо лотереи — производство. Один сценарий превращаем в десятки уникальных версий. Публикуем через сетку аккаунтов. Охваты становятся предсказуемыми.',
       'Как работает контент-завод', 'Полный цикл от идеи до публикации и аналитики',
-      'Примеры работ', 'Реальные ролики наших клиентов: Instagram Reels и YouTube Shorts',
+      'Примеры работ', 'Реальные ролики наших клиентов. Vimeo доступен в РФ.',
       'С кем мы работаем', 'B2C-бизнес с широкой аудиторией. Бюджет на маркетинг от 200 000 ₽/мес.',
       'Чем мы отличаемся', 'Content Hunter — это не SMM-агентство и не видеопродакшен. Это контент-завод с гарантией результата.',
       'Готовы запустить', 'контент-завод?',
       'Получите бесплатный аудит и стратегию. Расскажем, как масштабировать охваты и дистрибуцию.',
-      'Получить консультацию']
+      'Получить консультацию',
+      'Получить консультацию', 'Смотреть кейсы', 'Написать в Telegram']
     const upd = await client.query(`
       UPDATE home_page_locales SET
         hero_headline = $1, hero_subheadline = $2, problem_title = $3, problem_text = $4,
@@ -55,8 +93,9 @@ async function main() {
         video_examples_title = $11, video_examples_subtitle = $12,
         niches_title = $13, niches_subtitle = $14,
         comparison_title = $15, comparison_subtitle = $16,
-        cta_headline = $17, cta_headline_highlight = $18, cta_text = $19, cta_primary_button_text = $20
-      WHERE _locale = 'ru'::_locales AND _parent_id = $21
+        cta_headline = $17, cta_headline_highlight = $18, cta_text = $19, cta_primary_button_text = $20,
+        hero_primary_button_text = $21, hero_secondary_button_text = $22, cta_secondary_button_text = $23
+      WHERE _locale = 'ru'::_locales AND _parent_id = $24
     `, [...localeRows, homeId])
     if (upd.rowCount === 0) {
       await client.query(`
@@ -68,8 +107,9 @@ async function main() {
           niches_title, niches_subtitle,
           comparison_title, comparison_subtitle,
           cta_headline, cta_headline_highlight, cta_text, cta_primary_button_text,
+          hero_primary_button_text, hero_secondary_button_text, cta_secondary_button_text,
           _locale, _parent_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 'ru'::_locales, $21)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, 'ru'::_locales, $24)
       `, [...localeRows, homeId])
     }
 
@@ -109,19 +149,21 @@ async function main() {
         client: 'Витаминная крышка Booster Cap',
         format: 'Распаковка и обзорные ролики',
         ig: [
-          { id: 'DSup4OVjRYf', label: 'Reel 1' },  // sunnlyxvibe — дофамин в крышечке, арт 502520177
-          { id: 'DTaSfgqDRdy', label: 'Reel 2' },  // booster_c_ — вода за 10 сек, коллаген
+          { id: 'DSup4OVjRYf', label: 'Reel 1' },
+          { id: 'DTaSfgqDRdy', label: 'Reel 2' },
         ],
         yt: [
           { id: 'gLKgolZi_do', label: 'Shorts 1' },
           { id: '_KbGGubr6_Q', label: 'Shorts 2' },
         ],
+        vimeo: [] as { id: string; label: string }[],
       },
       {
         client: 'Бренд одежды Relisme',
         format: 'Распаковка и обзорные ролики',
         ig: [{ id: 'DTdG-HzAtTV', label: 'Reel 1' }],
         yt: [{ id: 'BRA7KSecCYQ', label: 'Shorts 1' }],
+        vimeo: [] as { id: string; label: string }[],
       },
     ]
     for (let i = 0; i < examples.length; i++) {
@@ -157,6 +199,13 @@ async function main() {
         await client.query(
           `INSERT INTO home_page_video_examples_items_youtube_ids (_order, _parent_id, id, label) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET label = $4`,
           [j, itemId, videoId, label]
+        )
+      }
+      for (let j = 0; j < (examples[i].vimeo || []).length; j++) {
+        const { id: vid, label } = examples[i].vimeo![j]
+        await client.query(
+          `INSERT INTO home_page_video_examples_items_vimeo_ids (_order, _parent_id, id, label) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET label = $4`,
+          [j, itemId, vid, label]
         )
       }
     }
@@ -202,8 +251,11 @@ async function main() {
       )
     }
 
-    // services_page_locales
+    // services_page — ссылки кнопок hero/cta
     const servId = 1
+    await client.query(`UPDATE services_page SET hero_primary_button_link='/contact', hero_secondary_button_link='/cases', cta_primary_button_link='/contact', cta_secondary_button_link='/pricing' WHERE id=$1`, [servId])
+
+    // services_page_locales
     const servRows = [
       'Контент-завод', 'под ключ', // hero
       'Разворачиваем систему массовой дистрибуции коротких видео. Полный цикл от стратегии до аналитики.',
@@ -314,10 +366,11 @@ async function main() {
       await client.query(`UPDATE header_locales SET cta_button_text='Получить консультацию' WHERE _locale='ru'::_locales AND _parent_id=$1`, [headerId])
     }
 
-    // footer — navigation, social, locales (удаляем старые nav/social)
+    // footer — navigation, social, materials, locales (удаляем старые nav/social/materials)
     const footerId = 1
     await client.query(`DELETE FROM footer_navigation WHERE _parent_id=$1`, [footerId])
     await client.query(`DELETE FROM footer_social WHERE _parent_id=$1`, [footerId])
+    await client.query(`DELETE FROM footer_materials WHERE _parent_id=$1`, [footerId])
     const footerNav = [
       { label: 'Кейсы', link: '/cases' }, { label: 'Услуги', link: '/services' }, { label: 'Тарифы', link: '/pricing' },
       { label: 'Блог', link: '/blog' }, { label: 'О нас', link: '/about' }, { label: 'FAQ', link: '/faq' }, { label: 'Контакты', link: '/contact' },
@@ -335,6 +388,15 @@ async function main() {
     for (let i = 0; i < footerSocial.length; i++) {
       const sid = uid()
       await client.query(`INSERT INTO footer_social (_order, _parent_id, id, platform, url) VALUES ($1, $2, $3, $4::enum_footer_social_platform, $5)`, [i, footerId, sid, footerSocial[i].platform, footerSocial[i].url])
+    }
+    const footerMaterials = [
+      { label: 'Презентация', link: 'https://gamma.app/docs/Content-Hunter-20-ta6xnap4ulyonku?mode=doc' },
+      { label: 'Прайс и кейсы', link: 'https://docs.google.com/spreadsheets/d/1axwH_4ByTRGrBneCOP18ARJgsJNqXnzzxBXLdTFph9s/edit?gid=1037848601' },
+    ]
+    for (let i = 0; i < footerMaterials.length; i++) {
+      const mid = uid()
+      await client.query(`INSERT INTO footer_materials (_order, _parent_id, id, link) VALUES ($1, $2, $3, $4)`, [i, footerId, mid, footerMaterials[i].link])
+      await client.query(`INSERT INTO footer_materials_locales (label, _locale, _parent_id) VALUES ($1, 'ru'::_locales, $2)`, [footerMaterials[i].label, mid])
     }
     const footerLoc = await client.query(`SELECT 1 FROM footer_locales WHERE _locale='ru'::_locales AND _parent_id=$1`, [footerId])
     if (footerLoc.rowCount === 0) {

@@ -15,10 +15,12 @@ export type CTASectionProps = {
   text?: string | null
   guarantees?: Array<{ item?: string } | string> | null
   primaryButtonText?: string | null
+  primaryButtonLink?: string | null
+  secondaryButtonText?: string | null
   telegramLink?: string | null
 }
 
-export function CTASection({ headline, headlineHighlight, text, guarantees: g, primaryButtonText, telegramLink }: CTASectionProps = {}) {
+export function CTASection({ headline, headlineHighlight, text, guarantees: g, primaryButtonText, primaryButtonLink, secondaryButtonText, telegramLink }: CTASectionProps = {}) {
   const guarantees = g?.length ? g.map(x => typeof x === 'string' ? x : (x as { item?: string }).item || '').filter(Boolean) : DEFAULT_GUARANTEES
   return (
     <section className="relative section-hero bg-neutral-950 text-white overflow-hidden">
@@ -48,7 +50,7 @@ export function CTASection({ headline, headlineHighlight, text, guarantees: g, p
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <MagneticButton strength={0.2}>
                 <Link
-                  href="/contact"
+                  href={primaryButtonLink || '/contact'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors relative group overflow-hidden"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -64,7 +66,7 @@ export function CTASection({ headline, headlineHighlight, text, guarantees: g, p
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg border border-neutral-700 text-white hover:border-neutral-500 bg-transparent transition-colors"
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />
-                  Написать в Telegram
+                  {secondaryButtonText || 'Написать в Telegram'}
                 </Link>
               </MagneticButton>
             </div>

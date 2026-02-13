@@ -2,15 +2,16 @@
 
 import { YouTubeEmbed } from '@/components/ui/YouTubeEmbed'
 import { InstagramEmbed } from '@/components/ui/InstagramEmbed'
-import { Instagram, Youtube } from 'lucide-react'
+import { VimeoEmbed } from '@/components/ui/VimeoEmbed'
+import { Instagram, Youtube, Video } from 'lucide-react'
 import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 
 const DEFAULT_EXAMPLES = [
-  { client: 'Витаминная крышка Booster Cap', format: 'Распаковка и обзорные ролики', instagram: [{ id: 'DSup4OVjRYf', label: 'Reel 1' }, { id: 'DTaSfgqDRdy', label: 'Reel 2' }], youtube: [{ id: 'gLKgolZi_do', label: 'Shorts 1' }, { id: '_KbGGubr6_Q', label: 'Shorts 2' }] },
-  { client: 'Бренд одежды Relisme', format: 'Распаковка и обзорные ролики', instagram: [{ id: 'DTdG-HzAtTV', label: 'Reel 1' }, { id: 'DTfk7UhjU4J', label: 'Reel 2' }], youtube: [{ id: 'BRA7KSecCYQ', label: 'Shorts 1' }, { id: 'I-eocyqs368', label: 'Shorts 2' }] },
-  { client: 'Агентство недвижимости, Санкт-Петербург', format: 'Обзорные и продающие ролики', instagram: [{ id: 'DTaoMp_DEab', label: 'Reel 1' }, { id: 'DTNQBqpgjCo', label: 'Reel 2' }], youtube: [{ id: 'jcazjbT-n4w', label: 'Shorts 1' }, { id: 'BRA7KSecCYQ', label: 'Shorts 2' }] },
-  { client: 'Клиника, Дубай', format: 'Обзорные и продающие ролики', instagram: [{ id: 'DSFEgVTjISQ', label: 'Reel 1' }, { id: 'DSpsSUFjapm', label: 'Reel 2' }], youtube: [{ id: 'djdXr49DC-Q', label: 'Shorts 1' }, { id: 'LN0R2ko8lCY', label: 'Shorts 2' }] },
-  { client: 'Ресторан, Дубай', format: 'Обзорные и продающие ролики', instagram: [{ id: 'DTH6DVLDM-s', label: 'Reel 1' }, { id: 'DS4lfjWjNJp', label: 'Reel 2' }], youtube: [{ id: '6TodhymWsFQ', label: 'Shorts 1' }, { id: 'mhw1BUwW0XM', label: 'Shorts 2' }] },
+  { client: 'Витаминная крышка Booster Cap', format: 'Распаковка и обзорные ролики', instagram: [{ id: 'DSup4OVjRYf', label: 'Reel 1' }, { id: 'DTaSfgqDRdy', label: 'Reel 2' }], youtube: [{ id: 'gLKgolZi_do', label: 'Shorts 1' }, { id: '_KbGGubr6_Q', label: 'Shorts 2' }], vimeo: [] as { id: string; label: string }[] },
+  { client: 'Бренд одежды Relisme', format: 'Распаковка и обзорные ролики', instagram: [{ id: 'DTdG-HzAtTV', label: 'Reel 1' }], youtube: [{ id: 'BRA7KSecCYQ', label: 'Shorts 1' }], vimeo: [] as { id: string; label: string }[] },
+  { client: 'Агентство недвижимости, Санкт-Петербург', format: 'Обзорные и продающие ролики', instagram: [], youtube: [], vimeo: [] as { id: string; label: string }[] },
+  { client: 'Клиника, Дубай', format: 'Обзорные и продающие ролики', instagram: [], youtube: [], vimeo: [] as { id: string; label: string }[] },
+  { client: 'Ресторан, Дубай', format: 'Обзорные и продающие ролики', instagram: [], youtube: [], vimeo: [] as { id: string; label: string }[] },
 ]
 
 export type VideoExamplesSectionProps = {
@@ -21,6 +22,7 @@ export type VideoExamplesSectionProps = {
     format?: string
     instagramIds?: Array<{ id?: string; label?: string }>
     youtubeIds?: Array<{ id?: string; label?: string }>
+    vimeoIds?: Array<{ id?: string; label?: string }>
   }> | null
 }
 
@@ -30,7 +32,8 @@ export function VideoExamplesSection({ title, subtitle, items }: VideoExamplesSe
     format: p.format || '',
     instagram: (p.instagramIds || []).map(i => ({ id: i.id || '', label: i.label || '' })).filter(i => i.id),
     youtube: (p.youtubeIds || []).map(i => ({ id: i.id || '', label: i.label || '' })).filter(i => i.id),
-  })).filter(p => p.instagram.length || p.youtube.length) : DEFAULT_EXAMPLES
+    vimeo: (p.vimeoIds || []).map(i => ({ id: i.id || '', label: i.label || '' })).filter(i => i.id),
+  })).filter(p => p.instagram.length || p.youtube.length || p.vimeo.length) : DEFAULT_EXAMPLES
   return (
     <section className="section bg-neutral-50">
       <div className="container">
@@ -39,7 +42,7 @@ export function VideoExamplesSection({ title, subtitle, items }: VideoExamplesSe
             {title || 'Примеры работ'}
           </h2>
           <p className="text-lead max-w-2xl mx-auto text-neutral-600">
-            {subtitle || 'Реальные ролики наших клиентов: Instagram Reels и YouTube Shorts'}
+            {subtitle || 'Реальные ролики наших клиентов. Vimeo доступен в РФ.'}
           </p>
         </FadeInView>
 
@@ -73,6 +76,17 @@ export function VideoExamplesSection({ title, subtitle, items }: VideoExamplesSe
                         <span className="truncate">Shorts</span>
                       </div>
                       <YouTubeEmbed videoId={short.id} title={`${project.client} — ${short.label}`} />
+                    </div>
+                  </StaggerItem>
+                ))}
+                {project.vimeo?.map((v) => (
+                  <StaggerItem key={v.id} direction="up">
+                    <div className="space-y-1 sm:space-y-2 min-w-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-500 text-xs sm:text-sm truncate">
+                        <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="truncate">Vimeo</span>
+                      </div>
+                      <VimeoEmbed videoId={v.id} title={`${project.client} — ${v.label}`} />
                     </div>
                   </StaggerItem>
                 ))}

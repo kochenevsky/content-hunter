@@ -42,6 +42,16 @@ export const Footer: GlobalConfig = {
       ],
     },
     {
+      name: 'materials',
+      type: 'array',
+      label: 'Материалы (Презентация, Прайс и т.д.)',
+      admin: { description: 'Ссылки на документы в блоке «Материалы»' },
+      fields: [
+        { name: 'label', type: 'text', label: 'Текст', required: true, localized: true },
+        { name: 'link', type: 'text', label: 'Ссылка', required: true },
+      ],
+    },
+    {
       name: 'social',
       type: 'array',
       label: 'Социальные сети',

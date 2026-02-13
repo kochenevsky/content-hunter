@@ -34,6 +34,10 @@ export default async function HomePage() {
       <HeroSection
         headline={h?.hero?.headline}
         subheadline={h?.hero?.subheadline}
+        primaryButtonText={h?.hero?.primaryButtonText}
+        primaryButtonLink={h?.hero?.primaryButtonLink}
+        secondaryButtonText={h?.hero?.secondaryButtonText}
+        secondaryButtonLink={h?.hero?.secondaryButtonLink}
         stats={h?.hero?.stats}
         cycleWords={h?.hero?.cycleWords}
       />
@@ -79,6 +83,8 @@ export default async function HomePage() {
         text={h?.cta?.text}
         guarantees={h?.cta?.guarantees}
         primaryButtonText={h?.cta?.primaryButtonText}
+        primaryButtonLink={h?.cta?.primaryButtonLink}
+        secondaryButtonText={h?.cta?.secondaryButtonText}
         telegramLink={h?.cta?.telegramLink}
       />
     </>

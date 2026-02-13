@@ -16,6 +16,10 @@ export const HomePage: GlobalConfig = {
       fields: [
         { name: 'headline', type: 'text', label: 'Заголовок', localized: true },
         { name: 'subheadline', type: 'textarea', label: 'Подзаголовок', localized: true },
+        { name: 'primaryButtonText', type: 'text', label: 'Кнопка 1 (текст)', localized: true },
+        { name: 'primaryButtonLink', type: 'text', label: 'Кнопка 1 (ссылка)', admin: { description: 'Например: /contact' }},
+        { name: 'secondaryButtonText', type: 'text', label: 'Кнопка 2 (текст)', localized: true },
+        { name: 'secondaryButtonLink', type: 'text', label: 'Кнопка 2 (ссылка)', admin: { description: 'Например: /cases' }},
         { name: 'stats', type: 'array', label: 'Статистика', fields: [
           { name: 'value', type: 'text', label: 'Значение (50)' },
           { name: 'suffix', type: 'text', label: 'Суффикс (+)' },
@@ -98,6 +102,10 @@ export const HomePage: GlobalConfig = {
             { name: 'id', type: 'text', label: 'ID' },
             { name: 'label', type: 'text', label: 'Подпись' },
           ]},
+          { name: 'vimeoIds', type: 'array', label: 'Vimeo (для РФ)', admin: { description: 'Работает в РФ, в отличие от YouTube/Instagram' }, fields: [
+            { name: 'id', type: 'text', label: 'ID (из vimeo.com/ID)' },
+            { name: 'label', type: 'text', label: 'Подпись' },
+          ]},
         ]},
       ],
     },
@@ -139,8 +147,10 @@ export const HomePage: GlobalConfig = {
         { name: 'headlineHighlight', type: 'text', label: 'Выделение', localized: true },
         { name: 'text', type: 'textarea', label: 'Текст', localized: true },
         { name: 'guarantees', type: 'array', label: 'Гарантии', fields: [{ name: 'item', type: 'text', localized: true }]},
-        { name: 'primaryButtonText', type: 'text', label: 'Текст кнопки', localized: true },
-        { name: 'telegramLink', type: 'text', label: 'Ссылка Telegram' },
+        { name: 'primaryButtonText', type: 'text', label: 'Кнопка 1 (текст)', localized: true },
+        { name: 'primaryButtonLink', type: 'text', label: 'Кнопка 1 (ссылка)', admin: { description: 'Например: /contact' }},
+        { name: 'secondaryButtonText', type: 'text', label: 'Кнопка 2 (текст)', localized: true, admin: { description: 'Например: Написать в Telegram' }},
+        { name: 'telegramLink', type: 'text', label: 'Кнопка 2 (ссылка)', admin: { description: 'Ссылка Telegram, например: https://t.me/...' }},
       ],
     },
     {

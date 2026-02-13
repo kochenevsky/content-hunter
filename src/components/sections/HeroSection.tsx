@@ -21,6 +21,10 @@ const DEFAULT_CYCLE_WORDS = ['под ключ', 'с гарантией', 'для
 export type HeroSectionProps = {
   headline?: string | null
   subheadline?: string | null
+  primaryButtonText?: string | null
+  primaryButtonLink?: string | null
+  secondaryButtonText?: string | null
+  secondaryButtonLink?: string | null
   stats?: Array<{ value?: number; suffix?: string; label?: string }> | null
   cycleWords?: Array<{ word?: string } | string> | null
   badge?: string | null
@@ -158,7 +162,7 @@ function CardStack() {
   )
 }
 
-export function HeroSection({ headline, subheadline, stats, cycleWords, badge }: HeroSectionProps = {}) {
+export function HeroSection({ headline, subheadline, primaryButtonText, primaryButtonLink, secondaryButtonText, secondaryButtonLink, stats, cycleWords, badge }: HeroSectionProps = {}) {
   const statsList = stats?.length ? stats.map(s => {
     const v = s.value
     const num = typeof v === 'number' ? v : parseInt(String(v || '0'), 10)
@@ -227,23 +231,23 @@ export function HeroSection({ headline, subheadline, stats, cycleWords, badge }:
             >
               <MagneticButton strength={0.2}>
                 <Link
-                  href="/contact"
+                  href={primaryButtonLink || '/contact'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors relative group overflow-hidden"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <span className="relative flex items-center">
-                    Получить консультацию
+                    {primaryButtonText || 'Получить консультацию'}
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Link>
               </MagneticButton>
               <MagneticButton strength={0.15}>
                 <Link
-                  href="/cases"
+                  href={secondaryButtonLink || '/cases'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg border border-neutral-700 text-white hover:border-neutral-500 bg-transparent transition-colors"
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  Смотреть кейсы
+                  {secondaryButtonText || 'Смотреть кейсы'}
                 </Link>
               </MagneticButton>
             </motion.div>

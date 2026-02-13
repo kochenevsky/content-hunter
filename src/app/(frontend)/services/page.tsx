@@ -104,11 +104,11 @@ export default async function ServicesPage() {
               {hero?.subheadline || 'Разворачиваем инфраструктуру для массовой дистрибуции контента — от производства роликов до публикации на десятках аккаунтов. Не надеемся на вирусность — гарантируем результат.'}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button href="/contact" size="lg">
+              <Button href={hero?.primaryButtonLink || '/contact'} size="lg">
                 {hero?.primaryButtonText || 'Получить консультацию'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button href="/cases" variant="outline" size="lg" className="border-neutral-700 text-white hover:border-neutral-500">
+              <Button href={hero?.secondaryButtonLink || '/cases'} variant="outline" size="lg" className="border-neutral-700 text-white hover:border-neutral-500">
                 {hero?.secondaryButtonText || 'Смотреть кейсы'}
               </Button>
             </div>
@@ -258,11 +258,11 @@ export default async function ServicesPage() {
               {cta?.text || 'Получите бесплатную консультацию и узнайте, сколько просмотров и лидов вы можете получать ежемесячно.'}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" size="lg">
+              <Button href={cta?.primaryButtonLink || '/contact'} size="lg">
                 {cta?.primaryButtonText || 'Получить консультацию'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button href="/pricing" variant="outline" size="lg">
+              <Button href={cta?.secondaryButtonLink || '/pricing'} variant="outline" size="lg">
                 {cta?.secondaryButtonText || 'Смотреть тарифы'}
               </Button>
             </div>

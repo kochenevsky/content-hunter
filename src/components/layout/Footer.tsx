@@ -10,8 +10,8 @@ const defaultNavigation = [
   { name: 'FAQ', href: '/faq' },
 ]
 
-// Ссылки из брифа (документ Content Hunter)
-const materialsFromBrief = [
+// Фоллбэк для материалов
+const defaultMaterials = [
   { name: 'Презентация', href: 'https://gamma.app/docs/Content-Hunter-20-ta6xnap4ulyonku?mode=doc', icon: Presentation },
   { name: 'Прайс и кейсы', href: 'https://docs.google.com/spreadsheets/d/1axwH_4ByTRGrBneCOP18ARJgsJNqXnzzxBXLdTFph9s/edit?gid=1037848601', icon: FileSpreadsheet },
 ]
@@ -25,6 +25,7 @@ interface FooterProps {
   data?: {
     description?: string
     navigation?: Array<{ label: string; link: string }>
+    materials?: Array<{ label: string; link: string }>
     social?: Array<{ platform: string; url: string }>
     copyright?: string
   } | null
@@ -80,13 +81,17 @@ export function Footer({ data }: FooterProps) {
             </ul>
           </div>
 
-          {/* Материалы из брифа */}
+          {/* Материалы (из админки или фоллбэк) */}
           <div>
             <h4 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">
               Материалы
             </h4>
             <ul className="space-y-3">
-              {materialsFromBrief.map((item) => {
+              {(data?.materials?.length ? data.materials.map((item, i) => ({
+                name: item.label,
+                href: item.link,
+                icon: defaultMaterials[i]?.icon ?? FileSpreadsheet,
+              })) : defaultMaterials).map((item) => {
                 const Icon = item.icon
                 return (
                   <li key={item.name}>

@@ -862,6 +862,16 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Ссылки на документы в блоке «Материалы»
+   */
+  materials?:
+    | {
+        label: string;
+        link: string;
+        id?: string | null;
+      }[]
+    | null;
   social?:
     | {
         platform?: ('telegram' | 'instagram' | 'youtube' | 'tiktok' | 'whatsapp') | null;
@@ -918,6 +928,16 @@ export interface HomePage {
   hero?: {
     headline?: string | null;
     subheadline?: string | null;
+    primaryButtonText?: string | null;
+    /**
+     * Например: /contact
+     */
+    primaryButtonLink?: string | null;
+    secondaryButtonText?: string | null;
+    /**
+     * Например: /cases
+     */
+    secondaryButtonLink?: string | null;
     stats?:
       | {
           value?: string | null;
@@ -1005,6 +1025,15 @@ export interface HomePage {
                 label?: string | null;
               }[]
             | null;
+          /**
+           * Работает в РФ, в отличие от YouTube/Instagram
+           */
+          vimeoIds?:
+            | {
+                id?: string | null;
+                label?: string | null;
+              }[]
+            | null;
           id?: string | null;
         }[]
       | null;
@@ -1055,6 +1084,17 @@ export interface HomePage {
         }[]
       | null;
     primaryButtonText?: string | null;
+    /**
+     * Например: /contact
+     */
+    primaryButtonLink?: string | null;
+    /**
+     * Например: Написать в Telegram
+     */
+    secondaryButtonText?: string | null;
+    /**
+     * Ссылка Telegram, например: https://t.me/...
+     */
     telegramLink?: string | null;
   };
   meta?: {
@@ -1076,7 +1116,15 @@ export interface ServicesPage {
     headlineHighlight?: string | null;
     subheadline?: string | null;
     primaryButtonText?: string | null;
+    /**
+     * Например: /contact
+     */
+    primaryButtonLink?: string | null;
     secondaryButtonText?: string | null;
+    /**
+     * Например: /cases
+     */
+    secondaryButtonLink?: string | null;
   };
   whatIs?: {
     title?: string | null;
@@ -1148,7 +1196,15 @@ export interface ServicesPage {
     headlineHighlight?: string | null;
     text?: string | null;
     primaryButtonText?: string | null;
+    /**
+     * Например: /contact
+     */
+    primaryButtonLink?: string | null;
     secondaryButtonText?: string | null;
+    /**
+     * Например: /pricing
+     */
+    secondaryButtonLink?: string | null;
   };
   meta?: {
     title?: string | null;
@@ -1318,6 +1374,13 @@ export interface FooterSelect<T extends boolean = true> {
         link?: T;
         id?: T;
       };
+  materials?:
+    | T
+    | {
+        label?: T;
+        link?: T;
+        id?: T;
+      };
   social?:
     | T
     | {
@@ -1373,6 +1436,10 @@ export interface HomePageSelect<T extends boolean = true> {
     | {
         headline?: T;
         subheadline?: T;
+        primaryButtonText?: T;
+        primaryButtonLink?: T;
+        secondaryButtonText?: T;
+        secondaryButtonLink?: T;
         stats?:
           | T
           | {
@@ -1471,6 +1538,12 @@ export interface HomePageSelect<T extends boolean = true> {
                     id?: T;
                     label?: T;
                   };
+              vimeoIds?:
+                | T
+                | {
+                    id?: T;
+                    label?: T;
+                  };
               id?: T;
             };
       };
@@ -1526,6 +1599,8 @@ export interface HomePageSelect<T extends boolean = true> {
               id?: T;
             };
         primaryButtonText?: T;
+        primaryButtonLink?: T;
+        secondaryButtonText?: T;
         telegramLink?: T;
       };
   meta?:
@@ -1551,7 +1626,9 @@ export interface ServicesPageSelect<T extends boolean = true> {
         headlineHighlight?: T;
         subheadline?: T;
         primaryButtonText?: T;
+        primaryButtonLink?: T;
         secondaryButtonText?: T;
+        secondaryButtonLink?: T;
       };
   whatIs?:
     | T
@@ -1633,7 +1710,9 @@ export interface ServicesPageSelect<T extends boolean = true> {
         headlineHighlight?: T;
         text?: T;
         primaryButtonText?: T;
+        primaryButtonLink?: T;
         secondaryButtonText?: T;
+        secondaryButtonLink?: T;
       };
   meta?:
     | T

@@ -1,6 +1,23 @@
 -- Применить в Supabase Dashboard → SQL Editor проекта feytgokjblyqzymadfym (production)
 -- Колонка analytics_custom_head_scripts (если её нет)
 ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS analytics_custom_head_scripts varchar;
+
+-- Кнопки hero/cta (home_page, services_page)
+ALTER TABLE home_page ADD COLUMN IF NOT EXISTS hero_primary_button_link varchar;
+ALTER TABLE home_page ADD COLUMN IF NOT EXISTS hero_secondary_button_link varchar;
+ALTER TABLE home_page ADD COLUMN IF NOT EXISTS cta_primary_button_link varchar;
+ALTER TABLE home_page ADD COLUMN IF NOT EXISTS cta_telegram_link varchar;
+ALTER TABLE home_page_locales ADD COLUMN IF NOT EXISTS hero_primary_button_text varchar;
+ALTER TABLE home_page_locales ADD COLUMN IF NOT EXISTS hero_secondary_button_text varchar;
+ALTER TABLE home_page_locales ADD COLUMN IF NOT EXISTS cta_secondary_button_text varchar;
+ALTER TABLE services_page ADD COLUMN IF NOT EXISTS hero_primary_button_link varchar;
+ALTER TABLE services_page ADD COLUMN IF NOT EXISTS hero_secondary_button_link varchar;
+ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_primary_button_link varchar;
+ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_secondary_button_link varchar;
+
+-- Footer materials (Презентация, Прайс)
+CREATE TABLE IF NOT EXISTS footer_materials (_order integer NOT NULL, _parent_id integer NOT NULL REFERENCES footer(id) ON DELETE CASCADE, id varchar PRIMARY KEY, link varchar NOT NULL);
+CREATE TABLE IF NOT EXISTS footer_materials_locales (label varchar NOT NULL, id serial PRIMARY KEY, _locale public._locales NOT NULL, _parent_id varchar NOT NULL REFERENCES footer_materials(id) ON DELETE CASCADE);
 -- Ссылка: https://supabase.com/dashboard/project/feytgokjblyqzymadfym/sql/new
 
 -- 1. Таблицы глобалов Главная, Услуги, О нас, Тарифы, FAQ
@@ -38,6 +55,7 @@ CREATE TABLE IF NOT EXISTS home_page_video_examples_items (_order integer NOT NU
 CREATE TABLE IF NOT EXISTS home_page_video_examples_items_locales (client varchar, format varchar, id serial PRIMARY KEY, _locale public._locales NOT NULL, _parent_id varchar NOT NULL REFERENCES home_page_video_examples_items(id) ON DELETE CASCADE);
 CREATE TABLE IF NOT EXISTS home_page_video_examples_items_instagram_ids (_order integer NOT NULL, _parent_id varchar NOT NULL REFERENCES home_page_video_examples_items(id) ON DELETE CASCADE, id varchar PRIMARY KEY, label varchar);
 CREATE TABLE IF NOT EXISTS home_page_video_examples_items_youtube_ids (_order integer NOT NULL, _parent_id varchar NOT NULL REFERENCES home_page_video_examples_items(id) ON DELETE CASCADE, id varchar PRIMARY KEY, label varchar);
+CREATE TABLE IF NOT EXISTS home_page_video_examples_items_vimeo_ids (_order integer NOT NULL, _parent_id varchar NOT NULL REFERENCES home_page_video_examples_items(id) ON DELETE CASCADE, id varchar PRIMARY KEY, label varchar);
 
 CREATE TABLE IF NOT EXISTS home_page_niches_items (_order integer NOT NULL, _parent_id integer NOT NULL REFERENCES home_page(id) ON DELETE CASCADE, id varchar PRIMARY KEY, icon varchar);
 CREATE TABLE IF NOT EXISTS home_page_niches_items_locales (name varchar, description varchar, id serial PRIMARY KEY, _locale public._locales NOT NULL, _parent_id varchar NOT NULL REFERENCES home_page_niches_items(id) ON DELETE CASCADE);
