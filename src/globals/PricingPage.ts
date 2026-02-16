@@ -26,6 +26,7 @@ export const PricingPage: GlobalConfig = {
         { name: 'headline', type: 'text', label: 'Заголовок', localized: true },
         { name: 'text', type: 'textarea', label: 'Текст', localized: true },
         { name: 'buttonText', type: 'text', label: 'Текст кнопки', localized: true },
+        { name: 'buttonLink', type: 'text', label: 'Ссылка кнопки', admin: { description: 'Например: /contact' }},
       ],
     },
     {

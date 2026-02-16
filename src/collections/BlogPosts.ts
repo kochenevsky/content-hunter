@@ -110,6 +110,19 @@ export const BlogPosts: CollectionConfig = {
       },
     },
     {
+      name: 'ctaText',
+      type: 'text',
+      label: 'Текст кнопки CTA',
+      admin: { description: 'В сайдбаре: «Получить консультацию»' },
+      localized: true,
+    },
+    {
+      name: 'ctaLink',
+      type: 'text',
+      label: 'Ссылка кнопки CTA',
+      admin: { description: 'Например: /contact' },
+    },
+    {
       name: 'published',
       type: 'checkbox',
       label: 'Опубликована',

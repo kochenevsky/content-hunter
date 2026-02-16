@@ -14,6 +14,15 @@ ALTER TABLE services_page ADD COLUMN IF NOT EXISTS hero_primary_button_link varc
 ALTER TABLE services_page ADD COLUMN IF NOT EXISTS hero_secondary_button_link varchar;
 ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_primary_button_link varchar;
 ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_secondary_button_link varchar;
+ALTER TABLE pricing_page ADD COLUMN IF NOT EXISTS cta_button_link varchar;
+ALTER TABLE about_page ADD COLUMN IF NOT EXISTS cta_button_link varchar;
+ALTER TABLE faq_page ADD COLUMN IF NOT EXISTS hero_button_link varchar;
+ALTER TABLE faq_page ADD COLUMN IF NOT EXISTS cta_button_link varchar;
+ALTER TABLE pricing ADD COLUMN IF NOT EXISTS cta_link varchar;
+ALTER TABLE cases ADD COLUMN IF NOT EXISTS cta_link varchar;
+ALTER TABLE cases_locales ADD COLUMN IF NOT EXISTS cta_text varchar;
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS cta_link varchar;
+ALTER TABLE blog_posts_locales ADD COLUMN IF NOT EXISTS cta_text varchar;
 
 -- Footer materials (Презентация, Прайс)
 CREATE TABLE IF NOT EXISTS footer_materials (_order integer NOT NULL, _parent_id integer NOT NULL REFERENCES footer(id) ON DELETE CASCADE, id varchar PRIMARY KEY, link varchar NOT NULL);

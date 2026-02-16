@@ -39,6 +39,15 @@ async function ensureSchema(client: pg.PoolClient) {
     `ALTER TABLE services_page ADD COLUMN IF NOT EXISTS hero_secondary_button_link varchar`,
     `ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_primary_button_link varchar`,
     `ALTER TABLE services_page ADD COLUMN IF NOT EXISTS cta_secondary_button_link varchar`,
+    `ALTER TABLE pricing_page ADD COLUMN IF NOT EXISTS cta_button_link varchar`,
+    `ALTER TABLE about_page ADD COLUMN IF NOT EXISTS cta_button_link varchar`,
+    `ALTER TABLE faq_page ADD COLUMN IF NOT EXISTS hero_button_link varchar`,
+    `ALTER TABLE faq_page ADD COLUMN IF NOT EXISTS cta_button_link varchar`,
+    `ALTER TABLE pricing ADD COLUMN IF NOT EXISTS cta_link varchar`,
+    `ALTER TABLE cases ADD COLUMN IF NOT EXISTS cta_link varchar`,
+    `ALTER TABLE cases_locales ADD COLUMN IF NOT EXISTS cta_text varchar`,
+    `ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS cta_link varchar`,
+    `ALTER TABLE blog_posts_locales ADD COLUMN IF NOT EXISTS cta_text varchar`,
   ]
   for (const q of alters) {
     try { await client.query(q) } catch (e: any) { if (e.code !== '42701') throw e }
@@ -55,10 +64,10 @@ async function ensureSchema(client: pg.PoolClient) {
   `)
   try {
     await client.query(`ALTER TABLE footer_materials ADD CONSTRAINT footer_materials_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES footer(id) ON DELETE CASCADE`)
-  } catch (e: any) { if (e.code !== '42P07') throw e }
+  } catch (e: any) { if (e.code !== '42P07' && e.code !== '42710') throw e }
   try {
     await client.query(`ALTER TABLE footer_materials_locales ADD CONSTRAINT footer_materials_locales_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES footer_materials(id) ON DELETE CASCADE`)
-  } catch (e: any) { if (e.code !== '42P07') throw e }
+  } catch (e: any) { if (e.code !== '42P07' && e.code !== '42710') throw e }
 }
 
 async function main() {

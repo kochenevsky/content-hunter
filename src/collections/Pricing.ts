@@ -104,6 +104,12 @@ export const Pricing: CollectionConfig = {
       localized: true,
     },
     {
+      name: 'ctaLink',
+      type: 'text',
+      label: 'Ссылка кнопки',
+      admin: { description: 'Например: /contact' },
+    },
+    {
       name: 'order',
       type: 'number',
       label: 'Порядок',

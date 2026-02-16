@@ -199,8 +199,8 @@ export default async function CaseDetailPage({ params }: Props) {
                   <p className="text-neutral-400 mb-6">
                     Получите бесплатную консультацию и узнайте, как это может работать в вашей нише.
                   </p>
-                  <Button href="/contact" className="w-full">
-                    Получить консультацию
+                  <Button href={caseData.ctaLink || '/contact'} className="w-full">
+                    {typeof caseData.ctaText === 'string' ? caseData.ctaText : (caseData.ctaText as Record<string, string> | null)?.ru || 'Получить консультацию'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>

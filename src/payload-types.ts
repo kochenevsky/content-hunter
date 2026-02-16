@@ -332,6 +332,14 @@ export interface Case {
         id?: string | null;
       }[]
     | null;
+  /**
+   * В сайдбаре: «Получить консультацию»
+   */
+  ctaText?: string | null;
+  /**
+   * Например: /contact
+   */
+  ctaLink?: string | null;
   published?: boolean | null;
   order?: number | null;
   updatedAt: string;
@@ -365,6 +373,14 @@ export interface BlogPost {
   } | null;
   author?: (number | null) | Team;
   publishedAt?: string | null;
+  /**
+   * В сайдбаре: «Получить консультацию»
+   */
+  ctaText?: string | null;
+  /**
+   * Например: /contact
+   */
+  ctaLink?: string | null;
   published?: boolean | null;
   meta?: {
     title?: string | null;
@@ -422,6 +438,10 @@ export interface Pricing {
     | null;
   isPopular?: boolean | null;
   ctaText?: string | null;
+  /**
+   * Например: /contact
+   */
+  ctaLink?: string | null;
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -710,6 +730,8 @@ export interface CasesSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  ctaText?: T;
+  ctaLink?: T;
   published?: T;
   order?: T;
   updatedAt?: T;
@@ -728,6 +750,8 @@ export interface BlogPostsSelect<T extends boolean = true> {
   content?: T;
   author?: T;
   publishedAt?: T;
+  ctaText?: T;
+  ctaLink?: T;
   published?: T;
   meta?:
     | T
@@ -757,6 +781,7 @@ export interface PricingSelect<T extends boolean = true> {
       };
   isPopular?: T;
   ctaText?: T;
+  ctaLink?: T;
   order?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1275,6 +1300,10 @@ export interface AboutPage {
     headline?: string | null;
     text?: string | null;
     buttonText?: string | null;
+    /**
+     * Например: /contact
+     */
+    buttonLink?: string | null;
   };
   meta?: {
     title?: string | null;
@@ -1298,6 +1327,10 @@ export interface PricingPage {
     headline?: string | null;
     text?: string | null;
     buttonText?: string | null;
+    /**
+     * Например: /contact
+     */
+    buttonLink?: string | null;
   };
   meta?: {
     title?: string | null;
@@ -1318,11 +1351,19 @@ export interface FaqPage {
     headlineHighlight?: string | null;
     subheadline?: string | null;
     buttonText?: string | null;
+    /**
+     * Например: #questions или /contact
+     */
+    buttonLink?: string | null;
   };
   cta?: {
     headline?: string | null;
     text?: string | null;
     buttonText?: string | null;
+    /**
+     * Например: /contact
+     */
+    buttonLink?: string | null;
   };
   categories?:
     | {
@@ -1799,6 +1840,7 @@ export interface AboutPageSelect<T extends boolean = true> {
         headline?: T;
         text?: T;
         buttonText?: T;
+        buttonLink?: T;
       };
   meta?:
     | T
@@ -1828,6 +1870,7 @@ export interface PricingPageSelect<T extends boolean = true> {
         headline?: T;
         text?: T;
         buttonText?: T;
+        buttonLink?: T;
       };
   meta?:
     | T
@@ -1852,6 +1895,7 @@ export interface FaqPageSelect<T extends boolean = true> {
         headlineHighlight?: T;
         subheadline?: T;
         buttonText?: T;
+        buttonLink?: T;
       };
   cta?:
     | T
@@ -1859,6 +1903,7 @@ export interface FaqPageSelect<T extends boolean = true> {
         headline?: T;
         text?: T;
         buttonText?: T;
+        buttonLink?: T;
       };
   categories?:
     | T

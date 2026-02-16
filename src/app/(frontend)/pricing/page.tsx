@@ -108,11 +108,11 @@ export default async function PricingPage() {
 
                 {/* CTA */}
                 <Button
-                  href="/contact"
+                  href={plan.ctaLink || '/contact'}
                   variant={plan.isPopular ? 'primary' : 'outline'}
                   className="w-full"
                 >
-                  Выбрать тариф
+                  {plan.ctaText || 'Выбрать тариф'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -175,7 +175,7 @@ export default async function PricingPage() {
             <p className="text-xl text-neutral-600 mb-10">
               {cta?.text || 'Получите бесплатную консультацию и расчёт под ваш проект.'}
             </p>
-            <Button href="/contact" size="lg">
+            <Button href={cta?.buttonLink || '/contact'} size="lg">
               {cta?.buttonText || 'Получить консультацию'}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>

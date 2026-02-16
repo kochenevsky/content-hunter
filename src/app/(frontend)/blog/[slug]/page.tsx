@@ -229,8 +229,8 @@ export default async function BlogPostPage({ params }: Props) {
                   <p className="text-neutral-400 mb-6">
                     Получите бесплатную консультацию и узнайте, как это может работать в вашей нише.
                   </p>
-                  <Button href="/contact" className="w-full">
-                    Получить консультацию
+                  <Button href={(post as any).ctaLink || '/contact'} className="w-full">
+                    {typeof (post as any).ctaText === 'string' ? (post as any).ctaText : ((post as any).ctaText as Record<string, string> | null)?.ru || 'Получить консультацию'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
@@ -272,8 +272,8 @@ export default async function BlogPostPage({ params }: Props) {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Все статьи
             </Button>
-            <Button href="/contact">
-              Получить консультацию
+            <Button href={(post as any).ctaLink || '/contact'}>
+              {typeof (post as any).ctaText === 'string' ? (post as any).ctaText : ((post as any).ctaText as Record<string, string> | null)?.ru || 'Получить консультацию'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>

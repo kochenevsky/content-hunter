@@ -18,6 +18,7 @@ export const FAQPage: GlobalConfig = {
         { name: 'headlineHighlight', type: 'text', label: 'Выделение', localized: true },
         { name: 'subheadline', type: 'textarea', label: 'Подзаголовок', localized: true },
         { name: 'buttonText', type: 'text', label: 'Текст кнопки', localized: true },
+        { name: 'buttonLink', type: 'text', label: 'Ссылка кнопки', admin: { description: 'Например: #questions или /contact' }},
       ],
     },
     {
@@ -28,6 +29,7 @@ export const FAQPage: GlobalConfig = {
         { name: 'headline', type: 'text', label: 'Заголовок', localized: true },
         { name: 'text', type: 'textarea', label: 'Текст', localized: true },
         { name: 'buttonText', type: 'text', label: 'Текст кнопки', localized: true },
+        { name: 'buttonLink', type: 'text', label: 'Ссылка кнопки', admin: { description: 'Например: /contact' }},
       ],
     },
     {

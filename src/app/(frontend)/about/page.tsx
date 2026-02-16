@@ -223,7 +223,7 @@ export default async function AboutPage() {
             <p className="text-xl text-neutral-600 mb-10">
               {cta?.text || 'Получите бесплатную консультацию и узнайте, как мы можем помочь вашему бизнесу.'}
             </p>
-            <Button href="/contact" size="lg">
+            <Button href={cta?.buttonLink || '/contact'} size="lg">
               {cta?.buttonText || 'Получить консультацию'}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>

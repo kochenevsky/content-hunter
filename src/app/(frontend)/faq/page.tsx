@@ -81,7 +81,7 @@ export default async function FAQPage() {
             <p className="text-xl text-neutral-400 mb-10">
               {cta?.text || 'Получите бесплатную консультацию и мы ответим на все ваши вопросы.'}
             </p>
-            <Button href="/contact" size="lg">
+            <Button href={cta?.buttonLink || '/contact'} size="lg">
               {cta?.buttonText || 'Получить консультацию'}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
