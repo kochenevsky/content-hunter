@@ -1,7 +1,6 @@
 /**
- * Одноразовый сид глобалов в production.
+ * Сид глобалов в production (home-page и др.).
  * Вызов: GET /api/seed-home?secret=YOUR_SEED_SECRET
- * В Vercel env добавьте SEED_SECRET.
  */
 import { NextResponse } from 'next/server'
 import pg from 'pg'
@@ -33,6 +32,17 @@ export async function GET(request: Request) {
   const pool = new pg.Pool(parseDbConfig())
   const client = await pool.connect()
   try {
+    // 0. ensureSchema — колонки для кнопок (на случай если миграции не применялись)
+    const alters = [
+      'home_page:hero_primary_button_link', 'home_page:hero_secondary_button_link', 'home_page:cta_primary_button_link', 'home_page:cta_telegram_link',
+      'home_page_locales:hero_primary_button_text', 'home_page_locales:hero_secondary_button_text', 'home_page_locales:cta_secondary_button_text',
+    ]
+    for (const a of alters) {
+      const [t, c] = a.split(':')
+      try { await client.query(`ALTER TABLE ${t} ADD COLUMN IF NOT EXISTS ${c} varchar`) } catch (e: any) { if (e.code !== '42701') throw e }
+    }
+
+    // 1. Создаём родительские записи глобалов
     for (const t of ['home_page', 'services_page', 'about_page', 'pricing_page', 'faq_page']) {
       try {
         await client.query(`INSERT INTO ${t} (id) SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM ${t} WHERE id = 1)`)
@@ -40,7 +50,53 @@ export async function GET(request: Request) {
         if (e.code !== '23505') throw e
       }
     }
-    return NextResponse.json({ ok: true, message: 'Глобалы созданы' })
+
+    const homeId = 1
+    // 2. home_page_locales — Payload требует хотя бы одну locale-строку для отображения формы
+    const locCheck = await client.query(
+      `SELECT 1 FROM home_page_locales WHERE _locale = 'ru'::_locales AND _parent_id = $1`,
+      [homeId]
+    )
+    if (locCheck.rowCount === 0) {
+      const localeRows = [
+        'Контент-завод для бизнеса',
+        'Разворачиваем систему массовой дистрибуции коротких видео.',
+        'Почему ваш SMM не приносит результатов',
+        'Контент перестал быть дефицитом...',
+        'Холодная математика', 'вместо надежды',
+        '50 роликов × 20 аккаунтов = 1000 публикаций в месяц',
+        'Вместо лотереи — производство.',
+        'Как работает контент-завод', 'Полный цикл',
+        'Примеры работ', 'Реальные ролики',
+        'С кем мы работаем', 'B2C-бизнес',
+        'Чем мы отличаемся', 'Content Hunter — это не SMM-агентство.',
+        'Готовы запустить', 'контент-завод?',
+        'Получите бесплатный аудит и стратегию.',
+        'Получить консультацию',
+        'Получить консультацию', 'Смотреть кейсы', 'Написать в Telegram',
+      ]
+      await client.query(`
+        INSERT INTO home_page_locales (
+          hero_headline, hero_subheadline, problem_title, problem_text,
+          solution_title, solution_title_highlight, solution_formula, solution_text,
+          how_it_works_title, how_it_works_subtitle,
+          video_examples_title, video_examples_subtitle,
+          niches_title, niches_subtitle,
+          comparison_title, comparison_subtitle,
+          cta_headline, cta_headline_highlight, cta_text, cta_primary_button_text,
+          hero_primary_button_text, hero_secondary_button_text, cta_secondary_button_text,
+          _locale, _parent_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, 'ru'::_locales, $24)
+      `, [...localeRows, homeId])
+    }
+
+    // 3. Обновляем home_page (ссылки кнопок)
+    await client.query(
+      `UPDATE home_page SET hero_primary_button_link='/contact', hero_secondary_button_link='/cases', cta_primary_button_link='/contact', cta_telegram_link='https://t.me/contenthunter_bot' WHERE id=$1`,
+      [homeId]
+    )
+
+    return NextResponse.json({ ok: true, message: 'home-page и locales готовы' })
   } catch (error) {
     console.error('seed-home error:', error)
     return NextResponse.json({ error: String(error) }, { status: 500 })
