@@ -77,6 +77,11 @@ async function main() {
     await ensureSchema(client)
     const homeId = 1
 
+    // Глобалы — создаём строки если нет (Payload требует хотя бы 1 запись для каждого)
+    for (const t of ['home_page', 'services_page', 'about_page', 'pricing_page', 'faq_page']) {
+      try { await client.query(`INSERT INTO ${t} (id) SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM ${t} WHERE id = 1)`) } catch (e: any) { if (e.code !== '23505') throw e }
+    }
+
     // home_page_locales — основной контент для локали ru (update or insert)
     await client.query(`UPDATE home_page SET hero_primary_button_link='/contact', hero_secondary_button_link='/cases', cta_primary_button_link='/contact', cta_telegram_link='https://t.me/contenthunter_bot' WHERE id=$1`, [homeId])
     const localeRows = ['Контент-завод для бизнеса',
