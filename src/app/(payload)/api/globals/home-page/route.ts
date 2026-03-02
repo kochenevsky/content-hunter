@@ -1,25 +1,23 @@
 /**
- * Обходной маршрут для home-page: подставляем id в тело запроса до передачи в Payload,
- * иначе при сохранении из админки приходит 400 "The following field is invalid: id".
- * Контекст с params.slug нужен, иначе Payload возвращает 404 "Route not found".
+ * Обходной маршрут для home-page: подставляем id в тело и вызываем операцию обновления напрямую.
+ * Иначе при сохранении из админки возможны 400 "invalid id" или 500 при переадресации в REST.
  */
 import config from '@payload-config'
 import {
+  addDataAndFileToRequest,
+  createPayloadRequest,
+  getPayload,
+  updateOperationGlobal,
+  sanitizePopulateParam,
+  sanitizeSelectParam,
+} from 'payload'
+import {
   REST_GET,
   REST_OPTIONS,
-  REST_PATCH,
-  REST_POST,
-  REST_PUT,
 } from '@payloadcms/next/routes'
 
 const GET = REST_GET(config)
 const OPTIONS = REST_OPTIONS(config)
-const PATCH_ORIG = REST_PATCH(config)
-const POST_ORIG = REST_POST(config)
-const PUT_ORIG = REST_PUT(config)
-
-/** Контекст как у [...slug] для /api/globals/home-page */
-const PAYLOAD_CTX = { params: Promise.resolve({ slug: ['globals', 'home-page'] }) }
 
 function ensureIdInBody(body: unknown): unknown {
   if (body == null || typeof body !== 'object') return body
@@ -32,44 +30,99 @@ function ensureIdInBody(body: unknown): unknown {
   return out
 }
 
-async function withFixedBody(
-  request: Request,
-  handler: (req: Request, ctx: { params: Promise<Record<string, string | string[]>> }) => Promise<Response>,
-): Promise<Response> {
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return handler(request, PAYLOAD_CTX)
-  }
-  const fixed = ensureIdInBody(body)
-  const newRequest = new Request(request.url, {
-    method: request.method,
-    headers: request.headers,
-    body: JSON.stringify(fixed),
-  })
-  return handler(newRequest, PAYLOAD_CTX)
-}
-
 export { GET, OPTIONS }
 
 export async function PATCH(
   request: Request,
   _ctx: { params: Promise<Record<string, string | string[]>> },
 ) {
-  return withFixedBody(request, PATCH_ORIG)
+  return handleUpdate(request)
 }
 
 export async function POST(
   request: Request,
   _ctx: { params: Promise<Record<string, string | string[]>> },
 ) {
-  return withFixedBody(request, POST_ORIG)
+  return handleUpdate(request)
 }
 
 export async function PUT(
   request: Request,
   _ctx: { params: Promise<Record<string, string | string[]>> },
 ) {
-  return withFixedBody(request, PUT_ORIG)
+  return handleUpdate(request)
+}
+
+async function handleUpdate(request: Request): Promise<Response> {
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    body = { id: 1 }
+  }
+  const fixed = ensureIdInBody(body) as Record<string, unknown>
+
+  const newRequest = new Request(request.url, {
+    method: request.method,
+    headers: request.headers,
+    body: JSON.stringify(fixed),
+  })
+
+  try {
+    const req = await createPayloadRequest({
+      request: newRequest,
+      config,
+      canSetHeaders: true,
+    })
+    req.routeParams = { global: 'home-page' }
+
+    await addDataAndFileToRequest(req)
+    if (req.data == null) req.data = fixed
+
+    const globalConfig = req.payload.globals.config.find(
+      (c: { slug: string }) => c.slug === 'home-page',
+    )
+    if (!globalConfig) {
+      return Response.json(
+        { message: 'Global home-page not found' },
+        { status: 404 },
+      )
+    }
+
+    const depthParam = req.searchParams?.get('depth')
+    const depth =
+      depthParam != null && depthParam !== '' && !Number.isNaN(Number(depthParam))
+        ? Number(depthParam)
+        : undefined
+
+    const result = await updateOperationGlobal({
+      slug: 'home-page',
+      data: req.data,
+      req,
+      globalConfig,
+      depth,
+      draft: req.searchParams?.get('draft') === 'true',
+      autosave: req.searchParams?.get('autosave') === 'true',
+      publishAllLocales: req.searchParams?.get('publishAllLocales') === 'true',
+      unpublishAllLocales:
+        req.searchParams?.get('unpublishAllLocales') === 'true',
+      populate: sanitizePopulateParam(req.query?.populate),
+      select: sanitizeSelectParam(req.query?.select),
+      publishSpecificLocale:
+        typeof req.query?.publishSpecificLocale === 'string'
+          ? req.query.publishSpecificLocale
+          : undefined,
+    })
+
+    const message = req.t('general:updatedSuccessfully')
+    return Response.json({ message, result }, { status: 200 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    const stack = err instanceof Error ? err.stack : undefined
+    console.error('[home-page route]', err)
+    return Response.json(
+      { error: message, ...(stack && { stack }) },
+      { status: 500, headers: { 'X-Payload-Error': message } },
+    )
+  }
 }

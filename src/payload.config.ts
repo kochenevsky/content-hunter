@@ -187,6 +187,9 @@ export default buildConfig({
 
   secret: process.env.PAYLOAD_SECRET || 'default-secret-change-me-in-production',
 
+  // При 500 в админке в ответе будет реальная ошибка (для отладки). В проде можно включить PAYLOAD_DEBUG=true.
+  debug: process.env.PAYLOAD_DEBUG === 'true',
+
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
