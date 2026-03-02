@@ -211,7 +211,7 @@ git push -u origin main
 
 ### 7.4 Environment Variables в Vercel
 
-Добавить все переменные из `.env.local`:
+Добавить все переменные из `.env.local` в **Project Settings → Environment Variables**. Указать окружения **Production**, **Preview** и обязательно **включить использование при Build** (не только при Runtime), иначе при сборке не выполнится `ensure:settings` и в админке глобалы (home-page и др.) будут показывать «Nothing found».
 
 | Key | Value |
 |-----|-------|
@@ -240,6 +240,44 @@ git push -u origin main
 5. Добавить команду
 
 ## Возможные проблемы
+
+### В админке «Nothing found» на /admin/globals/home-page (и других глобалах)
+
+Причина: в БД нет ни одной записи для этого глобала. Часто так бывает, если при билде на Vercel не был доступен `DATABASE_URI` (переменные не включены для Build).
+
+**Решение — пошагово:**
+
+1. **Скопировать продовый DATABASE_URI**
+   - Зайти в [Supabase](https://supabase.com/dashboard) → свой проект → **Settings** (слева внизу) → **Database**.
+   - В блоке **Connection string** выбрать вкладку **URI**.
+   - Включить **Use connection pooling** (Transaction mode).
+   - Нажать **Copy** и скопировать строку (она начинается с `postgresql://`).
+   - Либо взять тот же URI из Vercel: проект → **Settings** → **Environment Variables** → скопировать значение `DATABASE_URI` для Production.
+
+2. **Вставить URI в проект**
+   - Открыть папку проекта на компьютере.
+   - Найти файл `.env.local` в корне (рядом с `package.json`). Если его нет — создать: New File → `.env.local`.
+   - Открыть `.env.local` и прописать (или заменить уже записанный):
+     ```
+     DATABASE_URI=сюда_вставить_скопированную_строку
+     ```
+   - Сохранить файл. Остальные переменные (`PAYLOAD_SECRET` и т.д.) можно не трогать.
+
+3. **Запустить команду**
+   - Открыть терминал (в Cursor: Terminal → New Terminal или `` Ctrl+` ``).
+   - Перейти в папку проекта: `cd путь/к/Content Hunter` (или просто быть уже в ней).
+   - Выполнить:
+     ```bash
+     pnpm ensure:settings
+     ```
+
+4. **Проверить результат**
+   - В терминале должны появиться строки вида `✓ home_page: добавлена строка`, `✓ home_page_locales: добавлена строка` и т.д.
+   - Открыть в браузере админку (например `https://contenthunter.ru/admin/globals/home-page`) и обновить страницу — «Nothing found» должно исчезнуть.
+
+Скрипт только добавляет недостающие строки, существующие данные не перезаписывает.
+
+Чтобы не повторялось: в Vercel для переменной `DATABASE_URI` включить использование при **Build** (в настройках переменной окружения).
 
 ### Ошибка подключения к БД
 

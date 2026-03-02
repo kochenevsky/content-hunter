@@ -32,7 +32,17 @@ export async function GET(request: Request) {
   const pool = new pg.Pool(parseDbConfig())
   const client = await pool.connect()
   try {
-    // 0. ensureSchema — колонки для кнопок (на случай если миграции не применялись)
+    // 0. ensureSchema — таблицы и колонки (если миграции не применялись)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS home_page_video_examples_items_vimeo_ids (
+        _order integer NOT NULL, _parent_id varchar NOT NULL, id varchar PRIMARY KEY, label varchar
+      )
+    `)
+    try { await client.query(`CREATE INDEX IF NOT EXISTS home_page_video_examples_items_vimeo_ids_order_idx ON home_page_video_examples_items_vimeo_ids (_order)`) } catch (_) {}
+    try { await client.query(`CREATE INDEX IF NOT EXISTS home_page_video_examples_items_vimeo_ids_parent_id_idx ON home_page_video_examples_items_vimeo_ids (_parent_id)`) } catch (_) {}
+    try {
+      await client.query(`ALTER TABLE home_page_video_examples_items_vimeo_ids ADD CONSTRAINT home_page_video_examples_items_vimeo_ids_parent_id_fk FOREIGN KEY (_parent_id) REFERENCES home_page_video_examples_items(id) ON DELETE CASCADE`)
+    } catch (e: any) { if (e.code !== '42P07' && e.code !== '42710') {} /* FK optional */ }
     const alters = [
       'home_page:hero_primary_button_link', 'home_page:hero_secondary_button_link', 'home_page:cta_primary_button_link', 'home_page:cta_telegram_link',
       'home_page_locales:hero_primary_button_text', 'home_page_locales:hero_secondary_button_text', 'home_page_locales:cta_secondary_button_text',
@@ -88,15 +98,14 @@ export async function GET(request: Request) {
           _locale, _parent_id
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, 'ru'::_locales, $24)
       `, [...localeRows, homeId])
+      // Ссылки кнопок задаём только при первой инициализации (когда только что создали locale)
+      await client.query(
+        `UPDATE home_page SET hero_primary_button_link=COALESCE(hero_primary_button_link,'/contact'), hero_secondary_button_link=COALESCE(hero_secondary_button_link,'/cases'), cta_primary_button_link=COALESCE(cta_primary_button_link,'/contact'), cta_telegram_link=COALESCE(cta_telegram_link,'https://t.me/contenthunter_bot') WHERE id=$1`,
+        [homeId]
+      )
     }
 
-    // 3. Обновляем home_page (ссылки кнопок)
-    await client.query(
-      `UPDATE home_page SET hero_primary_button_link='/contact', hero_secondary_button_link='/cases', cta_primary_button_link='/contact', cta_telegram_link='https://t.me/contenthunter_bot' WHERE id=$1`,
-      [homeId]
-    )
-
-    return NextResponse.json({ ok: true, message: 'home-page и locales готовы' })
+    return NextResponse.json({ ok: true, message: 'home-page и locales готовы (существующие данные не перезаписывались)' })
   } catch (error) {
     console.error('seed-home error:', error)
     return NextResponse.json({ error: String(error) }, { status: 500 })

@@ -6,6 +6,15 @@ export const HomePage: GlobalConfig = {
   label: 'Главная страница',
   access: { read: () => true },
   hooks: {
+    beforeValidate: [
+      ({ data, originalDoc }) => {
+        // Исправление бага Payload: при сохранении из админки id иногда приходит null → "The following field is invalid: id"
+        if (data && (data.id == null || data.id === undefined)) {
+          data.id = originalDoc?.id ?? 1
+        }
+        return data
+      },
+    ],
     afterChange: [async () => { await revalidateFrontend() }],
   },
   fields: [
