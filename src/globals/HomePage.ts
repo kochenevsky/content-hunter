@@ -1,5 +1,39 @@
 import type { GlobalConfig } from 'payload'
+import { randomBytes } from 'crypto'
 import { revalidateFrontend } from '@/lib/revalidate'
+
+function ensureArrayIds(obj: unknown): unknown {
+  if (obj == null) return obj
+  if (Array.isArray(obj)) {
+    const seen = new Set<string>()
+    return obj.map((item) => {
+      if (item && typeof item === 'object') {
+        const rest = { ...item } as Record<string, unknown>
+        if ('id' in rest) {
+          let id = rest.id
+          if (id == null || id === '' || (typeof id === 'string' && seen.has(id))) {
+            id = randomBytes(8).toString('hex')
+          }
+          seen.add(String(id))
+          rest.id = id
+        }
+        for (const key of Object.keys(rest)) {
+          rest[key] = ensureArrayIds(rest[key]) as never
+        }
+        return rest
+      }
+      return item
+    })
+  }
+  if (typeof obj === 'object') {
+    const out = { ...obj } as Record<string, unknown>
+    for (const key of Object.keys(out)) {
+      out[key] = ensureArrayIds(out[key]) as never
+    }
+    return out
+  }
+  return obj
+}
 
 export const HomePage: GlobalConfig = {
   slug: 'home-page',
@@ -8,10 +42,17 @@ export const HomePage: GlobalConfig = {
   hooks: {
     beforeValidate: [
       ({ data, originalDoc }) => {
-        // Исправление бага Payload: при сохранении из админки id иногда приходит null → "The following field is invalid: id"
-        if (data && (data.id == null || data.id === undefined)) {
-          data.id = originalDoc?.id ?? 1
+        if (!data) return data
+        // Корневой id глобала — иначе Payload возвращает 400 "field is invalid: id"
+        if (data.id == null || data.id === undefined) {
+          data.id = (originalDoc as { id?: number } | undefined)?.id ?? 1
         }
+        if (typeof data.id !== 'number') {
+          data.id = Number(data.id) || 1
+        }
+        // Уникальные id у элементов массивов (hero.stats, problem.items, videoExamples.items и т.д.)
+        const sanitized = ensureArrayIds(data) as typeof data
+        Object.assign(data, sanitized)
         return data
       },
     ],

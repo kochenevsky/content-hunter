@@ -241,6 +241,27 @@ git push -u origin main
 
 ## Возможные проблемы
 
+### Коммиты не запускают деплой на Vercel
+
+Если пуши в `main` не вызывают автоматический деплой:
+
+1. **Проверить привязку Git в Vercel**
+   - [Vercel Dashboard](https://vercel.com/dashboard) → проект **content-hunter** → **Settings** → **Git**.
+   - Должны быть: **Connected Git Repository** = `kochenevsky/content-hunter`, **Production Branch** = `main`, включено **Automatically deploy pushes**.
+   - Если репозиторий не подключён или «Not connected» — нажать **Connect Git Repository**, выбрать GitHub и репозиторий `content-hunter`.
+
+2. **Проверить Vercel GitHub App**
+   - На [GitHub](https://github.com/settings/installations) → **Applications** → **Vercel** → **Configure**.
+   - Убедиться, что репозиторий `content-hunter` в списке разрешённых (или «All repositories»).
+
+3. **Проверить webhook на GitHub**
+   - Репозиторий **content-hunter** → **Settings** → **Webhooks**. Должен быть webhook от Vercel (URL вида `https://api.vercel.com/...`). Если нет — отвязать и заново привязать Git в Vercel (п. 1).
+
+4. **Запасной вариант: Deploy Hook**
+   - В Vercel: проект → **Settings** → **Git** → **Deploy Hooks**. Создать hook (например, «GitHub main»), скопировать URL.
+   - В репозитории на GitHub: **Settings** → **Secrets and variables** → **Actions** → добавить секрет `VERCEL_DEPLOY_HOOK` с этим URL.
+   - В репозитории уже есть workflow `.github/workflows/deploy-on-push.yml`: при каждом push в `main` он вызывает этот hook и запускает деплой. После добавления секрета деплой будет срабатывать по коммитам даже при сломанной привязке Git.
+
 ### В админке «Nothing found» на /admin/globals/home-page (и других глобалах)
 
 Причина: в БД нет ни одной записи для этого глобала. Часто так бывает, если при билде на Vercel не был доступен `DATABASE_URI` (переменные не включены для Build).
