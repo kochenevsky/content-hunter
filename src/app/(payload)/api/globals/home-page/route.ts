@@ -67,12 +67,28 @@ async function handleUpdate(request: Request): Promise<Response> {
     body: JSON.stringify(fixed),
   })
 
+  let req: Awaited<ReturnType<typeof createPayloadRequest>>
   try {
-    const req = await createPayloadRequest({
+    req = await createPayloadRequest({
       request: newRequest,
       config,
       canSetHeaders: true,
     })
+  } catch (initErr) {
+    const msg = initErr instanceof Error ? initErr.message : String(initErr)
+    console.error('[home-page route] createPayloadRequest failed:', initErr)
+    return Response.json(
+      {
+        error: msg,
+        hint:
+          msg.includes('Postgres') || msg.includes('connect')
+            ? 'Проверьте DATABASE_URI в Vercel и доступность БД из сервера.'
+            : undefined,
+      },
+      { status: 500, headers: { 'X-Payload-Error': msg } },
+    )
+  }
+  try {
     req.routeParams = { global: 'home-page' }
     // Не вызываем addDataAndFileToRequest — в serverless повторное чтение body может давать 500. Используем уже распарсенные данные.
     req.data = deepCopyObjectSimple(fixed) as Record<string, unknown>
@@ -117,9 +133,13 @@ async function handleUpdate(request: Request): Promise<Response> {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     const stack = err instanceof Error ? err.stack : undefined
-    console.error('[home-page route]', err)
+    console.error('[home-page route] updateOperationGlobal failed:', err)
     return Response.json(
-      { error: message, ...(stack && { stack }) },
+      {
+        error: message,
+        ...(stack && { stack }),
+        hint: 'В Network → ответ запроса POST: смотрите поле error и заголовок X-Payload-Error.',
+      },
       { status: 500, headers: { 'X-Payload-Error': message } },
     )
   }

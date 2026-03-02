@@ -19,7 +19,8 @@
     "apply:prod": "NODE_OPTIONS='--dns-result-order=ipv4first' npx tsx scripts/apply-page-globals-to-prod.ts",
     "ensure:settings": "NODE_OPTIONS='--dns-result-order=ipv4first' npx tsx scripts/ensure-settings.ts",
     "seed:home:sql": "NODE_OPTIONS='--dns-result-order=ipv4first' npx tsx scripts/seed-home-sql.ts",
-    "test:home-save": "npx tsx scripts/test-home-global-save.ts"
+    "test:home-save": "npx tsx scripts/test-home-global-save.ts",
+    "test:home-route": "npx tsx scripts/test-home-page-route.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
