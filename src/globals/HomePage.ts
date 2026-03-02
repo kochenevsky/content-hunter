@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 import { randomBytes } from 'crypto'
 import { revalidateFrontend } from '@/lib/revalidate'
 
+/** Исправляет только пустые/дублирующие id в элементах массивов. Не трогает непустые id (могут быть content-id: Instagram, Vimeo и т.д.). */
 function ensureArrayIds(obj: unknown): unknown {
   if (obj == null) return obj
   if (Array.isArray(obj)) {
@@ -11,10 +12,12 @@ function ensureArrayIds(obj: unknown): unknown {
         const rest = { ...item } as Record<string, unknown>
         if ('id' in rest) {
           let id = rest.id
-          if (id == null || id === '' || (typeof id === 'string' && seen.has(id))) {
+          const isEmpty = id == null || id === ''
+          const isDuplicate = typeof id === 'string' && id.length > 0 && seen.has(id)
+          if (isEmpty || isDuplicate) {
             id = randomBytes(8).toString('hex')
           }
-          seen.add(String(id))
+          if (id != null && id !== '') seen.add(String(id))
           rest.id = id
         }
         for (const key of Object.keys(rest)) {
@@ -43,17 +46,16 @@ export const HomePage: GlobalConfig = {
     beforeValidate: [
       ({ data, originalDoc }) => {
         if (!data) return data
-        // Корневой id глобала — иначе Payload возвращает 400 "field is invalid: id"
-        if (data.id == null || data.id === undefined) {
-          data.id = (originalDoc as { id?: number } | undefined)?.id ?? 1
+        const originalId = (originalDoc as { id?: number } | undefined)?.id
+        let rootId: number = originalId ?? 1
+        if (data.id != null && data.id !== undefined) {
+          const n = Number(data.id)
+          if (!Number.isNaN(n)) rootId = n
         }
-        if (typeof data.id !== 'number') {
-          data.id = Number(data.id) || 1
-        }
-        // Уникальные id у элементов массивов (hero.stats, problem.items, videoExamples.items и т.д.)
-        const sanitized = ensureArrayIds(data) as typeof data
-        Object.assign(data, sanitized)
-        return data
+        // Возвращаем новый объект, чтобы валидация точно видела наши правки (Payload может не использовать мутацию)
+        const sanitized = ensureArrayIds({ ...data, id: rootId }) as typeof data
+        sanitized.id = rootId
+        return sanitized
       },
     ],
     afterChange: [async () => { await revalidateFrontend() }],
