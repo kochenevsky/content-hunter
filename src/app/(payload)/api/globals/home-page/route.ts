@@ -4,9 +4,8 @@
  */
 import config from '@payload-config'
 import {
-  addDataAndFileToRequest,
   createPayloadRequest,
-  getPayload,
+  deepCopyObjectSimple,
   updateOperationGlobal,
   sanitizePopulateParam,
   sanitizeSelectParam,
@@ -75,9 +74,8 @@ async function handleUpdate(request: Request): Promise<Response> {
       canSetHeaders: true,
     })
     req.routeParams = { global: 'home-page' }
-
-    await addDataAndFileToRequest(req)
-    if (req.data == null) req.data = fixed
+    // Не вызываем addDataAndFileToRequest — в serverless повторное чтение body может давать 500. Используем уже распарсенные данные.
+    req.data = deepCopyObjectSimple(fixed) as Record<string, unknown>
 
     const globalConfig = req.payload.globals.config.find(
       (c: { slug: string }) => c.slug === 'home-page',
@@ -97,7 +95,7 @@ async function handleUpdate(request: Request): Promise<Response> {
 
     const result = await updateOperationGlobal({
       slug: 'home-page',
-      data: req.data,
+      data: deepCopyObjectSimple(req.data) as Record<string, unknown>,
       req,
       globalConfig,
       depth,
