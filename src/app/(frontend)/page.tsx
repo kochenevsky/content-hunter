@@ -6,7 +6,8 @@ import { ProblemSection } from '@/components/sections/ProblemSection'
 import { SolutionSection } from '@/components/sections/SolutionSection'
 import { StatsSection } from '@/components/sections/StatsSection'
 
-export const revalidate = 60
+// Инвалидация по revalidatePath после сохранения в админке; 30 сек — запасной вариант
+export const revalidate = 30
 
 // Lazy load below-the-fold sections
 const VideoExamplesSection = dynamic(() => import('@/components/sections/VideoExamplesSection').then(m => ({ default: m.VideoExamplesSection })), { ssr: true })

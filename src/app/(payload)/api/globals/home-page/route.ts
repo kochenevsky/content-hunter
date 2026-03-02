@@ -14,6 +14,7 @@ import {
   REST_GET,
   REST_OPTIONS,
 } from '@payloadcms/next/routes'
+import { revalidateFrontend } from '@/lib/revalidate'
 
 const GET = REST_GET(config)
 const OPTIONS = REST_OPTIONS(config)
@@ -127,6 +128,9 @@ async function handleUpdate(request: Request): Promise<Response> {
           ? req.query.publishSpecificLocale
           : undefined,
     })
+
+    // Явная инвалидация кэша главной (afterChange в глобале тоже вызывает revalidateFrontend, но в serverless дубль не помешает)
+    await revalidateFrontend()
 
     const message = req.t('general:updatedSuccessfully')
     return Response.json({ message, result }, { status: 200 })
