@@ -78,6 +78,15 @@ export const HomePage: GlobalConfig = {
           { name: 'label', type: 'text', label: 'Подпись' },
         ]},
         { name: 'cycleWords', type: 'array', label: 'Слова в цикле', fields: [{ name: 'word', type: 'text' }]},
+        {
+          name: 'videoCards',
+          type: 'array',
+          label: 'Видеокарусель (первый экран)',
+          admin: { description: 'YouTube Shorts: ID ролика из ссылки youtu.be/ID. Если пусто — используются дефолтные карточки.' },
+          fields: [
+            { name: 'videoId', type: 'text', label: 'YouTube Video ID', required: true, admin: { description: 'Например: gLKgolZi_do' }},
+          ],
+        },
       ],
     },
     {

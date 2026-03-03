@@ -41,6 +41,7 @@ export default async function HomePage() {
         secondaryButtonLink={h?.hero?.secondaryButtonLink}
         stats={h?.hero?.stats}
         cycleWords={h?.hero?.cycleWords}
+        videoCards={h?.hero?.videoCards}
       />
       <ProblemSection
         title={h?.problem?.title}

@@ -18,6 +18,16 @@ const DEFAULT_STATS = [
 
 const DEFAULT_CYCLE_WORDS = ['под ключ', 'с гарантией', 'для бизнеса', 'на масштаб']
 
+const DEFAULT_COLORS = [
+  'from-red-500/20 to-orange-500/20',
+  'from-blue-500/20 to-purple-500/20',
+  'from-emerald-500/20 to-teal-500/20',
+  'from-amber-500/20 to-yellow-500/20',
+  'from-pink-500/20 to-rose-500/20',
+  'from-violet-500/20 to-indigo-500/20',
+  'from-cyan-500/20 to-sky-500/20',
+]
+
 export type HeroSectionProps = {
   headline?: string | null
   subheadline?: string | null
@@ -28,31 +38,24 @@ export type HeroSectionProps = {
   stats?: Array<{ value?: number; suffix?: string; label?: string }> | null
   cycleWords?: Array<{ word?: string } | string> | null
   badge?: string | null
+  /** Карточки видеокарусели из админки (только YouTube Video ID). */
+  videoCards?: Array<{ videoId?: string; id?: string }> | null
 }
 
-// YouTube Shorts thumbnails from real client projects
-const videoCards = [
-  { id: 'gLKgolZi_do', client: 'Booster Cap', color: 'from-red-500/20 to-orange-500/20' },
-  { id: 'BRA7KSecCYQ', client: 'Relisme', color: 'from-blue-500/20 to-purple-500/20' },
-  { id: 'jcazjbT-n4w', client: 'Недвижимость СПб', color: 'from-emerald-500/20 to-teal-500/20' },
-  { id: 'djdXr49DC-Q', client: 'Клиника Дубай', color: 'from-amber-500/20 to-yellow-500/20' },
-  { id: '6TodhymWsFQ', client: 'Ресторан Дубай', color: 'from-pink-500/20 to-rose-500/20' },
-  { id: '_KbGGubr6_Q', client: 'Booster Cap', color: 'from-violet-500/20 to-indigo-500/20' },
-  { id: 'I-eocyqs368', client: 'Relisme', color: 'from-cyan-500/20 to-sky-500/20' },
-]
+type VideoCard = { id: string; client: string; color: string }
 
-function CardStack() {
+function CardStack({ cards }: { cards: VideoCard[] }) {
   const [current, setCurrent] = useState(0)
   const [playing, setPlaying] = useState<string | null>(null)
   const [paused, setPaused] = useState(false)
 
   useEffect(() => {
-    if (paused || playing) return
+    if (paused || playing || cards.length === 0) return
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % videoCards.length)
+      setCurrent((prev) => (prev + 1) % cards.length)
     }, 3000)
     return () => clearInterval(timer)
-  }, [paused, playing])
+  }, [paused, playing, cards.length])
 
   const handlePlay = useCallback((videoId: string) => {
     setPlaying(videoId)
@@ -66,8 +69,8 @@ function CardStack() {
 
   // Show 4 cards in the stack: current on top, next 3 behind. Render back-to-front so z-index stacks correctly.
   const visibleCards = Array.from({ length: 4 }, (_, i) => {
-    const index = (current + i) % videoCards.length
-    return { ...videoCards[index], stackIndex: i }
+    const index = (current + i) % cards.length
+    return { ...cards[index], stackIndex: i }
   })
   const cardsToRender = [...visibleCards].reverse() // не мутируем исходный массив
 
@@ -162,13 +165,29 @@ function CardStack() {
   )
 }
 
-export function HeroSection({ headline, subheadline, primaryButtonText, primaryButtonLink, secondaryButtonText, secondaryButtonLink, stats, cycleWords, badge }: HeroSectionProps = {}) {
+function normalizeVideoCards(raw: HeroSectionProps['videoCards']): VideoCard[] {
+  if (!raw?.length) return []
+  return raw
+    .map((item, i) => {
+      const id = ((item.videoId ?? item.id) ?? '').trim()
+      if (!id) return null
+      return {
+        id,
+        client: 'YouTube Shorts',
+        color: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+      }
+    })
+    .filter((c): c is VideoCard => c != null)
+}
+
+export function HeroSection({ headline, subheadline, primaryButtonText, primaryButtonLink, secondaryButtonText, secondaryButtonLink, stats, cycleWords, badge, videoCards }: HeroSectionProps = {}) {
   const statsList = stats?.length ? stats.map(s => {
     const v = s.value
     const num = typeof v === 'number' ? v : parseInt(String(v || '0'), 10)
     return { value: isNaN(num) ? 0 : num, suffix: String(s.suffix || ''), label: String(s.label || '') }
   }) : DEFAULT_STATS
   const words = cycleWords?.length ? cycleWords.map(w => (typeof w === 'string' ? w : (w as { word?: string }).word || '')).filter(Boolean) : DEFAULT_CYCLE_WORDS
+  const cards = normalizeVideoCards(videoCards)
 
   return (
     <section className="relative min-h-screen bg-neutral-950 text-white flex items-center overflow-hidden">
@@ -274,15 +293,17 @@ export function HeroSection({ headline, subheadline, primaryButtonText, primaryB
             </motion.div>
           </div>
 
-          {/* Right side — card stack */}
-          <motion.div
-            className="hidden lg:flex items-center justify-center flex-shrink-0"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: 0.15 }}
-          >
-            <CardStack />
-          </motion.div>
+          {/* Right side — card stack (только если в БД есть карточки) */}
+          {cards.length > 0 && (
+            <motion.div
+              className="hidden lg:flex items-center justify-center flex-shrink-0"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.15 }}
+            >
+              <CardStack cards={cards} />
+            </motion.div>
+          )}
         </div>
       </div>
 
