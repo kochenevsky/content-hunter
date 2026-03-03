@@ -12,10 +12,56 @@ function ensureArrayIds(obj: unknown): unknown {
         const rest = { ...item } as Record<string, unknown>
         if ('id' in rest) {
           let id = rest.id
-          const isEmpty = id == null || id === ''
-          const isDuplicate = typeof id === 'string' && id.length > 0 && seen.has(id)
-          if (isEmpty || isDuplicate) {
-            id = randomBytes(8).toString('hex')
+          /** Имена массивов, где поле 'id' — это контентный идентификатор (не Payload row id) */
+          const CONTENT_ID_ARRAYS = new Set(['instagramIds', 'youtubeIds', 'vimeoIds', 'videoCards'])
+          
+          function ensureArrayIds(obj: unknown, parentKey?: string): unknown {
+            if (obj == null) return obj
+            if (Array.isArray(obj)) {
+              // Если это массив контентных видео — не трогаем id внутри
+              if (parentKey && CONTENT_ID_ARRAYS.has(parentKey)) {
+                return obj.map((item) => {
+                  if (item && typeof item === 'object') {
+                    const rest = { ...item } as Record<string, unknown>
+                    for (const key of Object.keys(rest)) {
+                      rest[key] = ensureArrayIds(rest[key], key) as never
+                    }
+                    return rest
+                  }
+                  return item
+                })
+              }
+          
+              const seen = new Set<string>()
+              return obj.map((item) => {
+                if (item && typeof item === 'object') {
+                  const rest = { ...item } as Record<string, unknown>
+                  if ('id' in rest) {
+                    let id = rest.id
+                    const isEmpty = id == null || id === ''
+                    const isDuplicate = typeof id === 'string' && id.length > 0 && seen.has(id)
+                    if (isEmpty || isDuplicate) {
+                      id = randomBytes(8).toString('hex')
+                    }
+                    if (id != null && id !== '') seen.add(String(id))
+                    rest.id = id
+                  }
+                  for (const key of Object.keys(rest)) {
+                    rest[key] = ensureArrayIds(rest[key], key) as never
+                  }
+                  return rest
+                }
+                return item
+              })
+            }
+            if (typeof obj === 'object') {
+              const out = { ...obj } as Record<string, unknown>
+              for (const key of Object.keys(out)) {
+                out[key] = ensureArrayIds(out[key], key) as never
+              }
+              return out
+            }
+            return obj
           }
           if (id != null && id !== '') seen.add(String(id))
           rest.id = id
@@ -53,7 +99,7 @@ export const HomePage: GlobalConfig = {
           if (!Number.isNaN(n)) rootId = n
         }
         // Возвращаем новый объект, чтобы валидация точно видела наши правки (Payload может не использовать мутацию)
-        const sanitized = ensureArrayIds({ ...data, id: rootId }) as typeof data
+        const sanitized = ensureArrayIds({ ...data, id: rootId }, 'root') as typeof data
         sanitized.id = rootId
         return sanitized
       },
