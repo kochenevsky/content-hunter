@@ -82,9 +82,20 @@ export const HomePage: GlobalConfig = {
           name: 'videoCards',
           type: 'array',
           label: 'Видеокарусель (первый экран)',
-          admin: { description: 'YouTube Shorts: ID ролика из ссылки youtu.be/ID. Если пусто — используются дефолтные карточки.' },
+          admin: { description: 'YouTube или Vimeo: ID ролика из ссылки youtu.be/ID или vimeo.com/ID. Vimeo доступен в РФ.' },
           fields: [
-            { name: 'videoId', type: 'text', label: 'YouTube Video ID', required: true, admin: { description: 'Например: gLKgolZi_do' }},
+            {
+              name: 'platform',
+              type: 'select',
+              label: 'Платформа',
+              required: true,
+              options: [
+                { label: 'YouTube Shorts', value: 'youtube' },
+                { label: 'Vimeo', value: 'vimeo' },
+              ],
+              defaultValue: 'youtube',
+            },
+            { name: 'videoId', type: 'text', label: 'Video ID', required: true, admin: { description: 'YouTube: gLKgolZi_do из youtu.be/ID. Vimeo: число из vimeo.com/ID' }},
           ],
         },
       ],

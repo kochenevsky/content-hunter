@@ -38,15 +38,15 @@ export type HeroSectionProps = {
   stats?: Array<{ value?: number; suffix?: string; label?: string }> | null
   cycleWords?: Array<{ word?: string } | string> | null
   badge?: string | null
-  /** Карточки видеокарусели из админки (только YouTube Video ID). */
-  videoCards?: Array<{ videoId?: string; id?: string }> | null
+  /** Карточки видеокарусели из админки (YouTube или Vimeo). */
+  videoCards?: Array<{ platform?: string; videoId?: string; id?: string }> | null
 }
 
-type VideoCard = { id: string; client: string; color: string }
+type VideoCard = { id: string; platform: 'youtube' | 'vimeo'; client: string; color: string }
 
 function CardStack({ cards }: { cards: VideoCard[] }) {
   const [current, setCurrent] = useState(0)
-  const [playing, setPlaying] = useState<string | null>(null)
+  const [playing, setPlaying] = useState<VideoCard | null>(null)
   const [paused, setPaused] = useState(false)
 
   useEffect(() => {
@@ -57,8 +57,8 @@ function CardStack({ cards }: { cards: VideoCard[] }) {
     return () => clearInterval(timer)
   }, [paused, playing, cards.length])
 
-  const handlePlay = useCallback((videoId: string) => {
-    setPlaying(videoId)
+  const handlePlay = useCallback((card: VideoCard) => {
+    setPlaying(card)
     setPaused(true)
   }, [])
 
@@ -86,13 +86,23 @@ function CardStack({ cards }: { cards: VideoCard[] }) {
             transition={{ duration: 0.2 }}
             className="absolute inset-0 z-50 rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-black"
           >
-            <iframe
-              src={`https://www.youtube.com/embed/${playing}?autoplay=1&rel=0&modestbranding=1`}
-              title="Video player"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              className="w-full h-full"
-            />
+            {playing.platform === 'vimeo' ? (
+              <iframe
+                src={`https://player.vimeo.com/video/${playing.id}?autoplay=1`}
+                title="Vimeo"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            ) : (
+              <iframe
+                src={`https://www.youtube.com/embed/${playing.id}?autoplay=1&rel=0&modestbranding=1`}
+                title="YouTube"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            )}
             <button
               onClick={handleClose}
               className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/20 hover:bg-black/80 transition-colors z-10"
@@ -110,7 +120,7 @@ function CardStack({ cards }: { cards: VideoCard[] }) {
             key={`${current}-${card.stackIndex}-${card.id}`}
             layout
             className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-pointer bg-neutral-800"
-            onClick={() => card.stackIndex === 0 && handlePlay(card.id)}
+            onClick={() => card.stackIndex === 0 && handlePlay(card)}
             initial={{
               scale: 0.95,
               y: 20,
@@ -132,10 +142,10 @@ function CardStack({ cards }: { cards: VideoCard[] }) {
             whileHover={card.stackIndex === 0 ? { scale: 1.02 } : {}}
             style={{ zIndex: 10 - card.stackIndex }}
           >
-            {/* YouTube thumbnail; фон на случай ошибки загрузки */}
+            {/* Thumbnail: YouTube — img.youtube.com, Vimeo — vumbnail.com (работает в РФ) */}
             <div className="absolute inset-0 bg-neutral-700">
               <Image
-                src={`https://img.youtube.com/vi/${card.id}/sddefault.jpg`}
+                src={card.platform === 'vimeo' ? `https://vumbnail.com/${card.id}.jpg` : `https://img.youtube.com/vi/${card.id}/sddefault.jpg`}
                 alt={card.client}
                 fill
                 sizes="(max-width: 768px) 280px, 320px"
@@ -156,7 +166,7 @@ function CardStack({ cards }: { cards: VideoCard[] }) {
             {/* Client label */}
             <div className="absolute bottom-0 left-0 right-0 p-4 pointer-events-none">
               <p className="text-white/90 text-sm font-medium">{card.client}</p>
-              <p className="text-white/50 text-xs">YouTube Shorts</p>
+              <p className="text-white/50 text-xs">{card.platform === 'vimeo' ? 'Vimeo' : 'YouTube Shorts'}</p>
             </div>
           </motion.div>
         ))}
@@ -171,9 +181,11 @@ function normalizeVideoCards(raw: HeroSectionProps['videoCards']): VideoCard[] {
     .map((item, i) => {
       const id = ((item.videoId ?? item.id) ?? '').trim()
       if (!id) return null
+      const platform = (item.platform === 'vimeo' ? 'vimeo' : 'youtube') as 'youtube' | 'vimeo'
       return {
         id,
-        client: 'YouTube Shorts',
+        platform,
+        client: platform === 'vimeo' ? 'Vimeo' : 'YouTube Shorts',
         color: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
       }
     })

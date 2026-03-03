@@ -16,6 +16,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'img.youtube.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'vumbnail.com',
+      },
     ],
   },
   // pg должен быть внешним чтобы monkey-patch для Supabase Transaction mode работал
