@@ -7,8 +7,22 @@ function buildUtmHref(baseUrl: string): string {
   if (!baseUrl) return baseUrl
 
   const pageParams = new URLSearchParams(window.location.search)
-  const utmParams = new URLSearchParams()
 
+  // Режим 1: в ссылке есть переменные {utm_source} — просто подставляем значения
+  if (baseUrl.includes('{utm_')) {
+    let result = baseUrl
+    UTM_KEYS.forEach((key) => {
+      const val = pageParams.get(key) ?? ''
+      result = result.replaceAll(`{${key}}`, val)
+    })
+    // Убираем пустые параметры вида &utm_medium= если значения нет
+    result = result.replace(/[?&][^=&]+=(?=&|$)/g, (match) => match.startsWith('?') ? '?' : '')
+    result = result.replace(/\?&/, '?').replace(/[?&]$/, '')
+    return result
+  }
+
+  // Режим 2: переменных нет — добавляем UTM как новые параметры (старое поведение)
+  const utmParams = new URLSearchParams()
   UTM_KEYS.forEach((key) => {
     const val = pageParams.get(key)
     if (val) utmParams.set(key, val)
@@ -32,7 +46,6 @@ function buildUtmHref(baseUrl: string): string {
 }
 
 export function useUtmLink(baseUrl: string): string {
-  // Инициализируем сразу с UTM если window уже доступен (клиентский рендер)
   const [href, setHref] = useState<string>(() => {
     if (typeof window === 'undefined') return baseUrl
     return buildUtmHref(baseUrl)
