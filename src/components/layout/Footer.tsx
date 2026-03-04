@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { UtmLink } from '@/components/ui/UtmLink'
 import { MessageCircle, Send, ExternalLink, FileSpreadsheet, Presentation } from 'lucide-react'
 
 const defaultNavigation = [
@@ -95,7 +96,7 @@ export function Footer({ data }: FooterProps) {
                 const Icon = item.icon
                 return (
                   <li key={item.name}>
-                    <a
+                    <UtmLink
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -104,7 +105,7 @@ export function Footer({ data }: FooterProps) {
                       <Icon className="w-4 h-4 flex-shrink-0" />
                       <span>{item.name}</span>
                       <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-                    </a>
+                    </UtmLink>
                   </li>
                 )
               })}
@@ -120,14 +121,14 @@ export function Footer({ data }: FooterProps) {
               {social.map((item) => {
                 const Icon = item.icon
                 return (
-                  <a
+                  <UtmLink
                     key={item.name}
                     href={item.href}
                     className="w-10 h-10 flex items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700 transition-colors"
                   >
                     <Icon className="w-5 h-5" />
                     <span className="sr-only">{item.name}</span>
-                  </a>
+                  </UtmLink>
                 )
               })}
             </div>
