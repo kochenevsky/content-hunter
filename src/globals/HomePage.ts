@@ -99,7 +99,7 @@ export const HomePage: GlobalConfig = {
           if (!Number.isNaN(n)) rootId = n
         }
         // Возвращаем новый объект, чтобы валидация точно видела наши правки (Payload может не использовать мутацию)
-        const sanitized = ensureArrayIds({ ...data, id: rootId }, 'root') as typeof data
+        const sanitized = ensureArrayIds({ ...data, id: rootId }) as typeof data
         sanitized.id = rootId
         return sanitized
       },
