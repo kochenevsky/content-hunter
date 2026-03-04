@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
@@ -21,14 +21,45 @@ interface HeaderProps {
   } | null
 }
 
+// Функция для извлечения UTM параметров
+function getUtmParams(): string {
+  if (typeof window === 'undefined') return ''
+  
+  const searchParams = new URLSearchParams(window.location.search)
+  const utmParams = new URLSearchParams()
+  
+  // Сохраняем все UTM параметры
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
+  utmKeys.forEach(key => {
+    const value = searchParams.get(key)
+    if (value) utmParams.append(key, value)
+  })
+  
+  return utmParams.toString()
+}
+
+// Функция для добавления параметров к URL
+function appendUtmToUrl(url: string, utmString: string): string {
+  if (!utmString) return url
+  
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}${utmString}`
+}
+
 export function Header({ data }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [utmParams, setUtmParams] = useState('')
   const { scrollY } = useScroll()
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     setScrolled(latest > 50)
   })
+
+  // Загружаем UTM параметры после монтирования компонента
+  useEffect(() => {
+    setUtmParams(getUtmParams())
+  }, [])
 
   // Используем данные из БД или фоллбэк
   const navigation = data?.navigation?.length
@@ -62,7 +93,7 @@ export function Header({ data }: HeaderProps) {
           {navigation.map((item) => (
             <Link
               key={item.name}
-              href={item.href}
+              href={appendUtmToUrl(item.href, utmParams)}
               className="relative text-sm font-medium text-neutral-300 hover:text-white transition-colors duration-300 group"
             >
               {item.name}
@@ -74,7 +105,7 @@ export function Header({ data }: HeaderProps) {
 
         {/* CTA Button */}
         <div className="hidden md:block">
-          <Button href={ctaLink}>{ctaText}</Button>
+          <Button href={appendUtmToUrl(ctaLink, utmParams)}>{ctaText}</Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -105,7 +136,7 @@ export function Header({ data }: HeaderProps) {
               {navigation.map((item) => (
                 <div key={item.name}>
                   <Link
-                    href={item.href}
+                    href={appendUtmToUrl(item.href, utmParams)}
                     className="block py-3 text-base font-medium text-neutral-300 hover:text-white transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -114,7 +145,7 @@ export function Header({ data }: HeaderProps) {
                 </div>
               ))}
               <div className="pt-4 border-t border-white/10">
-                <Button href={ctaLink} className="w-full">
+                <Button href={appendUtmToUrl(ctaLink, utmParams)} className="w-full">
                   {ctaText}
                 </Button>
               </div>
