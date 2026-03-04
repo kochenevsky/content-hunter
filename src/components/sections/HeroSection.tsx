@@ -1,5 +1,6 @@
 'use client'
 
+import { UtmLink } from '@/components/ui/UtmLink'
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Play, X } from 'lucide-react'
@@ -261,7 +262,7 @@ export function HeroSection({ headline, subheadline, primaryButtonText, primaryB
               transition={{ duration: 0.25, delay: 0.2 }}
             >
               <MagneticButton strength={0.2}>
-                <Link
+                <UtmLink
                   href={primaryButtonLink || '/contact'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors relative group overflow-hidden"
                 >
@@ -270,16 +271,16 @@ export function HeroSection({ headline, subheadline, primaryButtonText, primaryB
                     {primaryButtonText || 'Получить консультацию'}
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </span>
-                </Link>
+                </UtmLink>
               </MagneticButton>
               <MagneticButton strength={0.15}>
-                <Link
+                <UtmLink
                   href={secondaryButtonLink || '/cases'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg border border-neutral-700 text-white hover:border-neutral-500 bg-transparent transition-colors"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   {secondaryButtonText || 'Смотреть кейсы'}
-                </Link>
+                </UtmLink>
               </MagneticButton>
             </motion.div>
 
