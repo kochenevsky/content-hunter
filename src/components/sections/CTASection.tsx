@@ -1,5 +1,6 @@
 'use client'
 
+import { UtmLink } from '@/components/ui/UtmLink'
 import { ArrowRight, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
