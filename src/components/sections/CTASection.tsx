@@ -49,7 +49,7 @@ export function CTASection({ headline, headlineHighlight, text, guarantees: g, p
           <FadeInView direction="up" delay={0.3}>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <MagneticButton strength={0.2}>
-                <Link
+                <UtmLink
                   href={primaryButtonLink || '/contact'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors relative group overflow-hidden"
                 >
@@ -58,16 +58,16 @@ export function CTASection({ headline, headlineHighlight, text, guarantees: g, p
                     {primaryButtonText || 'Получить консультацию'}
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </span>
-                </Link>
+                </UtmLink>
               </MagneticButton>
               <MagneticButton strength={0.15}>
-                <Link
+                <UtmLink
                   href={telegramLink || 'https://t.me/contenthunter_bot'}
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg border border-neutral-700 text-white hover:border-neutral-500 bg-transparent transition-colors"
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />
                   {secondaryButtonText || 'Написать в Telegram'}
-                </Link>
+                </UtmLink>
               </MagneticButton>
             </div>
           </FadeInView>
