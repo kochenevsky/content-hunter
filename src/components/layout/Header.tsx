@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion'
+import { useUtmLink } from '@/hooks/useUtmLink'
 
 const defaultNavigation = [
   { name: 'Услуги', href: '/services' },
@@ -21,45 +22,14 @@ interface HeaderProps {
   } | null
 }
 
-// Функция для извлечения UTM параметров
-function getUtmParams(): string {
-  if (typeof window === 'undefined') return ''
-  
-  const searchParams = new URLSearchParams(window.location.search)
-  const utmParams = new URLSearchParams()
-  
-  // Сохраняем все UTM параметры
-  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
-  utmKeys.forEach(key => {
-    const value = searchParams.get(key)
-    if (value) utmParams.append(key, value)
-  })
-  
-  return utmParams.toString()
-}
-
-// Функция для добавления параметров к URL
-function appendUtmToUrl(url: string, utmString: string): string {
-  if (!utmString) return url
-  
-  const separator = url.includes('?') ? '&' : '?'
-  return `${url}${separator}${utmString}`
-}
-
 export function Header({ data }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [utmParams, setUtmParams] = useState('')
   const { scrollY } = useScroll()
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     setScrolled(latest > 50)
   })
-
-  // Загружаем UTM параметры после монтирования компонента
-  useEffect(() => {
-    setUtmParams(getUtmParams())
-  }, [])
 
   // Используем данные из БД или фоллбэк
   const navigation = data?.navigation?.length
@@ -69,6 +39,7 @@ export function Header({ data }: HeaderProps) {
   const ctaText = data?.ctaButton?.text || 'Консультация'
   const ctaLink = data?.ctaButton?.link || '/contact'
 
+  // Для внутренних ссылок используем useUtmLink, чтобы сохранять UTM параметры
   return (
     <motion.header
       initial={{ y: -20 }}
@@ -91,21 +62,13 @@ export function Header({ data }: HeaderProps) {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           {navigation.map((item) => (
-            <Link
-              key={item.name}
-              href={appendUtmToUrl(item.href, utmParams)}
-              className="relative text-sm font-medium text-neutral-300 hover:text-white transition-colors duration-300 group"
-            >
-              {item.name}
-              {/* Animated underline */}
-              <span className="absolute -bottom-1 left-0 h-px w-0 bg-primary-500 group-hover:w-full transition-all duration-300" />
-            </Link>
+            <NavLink key={item.name} href={item.href} label={item.name} />
           ))}
         </div>
 
         {/* CTA Button */}
         <div className="hidden md:block">
-          <Button href={appendUtmToUrl(ctaLink, utmParams)}>{ctaText}</Button>
+          <Button href={ctaLink}>{ctaText}</Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -135,17 +98,16 @@ export function Header({ data }: HeaderProps) {
             <div className="container py-4 space-y-1">
               {navigation.map((item) => (
                 <div key={item.name}>
-                  <Link
-                    href={appendUtmToUrl(item.href, utmParams)}
-                    className="block py-3 text-base font-medium text-neutral-300 hover:text-white transition-colors"
+                  <NavLink
+                    href={item.href}
+                    label={item.name}
                     onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
+                    className="block py-3 text-base font-medium text-neutral-300 hover:text-white transition-colors"
+                  />
                 </div>
               ))}
               <div className="pt-4 border-t border-white/10">
-                <Button href={appendUtmToUrl(ctaLink, utmParams)} className="w-full">
+                <Button href={ctaLink} className="w-full">
                   {ctaText}
                 </Button>
               </div>
@@ -154,5 +116,39 @@ export function Header({ data }: HeaderProps) {
         )}
       </AnimatePresence>
     </motion.header>
+  )
+}
+
+/**
+ * Компонент навигационной ссылки с поддержкой UTM параметров
+ */
+function NavLink({
+  href,
+  label,
+  className = '',
+  onClick,
+}: {
+  href: string
+  label: string
+  className?: string
+  onClick?: () => void
+}) {
+  const utmHref = useUtmLink(href)
+
+  return (
+    <Link
+      href={utmHref}
+      className={
+        className ||
+        'relative text-sm font-medium text-neutral-300 hover:text-white transition-colors duration-300 group'
+      }
+      onClick={onClick}
+    >
+      {label}
+      {!className && (
+        // Animated underline только для десктопной версии
+        <span className="absolute -bottom-1 left-0 h-px w-0 bg-primary-500 group-hover:w-full transition-all duration-300" />
+      )}
+    </Link>
   )
 }
