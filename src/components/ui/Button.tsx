@@ -1,6 +1,9 @@
+'use client'
+
 import Link from 'next/link'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
+import { useUtmLink } from '@/hooks/useUtmLink'
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none',
@@ -32,6 +35,30 @@ interface ButtonProps
   children: React.ReactNode
 }
 
+/** Определяет внешнюю ссылку (http/https или //...) */
+function isExternal(href: string) {
+  return /^https?:\/\//.test(href) || href.startsWith('//')
+}
+
+function ButtonLink({ href, className, children }: { href: string; className: string; children: React.ReactNode }) {
+  const utmHref = useUtmLink(href)
+  const external = isExternal(href)
+
+  if (external) {
+    return (
+      <a href={utmHref} className={className} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    )
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  )
+}
+
 export function Button({
   className,
   variant,
@@ -44,9 +71,9 @@ export function Button({
 
   if (href) {
     return (
-      <Link href={href} className={classes}>
+      <ButtonLink href={href} className={classes}>
         {children}
-      </Link>
+      </ButtonLink>
     )
   }
 
