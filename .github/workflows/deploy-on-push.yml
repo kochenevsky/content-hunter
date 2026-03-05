@@ -1,6 +1,4 @@
-# При push в main:
-# 1. Vercel — через Deploy Hook (если задан VERCEL_DEPLOY_HOOK)
-# 2. Timeweb — сборка в CI (без долгого SSH), rsync .next на сервер, pm2 restart
+# При push в main: Timeweb — сборка в CI, rsync .next на сервер, pm2 restart
 
 name: Deploy on push
 
@@ -10,18 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  vercel:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Vercel Deploy
-        run: |
-          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-            echo "VERCEL_DEPLOY_HOOK not set, skip."
-            exit 0
-          fi
-          curl -f -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
-
-  timeweb:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
