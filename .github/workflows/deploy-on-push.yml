@@ -1,22 +1,42 @@
-# Запускает деплой на Vercel при push в main через Deploy Hook.
-# Работает даже если в Vercel сломана привязка Git.
-# Нужно: в Vercel создать Deploy Hook, в GitHub добавить секрет VERCEL_DEPLOY_HOOK с его URL.
+# При push в main:
+# 1. Vercel — через Deploy Hook (если задан VERCEL_DEPLOY_HOOK)
+# 2. Timeweb — SSH на сервер, git pull, build, pm2 restart
 
-name: Deploy to Vercel on push
+name: Deploy on push
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  vercel:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Vercel Deploy
         run: |
           if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-            echo "VERCEL_DEPLOY_HOOK not set. Add it in repo Settings → Secrets and variables → Actions."
+            echo "VERCEL_DEPLOY_HOOK not set, skip."
             exit 0
           fi
           curl -f -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
-        env: {}
+
+  timeweb:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Timeweb
+        run: |
+          if [ -z "${{ secrets.TIMEWEB_SSH_PASSWORD }}" ]; then
+            echo "TIMEWEB_SSH_PASSWORD not set. Add in repo Settings → Secrets → Actions."
+            exit 0
+          fi
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+          export SSHPASS="${{ secrets.TIMEWEB_SSH_PASSWORD }}"
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 root@5.42.104.246 '
+            cd /var/www/content-hunter &&
+            git pull origin main &&
+            pnpm install --frozen-lockfile &&
+            pnpm build &&
+            pm2 restart content-hunter &&
+            pm2 save
+          '
+          echo "Timeweb deploy OK"
