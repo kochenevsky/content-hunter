@@ -40,10 +40,7 @@ export default function FarmPage() {
             <p className="text-neutral-400 mb-10">
               Без увеличения команды. Без хаоса. Сделаем всё под ключ, с отчётностью.
             </p>
-            <StickyCta href="https://sbsite.pro//eu_site_calc_1" size="lg">
-              Сделать расчёт стоимости
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </StickyCta>
+            <StickyCta href="https://sbsite.pro//eu_site_calc_1" label="Сделать расчёт стоимости" />
           </div>
         </div>
       </section>
@@ -97,10 +94,7 @@ export default function FarmPage() {
                 </li>
               ))}
             </ul>
-            <StickyCta href="https://sbsite.pro//eu_site_calc_1" size="lg">
-              Получить калькулятор
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </StickyCta>
+            <StickyCta href="https://sbsite.pro//eu_site_calc_1" label="Получить калькулятор" />
           </div>
         </div>
       </section>
