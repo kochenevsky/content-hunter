@@ -31,7 +31,8 @@ jobs:
           fi
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
           export SSHPASS="${{ secrets.TIMEWEB_SSH_PASSWORD }}"
-          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 root@5.42.104.246 '
+          # ServerAliveInterval — keepalive, чтобы SSH не обрывался во время долгой сборки (~4 мин)
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 root@5.42.104.246 '
             cd /var/www/content-hunter &&
             git pull origin main &&
             pnpm install --frozen-lockfile &&
