@@ -1,12 +1,13 @@
 # При push в main:
 # 1. Vercel — через Deploy Hook (если задан VERCEL_DEPLOY_HOOK)
-# 2. Timeweb — SSH на сервер, git pull, build, pm2 restart
+# 2. Timeweb — сборка в CI (без долгого SSH), rsync .next на сервер, pm2 restart
 
 name: Deploy on push
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   vercel:
@@ -23,20 +24,47 @@ jobs:
   timeweb:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Timeweb
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps and build
+        env:
+          NEXT_PUBLIC_SERVER_URL: https://contenthunter.ru
+          NEXT_PUBLIC_SUPABASE_URL: https://feytgokjblyqzymadfym.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZleXRnb2tqYmx5cXp5bWFkZnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDg3MzksImV4cCI6MjA4NTI4NDczOX0.IjRLp_2URxV43OmkGdHUY2v-Jmb4XynxCgXjRIMqQ-8
         run: |
-          if [ -z "${{ secrets.TIMEWEB_SSH_PASSWORD }}" ]; then
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Deploy to Timeweb (rsync + pm2)
+        env:
+          SSH_PASS: ${{ secrets.TIMEWEB_SSH_PASSWORD }}
+        run: |
+          if [ -z "$SSH_PASS" ]; then
             echo "TIMEWEB_SSH_PASSWORD not set. Add in repo Settings → Secrets → Actions."
             exit 0
           fi
-          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
-          export SSHPASS="${{ secrets.TIMEWEB_SSH_PASSWORD }}"
-          # ServerAliveInterval — keepalive, чтобы SSH не обрывался во время долгой сборки (~4 мин)
-          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 root@5.42.104.246 '
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync
+          export SSHPASS="$SSH_PASS"
+          # rsync .next — короткая сессия, без обрыва SSH
+          sshpass -e rsync -avz -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
+            .next/ root@5.42.104.246:/var/www/content-hunter/.next/
+          # git pull + install (на случай новых deps) + restart — быстро
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 root@5.42.104.246 '
             cd /var/www/content-hunter &&
             git pull origin main &&
             pnpm install --frozen-lockfile &&
-            pnpm build &&
             pm2 restart content-hunter &&
             pm2 save
           '
