@@ -1,5 +1,28 @@
 # Деплой Content Hunter на Timeweb VPS
 
+## Timeweb Cloud CLI (twc)
+
+Для управления сервером через командную строку:
+
+```bash
+# Установка (один раз)
+pipx install twc-cli
+
+# Настройка (один раз) — нужен токен из https://timeweb.cloud/my/api-keys
+twc config
+```
+
+Полезные команды:
+- `twc server list` — список серверов
+- `twc server get <id>` — информация о сервере
+- `twc server boot <id>` / `twc server shutdown <id>` — включить/выключить
+- `twc server reboot <id>` — перезагрузка
+- `twc server dash <id>` — открыть панель в браузере
+
+Документация: https://timeweb.cloud/docs/twc-cli
+
+---
+
 ## Сервер
 
 - **IP:** 5.42.104.246
