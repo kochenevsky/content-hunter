@@ -51,7 +51,7 @@ export function CTASection({ headline, headlineHighlight, text, guarantees: g, p
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <MagneticButton strength={0.2}>
                 <UtmLink
-                  href={primaryButtonLink || '/contact'}
+                  href="https://sbsite.pro//ru_site_ch_1"
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors relative group overflow-hidden"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -63,7 +63,7 @@ export function CTASection({ headline, headlineHighlight, text, guarantees: g, p
               </MagneticButton>
               <MagneticButton strength={0.15}>
                 <UtmLink
-                  href={telegramLink || 'https://t.me/contenthunter_bot'}
+                  href="https://sbsite.pro//ru_site_ch_1"
                   className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg border border-neutral-700 text-white hover:border-neutral-500 bg-transparent transition-colors"
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />
