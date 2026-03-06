@@ -11,8 +11,8 @@ export const revalidate = 30
 
 // Lazy load below-the-fold sections
 const VideoExamplesSection = dynamic(() => import('@/components/sections/VideoExamplesSection').then(m => ({ default: m.VideoExamplesSection })), { ssr: true })
-const HowItWorksSection = dynamic(() => import('@/components/sections/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })), { ssr: true })
-const CasesSection = dynamic(() => import('@/components/sections/CasesSection').then(m => ({ default: m.CasesSection })), { ssr: true })
+// const HowItWorksSection = dynamic(() => import('@/components/sections/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })), { ssr: true })
+// const CasesSection = dynamic(() => import('@/components/sections/CasesSection').then(m => ({ default: m.CasesSection })), { ssr: true })
 const NichesSection = dynamic(() => import('@/components/sections/NichesSection').then(m => ({ default: m.NichesSection })), { ssr: true })
 const ComparisonSection = dynamic(() => import('@/components/sections/ComparisonSection').then(m => ({ default: m.ComparisonSection })), { ssr: true })
 const CTASection = dynamic(() => import('@/components/sections/CTASection').then(m => ({ default: m.CTASection })), { ssr: true })
@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [cases, home] = await Promise.all([getCases(3), getHomePage()])
+  // const [cases, home] = await Promise.all([getCases(3), getHomePage()])
   const h = home as any
 
   return (
@@ -62,12 +62,6 @@ export default async function HomePage() {
         subtitle={h?.videoExamples?.subtitle}
         items={h?.videoExamples?.items}
       />
-      <HowItWorksSection
-        title={h?.howItWorks?.title}
-        subtitle={h?.howItWorks?.subtitle}
-        steps={h?.howItWorks?.steps}
-      />
-      <CasesSection cases={cases} />
       <NichesSection
         title={h?.niches?.title}
         subtitle={h?.niches?.subtitle}
