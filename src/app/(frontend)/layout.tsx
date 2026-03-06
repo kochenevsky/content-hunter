@@ -6,6 +6,8 @@ import { Footer } from '@/components/layout/Footer'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { AnalyticsHead } from '@/components/AnalyticsHead'
 import { getHeader, getFooter, getSettings } from '@/lib/payload-data'
+import { StickyMobileCta } from '@/components/ui/StickyMobileCta'
+
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
@@ -49,6 +51,7 @@ export default async function RootLayout({
 
   return (
     <html lang="ru">
+  
       <body className={inter.className}>
         <AnalyticsHead
           googleAnalyticsId={analytics?.googleAnalyticsId}
@@ -59,6 +62,7 @@ export default async function RootLayout({
         <Header data={headerData as any} />
         <main className="min-h-screen">{children}</main>
         <Footer data={footerData as any} />
+        <StickyMobileCta />
       </body>
     </html>
   )
