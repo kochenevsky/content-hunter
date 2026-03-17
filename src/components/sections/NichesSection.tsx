@@ -9,13 +9,13 @@ import { getIcon } from '@/lib/icon-map'
 
 const DEFAULT_NICHES = [
   { icon: ShoppingBag, name: 'E-commerce', description: 'Маркетплейсы, онлайн-магазины' },
-  { icon: GraduationCap, name: 'Онлайн-школы', description: 'Курсы, образовательные проекты' },
-  { icon: User, name: 'Эксперты', description: 'Коучи, консультанты, психологи' },
+  { icon: GraduationCap, name: 'SaaS', description: 'Сервисы, приложения' },
+  { icon: User, name: 'Эксперты', description: 'Коучи, психологи, блогеры' },
   { icon: Utensils, name: 'HoReCa', description: 'Рестораны, кафе, отели' },
   { icon: Sparkles, name: 'Beauty', description: 'Салоны красоты, косметология' },
-  { icon: Plane, name: 'Тревел', description: 'Туризм, глэмпинги, агентства' },
+  { icon: Plane, name: 'Онлайн-школы', description: 'Курсы, образовательные проекты' },
   { icon: Building2, name: 'Недвижимость', description: 'Агентства, застройщики' },
-  { icon: Stethoscope, name: 'Клиники', description: 'Медицинские центры, стоматологии' },
+  { icon: Stethoscope, name: 'Клиники', description: 'Мед.центры, стоматологии' },
 ]
 
 export type NichesSectionProps = {
