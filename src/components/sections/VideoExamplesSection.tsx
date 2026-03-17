@@ -35,7 +35,7 @@ export function VideoExamplesSection({ title, subtitle, items }: VideoExamplesSe
     vimeo: (p.vimeoIds || []).map(i => ({ id: i.id || '', label: i.label || '' })).filter(i => i.id),
   })).filter(p => p.instagram.length || p.youtube.length || p.vimeo.length) : DEFAULT_EXAMPLES
   return (
-    <section className="section bg-neutral-50">
+    <section id="video-examples" className="section bg-neutral-50">
       <div className="container">
         <FadeInView direction="up" className="text-center mb-10 md:mb-16 px-2 sm:px-0">
           <h2 className="heading-2 text-neutral-900 mb-4">
