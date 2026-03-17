@@ -41,7 +41,7 @@ export function ComparisonSection({ title, subtitle, competitors, ourAdvantages:
             {title || 'Чем мы отличаемся'}
           </h2>
           <p className="text-lead max-w-2xl mx-auto">
-            {subtitle || 'Content Hunter — это не SMM-агентство и не видеопродакшен. Это контент-завод с гарантией результата.'}
+            {subtitle || 'Делаем массовую выкладку ваших роликов и даем гарантию результата.'}
           </p>
         </FadeInView>
 
