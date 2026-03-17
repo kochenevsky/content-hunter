@@ -12,10 +12,10 @@ const DEFAULT_CHECKLIST = [
 ]
 
 const DEFAULT_FORMULA_STATS = [
-  { value: 50, label: 'роликов/мес' },
-  { value: 20, label: 'аккаунтов' },
+  { value: 20, label: 'роликов' },
+  { value: 50, label: 'аккаунтов' },
   { value: 1000, label: 'публикаций' },
-  { value: 1500000, label: 'просмотров' },
+  { value: 2000000, label: 'просмотров' },
 ]
 
 export type SolutionSectionProps = {
