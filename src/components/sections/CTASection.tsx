@@ -8,7 +8,7 @@ import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animatio
 import { MagneticButton } from '@/components/animations/magnetic-button'
 import { AnimatedGrid } from '@/components/animations/parallax-section'
 
-const DEFAULT_GUARANTEES = ['KPI по охватам в договоре', 'Бесплатный аудит', 'Первые результаты через 1.5 месяца']
+const DEFAULT_GUARANTEES = ['KPI по охватам в договоре', 'Детальная аналитика', 'Первые результаты через 2 недели']
 
 export type CTASectionProps = {
   headline?: string | null
