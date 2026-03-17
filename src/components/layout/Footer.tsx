@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { UtmLink } from '@/components/ui/UtmLink'
-import { MessageCircle, Send, ExternalLink, FileSpreadsheet, Presentation } from 'lucide-react'
+import { MessageCircle, Send, ExternalLink, FileSpreadsheet, Presentation, Instagram, Youtube } from 'lucide-react'
 
 const defaultNavigation = [
   { name: 'Услуги', href: '/services' },
@@ -20,6 +20,8 @@ const defaultMaterials = [
 const socialIcons: Record<string, typeof Send> = {
   telegram: Send,
   whatsapp: MessageCircle,
+  instagram: Instagram,
+  youtube: Youtube,
 }
 
 interface FooterProps {
