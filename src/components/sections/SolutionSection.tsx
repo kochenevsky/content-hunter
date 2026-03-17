@@ -99,7 +99,7 @@ export function SolutionSection({ title, titleHighlight, formula, text, checklis
                   {stats.length >= 4 ? (
                     <div className="text-center p-4 rounded-xl bg-primary-500/20 border border-primary-500/30">
                       <p className="text-3xl font-bold text-primary-500">
-                        <AnimatedCounter target={stats[3].value} suffix={stats[3].value === 1 ? 'М+' : ''} />
+                        <AnimatedCounter target={Math.round(stats[3].value / 1000000)} suffix="М+" />
                       </p>
                       <p className="text-sm text-primary-400">{stats[3].label}</p>
                     </div>
