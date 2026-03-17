@@ -37,7 +37,6 @@ export function CTASection({ headline, headlineHighlight, text, guarantees: g, p
             <h2 className="heading-1 text-white mb-6">
               {headline || 'Готовы запустить'}
               <br />
-              <span className="text-primary-500">{headlineHighlight || 'контент-завод?'}</span>
             </h2>
           </FadeInView>
 
