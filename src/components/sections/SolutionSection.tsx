@@ -15,6 +15,7 @@ const DEFAULT_FORMULA_STATS = [
   { value: 50, label: 'роликов/мес' },
   { value: 20, label: 'аккаунтов' },
   { value: 1000, label: 'публикаций' },
+  { value: 1500000, label: 'просмотров' },
 ]
 
 export type SolutionSectionProps = {
