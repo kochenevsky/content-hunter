@@ -34,7 +34,7 @@ export function ComparisonSection({ title, subtitle, competitors, ourAdvantages:
   const ourAdvantages = adv?.length ? adv.map(a => typeof a === 'string' ? a : (a as { item?: string }).item || '').filter(Boolean) : DEFAULT_ADVANTAGES
 
   return (
-    <section className="section bg-white overflow-hidden">
+    <section id="comparison" className="section bg-white overflow-hidden">
       <div className="container">
         <FadeInView direction="up" className="text-center mb-16">
           <h2 className="heading-2 text-neutral-900 mb-4">
