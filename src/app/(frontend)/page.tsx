@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
-import { getCases, getHomePage } from '@/lib/payload-data'
+import { getHomePage } from '@/lib/payload-data'
+// import { getCases } from '@/lib/payload-data'
 import { HeroSection } from '@/components/sections/HeroSection'
 import { ProblemSection } from '@/components/sections/ProblemSection'
 import { SolutionSection } from '@/components/sections/SolutionSection'
@@ -28,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   // const [cases, home] = await Promise.all([getCases(3), getHomePage()])
+  const home = await getHomePage()
   const h = home as any
 
   return (
