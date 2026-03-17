@@ -117,7 +117,7 @@ export function Footer({ data }: FooterProps) {
           {/* Contacts */}
           <div>
             <h4 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">
-              Контакты
+              Соц сети
             </h4>
             <div className="flex gap-4">
               {social.map((item) => {
@@ -134,7 +134,6 @@ export function Footer({ data }: FooterProps) {
                 )
               })}
             </div>
-            <p className="text-neutral-500 text-xs mt-2">Telegram-бот, Telegram-менеджер — контакт в заявке</p>
           </div>
         </div>
 
@@ -142,9 +141,6 @@ export function Footer({ data }: FooterProps) {
         <div className="mt-12 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-neutral-500 text-sm">
             {data?.copyright || `© ${new Date().getFullYear()} Content Hunter. Все права защищены.`}
-          </p>
-          <p className="text-neutral-500 text-sm">
-            ОАО «Дженго»
           </p>
         </div>
       </div>
