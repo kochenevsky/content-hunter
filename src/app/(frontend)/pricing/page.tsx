@@ -118,51 +118,8 @@ export default async function PricingPage() {
               </div>
             ))}
           </div>
-
-          {/* Custom pricing */}
-          <div className="mt-12 p-8 rounded-2xl bg-neutral-950 text-white max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <h3 className="text-2xl font-bold mb-2">Нужен индивидуальный тариф?</h3>
-                <p className="text-neutral-400">
-                  Для крупных проектов и агентств — рассчитаем стоимость под ваши задачи.
-                </p>
-              </div>
-              <Button href="/contact" className="flex-shrink-0">
-                Обсудить
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
         </div>
       </section>
-
-      {/* FAQ */}
-      {pricingFAQ.length > 0 && (
-        <section className="section bg-neutral-50">
-          <div className="container">
-            <div className="max-w-3xl mx-auto">
-              <h2 className="heading-2 text-neutral-900 text-center mb-12">
-                Частые вопросы по тарифам
-              </h2>
-              <div className="space-y-6">
-                {pricingFAQ.map((item: any) => (
-                  <div
-                    key={item.id}
-                    className="p-6 rounded-2xl bg-white border border-neutral-200"
-                  >
-                    <h3 className="font-semibold text-neutral-900 mb-2">
-                      {item.question}
-                    </h3>
-                    <p className="text-neutral-600">
-                      {item.answer}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
       )}
 
       {/* CTA */}
@@ -173,10 +130,10 @@ export default async function PricingPage() {
               {cta?.headline || 'Готовы начать?'}
             </h2>
             <p className="text-xl text-neutral-600 mb-10">
-              {cta?.text || 'Получите бесплатную консультацию и расчёт под ваш проект.'}
+              {cta?.text || 'Проведем для вас экскурсию и ответим на все вопросы.'}
             </p>
             <Button href={cta?.buttonLink || '/contact'} size="lg">
-              {cta?.buttonText || 'Получить консультацию'}
+              {cta?.buttonText || 'Получить экскурсию'}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
