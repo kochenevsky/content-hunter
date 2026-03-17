@@ -120,7 +120,6 @@ export default async function PricingPage() {
           </div>
         </div>
       </section>
-      )}
 
       {/* CTA */}
       <section className="section bg-white">
