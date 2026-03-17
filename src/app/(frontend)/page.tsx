@@ -58,7 +58,6 @@ export default async function HomePage() {
         checklist={h?.solution?.checklist}
         formulaStats={h?.solution?.formulaStats}
       />
-      <StatsSection items={h?.stats?.items} />
       <VideoExamplesSection
         title={h?.videoExamples?.title}
         subtitle={h?.videoExamples?.subtitle}
