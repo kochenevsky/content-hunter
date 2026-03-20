@@ -1,3 +1,7 @@
-export default function StandaloneLayout({ children }) {
+export default function StandaloneLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }
