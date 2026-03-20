@@ -1,6 +1,6 @@
 'use client'
 
-import { ShoppingBag, GraduationCap, User, Utensils, Sparkles, Plane, Building2, Stethoscope } from 'lucide-react'
+import { ShoppingBag, GraduationCap, User, Utensils, Sparkles, Plane, Building2, Stethoscope, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { FadeInView, StaggerContainer, StaggerItem } from '@/components/animations/fade-in-view'
 import { TiltCard } from '@/components/animations/tilt-card'
@@ -76,13 +76,13 @@ export function NichesSection({ title, subtitle, items }: NichesSectionProps = {
         </StaggerContainer>
 
         <div className="mt-12 text-center">
-          
+          <a
             href="/#pricing"
             className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors"
           >
-  <span>Хочу контент-ферму</span>
-  <ArrowRight className="w-5 h-5 ml-2" />
-</a>
+            <span>Хочу контент-ферму</span>
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </a>
         </div>
       </div>
     </section>
