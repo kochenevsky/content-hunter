@@ -6,6 +6,8 @@ import { HeroSection } from '@/components/sections/HeroSection'
 import { ProblemSection } from '@/components/sections/ProblemSection'
 import { SolutionSection } from '@/components/sections/SolutionSection'
 import { StatsSection } from '@/components/sections/StatsSection'
+import { getPricing, getHomePage } from '@/lib/payload-data'
+import { PricingSection } from '@/components/sections/PricingSection'
 
 // Инвалидация по revalidatePath после сохранения в админке; 30 сек — запасной вариант
 export const revalidate = 30
@@ -31,6 +33,8 @@ export default async function HomePage() {
   // const [cases, home] = await Promise.all([getCases(3), getHomePage()])
   const home = await getHomePage()
   const h = home as any
+  const [pricing, home] = await Promise.all([getPricing(), getHomePage()])
+
 
   return (
     <>
@@ -74,6 +78,7 @@ export default async function HomePage() {
         competitors={h?.comparison?.competitors}
         ourAdvantages={h?.comparison?.ourAdvantages}
       />
+      <PricingSection plans={pricing as any[]} />
       <CTASection
         headline={h?.cta?.headline}
         headlineHighlight={h?.cta?.headlineHighlight}
