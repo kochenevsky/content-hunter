@@ -8,10 +8,11 @@ export const FAQ: CollectionConfig = {
     plural: 'FAQ',
   },
   admin: {
-    useAsTitle: 'question',
-    group: 'Контент',
-    defaultColumns: ['question', 'category', 'order'],
-  },
+  useAsTitle: 'question',
+  group: 'Контент',
+  defaultColumns: ['question', 'answer', 'category', 'order'],
+  listSearchableFields: ['question', 'answer'],
+},
   access: {
     read: () => true,
   },
