@@ -1,21 +1,15 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
-import { getHomePage } from '@/lib/payload-data'
-// import { getCases } from '@/lib/payload-data'
+import { getHomePage, getPricing } from '@/lib/payload-data'
 import { HeroSection } from '@/components/sections/HeroSection'
 import { ProblemSection } from '@/components/sections/ProblemSection'
 import { SolutionSection } from '@/components/sections/SolutionSection'
 import { StatsSection } from '@/components/sections/StatsSection'
-import { getPricing, getHomePage } from '@/lib/payload-data'
 import { PricingSection } from '@/components/sections/PricingSection'
 
-// Инвалидация по revalidatePath после сохранения в админке; 30 сек — запасной вариант
 export const revalidate = 30
 
-// Lazy load below-the-fold sections
 const VideoExamplesSection = dynamic(() => import('@/components/sections/VideoExamplesSection').then(m => ({ default: m.VideoExamplesSection })), { ssr: true })
-// const HowItWorksSection = dynamic(() => import('@/components/sections/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })), { ssr: true })
-// const CasesSection = dynamic(() => import('@/components/sections/CasesSection').then(m => ({ default: m.CasesSection })), { ssr: true })
 const NichesSection = dynamic(() => import('@/components/sections/NichesSection').then(m => ({ default: m.NichesSection })), { ssr: true })
 const ComparisonSection = dynamic(() => import('@/components/sections/ComparisonSection').then(m => ({ default: m.ComparisonSection })), { ssr: true })
 const CTASection = dynamic(() => import('@/components/sections/CTASection').then(m => ({ default: m.CTASection })), { ssr: true })
@@ -30,11 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  // const [cases, home] = await Promise.all([getCases(3), getHomePage()])
-  const home = await getHomePage()
+  const [home, pricing] = await Promise.all([getHomePage(), getPricing()])
   const h = home as any
-  const [pricing, home] = await Promise.all([getPricing(), getHomePage()])
-
 
   return (
     <>
@@ -62,6 +53,7 @@ export default async function HomePage() {
         checklist={h?.solution?.checklist}
         formulaStats={h?.solution?.formulaStats}
       />
+      <StatsSection items={h?.stats?.items} />
       <VideoExamplesSection
         title={h?.videoExamples?.title}
         subtitle={h?.videoExamples?.subtitle}
