@@ -10,12 +10,12 @@ function formatPrice(price: number, currency: string = 'RUB'): string {
 export function PricingSection({ plans }: { plans: any[] }) {
   if (!plans?.length) return null
   return (
-    <section className="section bg-neutral-50">
+    <section id="pricing" className="section bg-neutral-50">
       <div className="container">
         <FadeInView direction="up" className="text-center mb-16">
-          <h2 className="heading-2 text-neutral-900 mb-4">Тарифы</h2>
+          <h2 className="heading-2 text-neutral-900 mb-4">Оплата за публикации</h2>
           <p className="text-lead max-w-2xl mx-auto">
-            Выберите подходящий тариф. Гарантия результата в договоре.
+            Бесплатная настройка оборудования. Гарантия результата в договоре.
           </p>
         </FadeInView>
         <StaggerContainer stagger={0.08} className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto">
