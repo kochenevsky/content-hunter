@@ -17,7 +17,7 @@ const DEFAULT_STATS = [
   { value: 8, suffix: '', label: 'Стран' },
 ]
 
-const DEFAULT_CYCLE_WORDS = ['под ключ', 'с гарантией', 'для бизнеса', 'на масштаб']
+const DEFAULT_CYCLE_WORDS = ['в аренду', 'с гарантией', 'x50 к SMM', 'с аналитикой']
 
 const DEFAULT_COLORS = [
   'from-red-500/20 to-orange-500/20',
