@@ -127,22 +127,13 @@ export default function MiniAppPage() {
   const [avgCheck,   setAvgCheck]   = useState("");
   const [planId,     setPlanId]     = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [slideUrls,  setSlideUrls]  = useState<string[]>([]);
-  const [slidesLoading, setSlidesLoading] = useState(false);
-  const [slidesError,   setSlidesError]   = useState(false);
 
   const plan      = PLANS.find((p) => p.id === planId) ?? null;
   const nicheCase = niche ? CASES[niche] : null;
   const canCalc   = niche && avgCheck && planId;
-
-  useEffect(() => {
-    setSlidesLoading(true);
-    fetch("/api/pdf-slides")
-      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((data: { urls: string[] }) => { setSlideUrls(data.urls); setSlidesLoading(false); })
-      .catch(() => { setSlidesError(true); setSlidesLoading(false); });
-  }, []);
-
+  const SLIDE_URLS = Array.from({ length: 28 }, (_, i) =>
+  `/slides/slide-${String(i + 1).padStart(2, "0")}.png`
+);
   return (
     <main style={{
       background: "#0b1220",
@@ -363,73 +354,20 @@ export default function MiniAppPage() {
 
       {/* ЭКСКУРСИЯ */}
       <section style={{ padding: "0 20px 40px" }}>
-        <SectionTitle label="Экскурсия на контент-ферму" />
-
-        {slidesLoading && (
-          <div style={{ textAlign: "center", padding: "48px 0", color: "#334155", fontSize: 13 }}>
-            <div style={{ fontSize: 30, marginBottom: 10 }}>⏳</div>
-            Загружаем презентацию...
-          </div>
-        )}
-
-        {slidesError && (
-          <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14, padding: 20, textAlign: "center", color: "#f87171", fontSize: 13 }}>
-            Не удалось загрузить слайды. Попробуйте обновить страницу.
-          </div>
-        )}
-
-        {/* PDF изображения */}
-        {!slidesLoading && !slidesError && slideUrls.length > 0 && (
-          <div>
-            <p style={{ fontSize: 11, color: "#334155", marginBottom: 12, textAlign: "center" }}>
-              {slideUrls.length} слайдов · прокрутите вниз
-            </p>
-            {slideUrls.map((url, i) => (
-              <img
-                key={i} src={url} alt={`Слайд ${i + 1}`}
-                loading="lazy"
-                style={{ display: "block", width: "100%", borderRadius: 12, marginBottom: 10 }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Текстовые карточки-фоллбэк */}
-        {!slidesLoading && !slidesError && slideUrls.length === 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <p style={{ fontSize: 11, color: "#1e293b", textAlign: "center", marginBottom: 4 }}>
-              Добавьте PDF в /public/presentation.pdf и настройте /api/pdf-slides для показа оригиналов
-            </p>
-            {SLIDE_CARDS.map((s) => (
-              <div key={s.tag} style={{
-                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 16, padding: "18px 16px", position: "relative", overflow: "hidden",
-              }}>
-                <div style={{
-                  position: "absolute", bottom: -16, right: 6, fontSize: 80, fontWeight: 900,
-                  color: "rgba(255,255,255,0.025)", lineHeight: 1, userSelect: "none",
-                }}>
-                  {s.tag}
-                </div>
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <div style={{ fontSize: 26, marginBottom: 8 }}>{s.icon}</div>
-                  <div style={{ fontSize: 9, fontWeight: 800, color: "#4ade80", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
-                    Слайд {s.tag}
-                  </div>
-                  <h3 style={{ fontSize: 17, fontWeight: 900, marginBottom: 8, lineHeight: 1.25, letterSpacing: "-0.02em" }}>{s.title}</h3>
-                  <p style={{ color: "#64748b", fontSize: 12, lineHeight: 1.65, marginBottom: 12 }}>{s.body}</p>
-                  <div style={{
-                    display: "inline-block", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)",
-                    borderRadius: 7, padding: "5px 12px", fontSize: 14, fontWeight: 900, color: "#4ade80",
-                  }}>
-                    {s.accent}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+  <SectionTitle label="Экскурсия на контент-ферму" />
+  <p style={{ fontSize: 11, color: "#334155", marginBottom: 12, textAlign: "center" }}>
+    28 слайдов · прокрутите вниз
+  </p>
+  {SLIDE_URLS.map((url, i) => (
+    <img
+      key={i}
+      src={url}
+      alt={`Слайд ${i + 1}`}
+      loading="lazy"
+      style={{ display: "block", width: "100%", borderRadius: 12, marginBottom: 10 }}
+    />
+  ))}
+</section>
 
       {/* STICKY CTA */}
       <div style={{
