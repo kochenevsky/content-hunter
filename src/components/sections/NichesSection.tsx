@@ -32,7 +32,7 @@ export function NichesSection({ title, subtitle, items }: NichesSectionProps = {
   })) : DEFAULT_NICHES.map(n => ({ Icon: n.icon, name: n.name, description: n.description }))
 
   return (
-    <section className="section bg-neutral-50">
+    <section className="section bg-neutral-50 pt-0">
       <div className="container">
         <FadeInView direction="up" className="text-center mb-16">
           <h2 className="heading-2 text-neutral-900 mb-4">
