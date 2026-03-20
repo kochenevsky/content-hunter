@@ -74,6 +74,16 @@ export function NichesSection({ title, subtitle, items }: NichesSectionProps = {
             )
           })}
         </StaggerContainer>
+
+        <div className="mt-12 text-center">
+          
+            href="/#pricing"
+            className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium rounded-lg bg-primary-500 hover:bg-primary-600 text-white transition-colors"
+          >
+            Хочу контент-ферму
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </a>
+        </div>
       </div>
     </section>
   )
