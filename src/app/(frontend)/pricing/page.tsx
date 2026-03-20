@@ -58,7 +58,7 @@ export default async function PricingPage() {
       {/* Pricing Cards */}
       <section className="section bg-white">
         <div className="container">
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {pricing.map((plan: any) => (
               <div
                 key={plan.id}
