@@ -226,7 +226,7 @@ export function HeroSection({ headline, subheadline, primaryButtonText, primaryB
               <span className="relative flex h-2 w-2">
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
               </span>
-              {badge ?? 'Гарантия охватов в договоре'}
+              {badge ?? 'Бесплатная настройка оборудования'}
             </motion.div>
 
             {/* Headline */}
