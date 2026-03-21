@@ -233,7 +233,7 @@ export default function HMDProfile() {
           document.getElementById('patients-list').innerHTML =
             '<div class="empty-screen">' +
               '<div class="empty-icon">🏥</div>' +
-              '<div class="empty-title">Help me, Doctor 👩‍⚕️</div>' +
+              '<div class="empty-title">Help me, Doctor \uD83D\uDC69\u200D\u2695\uFE0F</div>' +
               '<div class="empty-sub">Пройдите регистрацию чтобы начать принимать пациентов</div>' +
               '<button class="btn-primary" style="max-width:260px;margin-top:8px" onclick="if(tg)tg.close()">Пройти регистрацию</button>' +
             '</div>';
