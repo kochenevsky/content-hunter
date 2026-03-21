@@ -362,11 +362,27 @@ export default function WFProfile() {
         }
 
         function showError(msg){document.getElementById('loading').classList.add('hidden');document.getElementById('prof-name').textContent=msg;}
-
+        window.showScreen = showScreen;
         window.showScreen=showScreen;
         window.handleFanficAction=handleFanficAction;
         window.buyPlan=buyPlan;
-        window.initApp=initApp;
+        window.initApp = initApp;
+        if (window.Telegram && window.Telegram.WebApp) {
+          initApp();
+        } else {
+          // Ждём загрузки скрипта через polling
+          var _tgCheck = setInterval(function() {
+            if (window.Telegram && window.Telegram.WebApp) {
+              clearInterval(_tgCheck);
+              initApp();
+            }
+          }, 50);
+          // Таймаут — если через 3 секунды tg не появился, запускаем без него
+          setTimeout(function() {
+            clearInterval(_tgCheck);
+            if (!myUid) initApp();
+          }, 3000);
+        }
       `}} />
     </>
   );
