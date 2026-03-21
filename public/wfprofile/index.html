@@ -362,7 +362,7 @@ async function loadRating() {
       html += '<div class="rating-item' + (isMe ? ' me' : '') + '" style="animation-delay:' + (i * 0.05) + 's">';
       html += '<div class="rating-rank">' + rankText + '</div>';
       html += '<div class="rating-name">' + esc(u.name) + (isMe ? ' <span class="rating-me-badge">ТЫ</span>' : '') + '</div>';
-      html += '<div class="rating-score">' + score</div>';
+      html += '<div class="rating-score">' + score + '</div>';
       html += '</div>';
     }
     listEl.innerHTML = html;
