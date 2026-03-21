@@ -257,10 +257,28 @@ export default function WFProfile() {
           }catch(e){alert('Ошибка создания платежа, попробуй позже');}
         }
 
-        function initApp(){
-          tg=window.Telegram&&window.Telegram.WebApp;
-          if(tg){tg.ready();tg.expand();tg.setHeaderColor('#0d0d0d');tg.setBackgroundColor('#0d0d0d');}
-          loadProfile();
+        async function initApp() {
+          tg = window.Telegram && window.Telegram.WebApp;
+          if (tg) { tg.ready(); tg.expand(); }
+        
+          await new Promise(function(r) { setTimeout(r, 200); });
+        
+          tg = window.Telegram && window.Telegram.WebApp;
+        
+          try {
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+              myUid = String(tg.initDataUnsafe.user.id);
+            } else {
+              myUid = new URLSearchParams(location.search).get('uid');
+            }
+            if (!myUid) { showError('Открой через Telegram бот'); return; }
+            var r = await fetch('/api/wf/profile?uid=' + myUid + '&init=' + encodeURIComponent((tg && tg.initData) || ''));
+            if (!r.ok) throw new Error('failed');
+            var d = await r.json();
+            profileData = d;
+            renderProfile(d);
+          } catch(e) { showError('Ошибка загрузки'); }
+          finally { document.getElementById('loading').classList.add('hidden'); }
         }
 
         async function loadProfile(){
