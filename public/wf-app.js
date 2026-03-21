@@ -74,21 +74,6 @@
           finally { document.getElementById('loading').classList.add('hidden'); }
         }
 
-        async function loadProfile(){
-          try{
-            var uid=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.id;
-            if(!uid)uid=new URLSearchParams(window.location.search).get('uid');
-            if(!uid){showError('Открой через Telegram бот');return;}
-            myUid=uid;
-            var r=await fetch('/api/wf/profile?uid='+uid+'&init='+encodeURIComponent((tg&&tg.initData)||''));
-            if(!r.ok)throw new Error('failed');
-            var d=await r.json();
-            profileData=d;
-            renderProfile(d);
-          }catch(e){showError('Ошибка загрузки');}
-          finally{document.getElementById('loading').classList.add('hidden');}
-        }
-
         function renderProfile(d){
           document.getElementById('prof-name').textContent=d.name||'Пользователь';
           document.getElementById('prof-level').textContent=d.level||'НОВИЧОК';
