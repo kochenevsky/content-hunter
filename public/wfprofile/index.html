@@ -368,7 +368,7 @@ async function loadRating() {
     listEl.innerHTML = html;
     var inTop = d.top.some(function(u) { return u.uid === String(myUid); });
     if (!inTop && d.my_place) {
-      myPlaceEl.innerHTML = '<div class="rating-myplace">Твоё место<strong>#' + d.my_place + '</strong><span style="color:var(--muted);font-size:12px">' + Math.round(d.my_score || 0)</span></div>';
+      myPlaceEl.innerHTML = '<div class="rating-myplace">Твоё место<strong>#' + d.my_place + '</strong><span style="color:var(--muted);font-size:12px">' + Math.round(d.my_score || 0) + '</span></div>';
     }
   } catch(e) {
     listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px 0">Не удалось загрузить</div>';
