@@ -294,6 +294,7 @@ async function loadProfile() {
     var r = await fetch('https://morning-wind-dc5e.oxion-ezhkov.workers.dev/mini-app/profile?uid=' + uid + '&init=' + encodeURIComponent((tg && tg.initData) || ''));
     if (!r.ok) throw new Error('failed');
     var d = await r.json();
+    console.log('profile data:', d); // добавь эту строку
     profileData = d;
     renderProfile(d);
   } catch(e) { showError('Ошибка загрузки'); }
