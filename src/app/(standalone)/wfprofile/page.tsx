@@ -4,16 +4,27 @@ import { useEffect } from 'react';
 
 export default function WFProfile() {
   useEffect(() => {
-    const tgScript = document.createElement('script');
-    tgScript.src = 'https://telegram.org/js/telegram-web-app.js';
-    tgScript.onload = () => {
+  // Шрифты
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800;900&family=Raleway:wght@400;500;600&display=swap';
+  document.head.appendChild(fontLink);
+
+  // Telegram
+  if ((window as any).Telegram?.WebApp) {
+    if ((window as any).initApp) (window as any).initApp();
+    return;
+  }
+  const tgScript = document.createElement('script');
+  tgScript.src = 'https://telegram.org/js/telegram-web-app.js';
+  tgScript.async = true;
+  tgScript.onload = () => {
+    setTimeout(() => {
       if ((window as any).initApp) (window as any).initApp();
-    };
-    document.head.appendChild(tgScript);
-    if ((window as any).Telegram?.WebApp && (window as any).initApp) {
-      (window as any).initApp();
-    }
-  }, []);
+    }, 100);
+  };
+  document.head.appendChild(tgScript);
+}, []);
 
   return (
     <>
@@ -23,8 +34,8 @@ export default function WFProfile() {
           --pink: #ff2d78; --pink-dim: rgba(255,45,120,0.15);
           --bg: #0d0d0d; --surface: #1a1a1a; --surface2: #222222; --border: rgba(255,255,255,0.07);
           --text: #ffffff; --muted: #666666; --muted2: #444444;
-          --font-head: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
-          --font-body: -apple-system, 'SF Pro Text', 'Segoe UI', sans-serif;
+          --font-head: 'Unbounded', sans-serif;
+          --font-body: 'Raleway', sans-serif;
           --safe-bottom: env(safe-area-inset-bottom, 0px); --nav-height: 64px;
         }
         html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); overflow: hidden; }
