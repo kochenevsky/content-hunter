@@ -4,25 +4,9 @@ import { useEffect } from 'react';
 
 export default function WFProfile() {
   useEffect(() => {
-  // Шрифты
-  const fontLink = document.createElement('link');
-  fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800;900&family=Raleway:wght@400;500;600&display=swap';
-  document.head.appendChild(fontLink);
-
-  // Telegram
-  if ((window as any).Telegram?.WebApp) {
-    if ((window as any).initApp) (window as any).initApp();
-    return;
-  }
   const tgScript = document.createElement('script');
   tgScript.src = 'https://telegram.org/js/telegram-web-app.js';
   tgScript.async = true;
-  tgScript.onload = () => {
-    setTimeout(() => {
-      if ((window as any).initApp) (window as any).initApp();
-    }, 100);
-  };
   document.head.appendChild(tgScript);
 }, []);
 
