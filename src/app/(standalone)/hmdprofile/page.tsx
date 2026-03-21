@@ -240,6 +240,7 @@ export default function HMDProfile() {
         }
 
         async function initApp() {
+          document.getElementById('panel-overlay').addEventListener('click', closePanel);
           tg = window.Telegram && window.Telegram.WebApp;
           if (tg) { tg.ready(); tg.expand(); }
           try {
@@ -377,8 +378,6 @@ export default function HMDProfile() {
           document.getElementById('panel-overlay').classList.remove('visible');
           document.getElementById('patient-panel').classList.remove('open');
         }
-
-        document.getElementById('panel-overlay').addEventListener('click', closePanel);
 
         function renderPanel(pat) {
           var isAlien = pat.is_alien;
