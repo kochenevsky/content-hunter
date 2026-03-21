@@ -288,6 +288,7 @@ async function buyPlan(planId) {
 async function loadProfile() {
   try {
     var uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+    if (!uid) uid = new URLSearchParams(window.location.search).get('uid');
     if (!uid) { showError('Открой через Telegram бот'); return; }
     myUid = uid;
     var r = await fetch('/mini-app/profile?uid=' + uid + '&init=' + encodeURIComponent((tg && tg.initData) || ''));
