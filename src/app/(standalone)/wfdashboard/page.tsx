@@ -1,4 +1,10 @@
-<!DOCTYPE html>
+export const metadata = { title: 'WhataFaaanfik Dashboard' };
+
+export default function WFDashboard() {
+  return (
+    <>
+      <script src="https://cdn..." />
+      {<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -645,4 +651,7 @@ function esc(s) {
 load();
 </script>
 </body>
-</html>
+</html>}
+    </>
+  );
+}
