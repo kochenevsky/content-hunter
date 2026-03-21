@@ -103,7 +103,7 @@ export default function HMDProfile() {
         .status-badge.alien { background: #F3F0FF; color: #7C3AED; }
         .panel-section { margin-bottom: 20px; }
         .panel-section-title { font-size: 10px; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .panel-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .panel-section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
         .cons-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface); border-radius: var(--radius-sm); margin-bottom: 6px; border: 1px solid var(--border); }
         .cons-num { font-size: 13px; font-weight: 700; }
         .cons-date { font-size: 12px; color: var(--text3); }
@@ -135,8 +135,8 @@ export default function HMDProfile() {
         .stat-label { font-size: 11px; color: var(--text3); font-weight: 600; }
         .strengths-list, .weak-list { list-style: none; padding: 0; }
         .strengths-list li, .weak-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text2); line-height: 1.5; padding: 6px 0; }
-        .strengths-list li::before { content: '💚'; flex-shrink: 0; }
-        .weak-list li::before { content: '⚠️'; flex-shrink: 0; }
+        .strengths-list li::before { content: "💚"; flex-shrink: 0; }
+        .weak-list li::before { content: "⚠️"; flex-shrink: 0; }
         .rec-chip { display: inline-block; background: var(--pink-pale); color: var(--pink); border-radius: var(--radius-sm); padding: 6px 14px; font-size: 12px; font-weight: 700; margin: 4px 4px 0 0; }
         .closed-item { background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 12px 14px; margin-bottom: 8px; }
         .closed-name { font-size: 14px; font-weight: 800; }
