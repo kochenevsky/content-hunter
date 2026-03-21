@@ -626,16 +626,16 @@ function render(d) {
 
 function funnelRow(label, val, max, color) {
   const w = max > 0 ? (val / max * 100) : 0;
-  return \`
+  return `
     <div class="funnel-row">
-      <div class="funnel-label">\${label}</div>
+      <div class="funnel-label">${label}</div>
       <div class="funnel-bar-wrap">
-        <div class="funnel-bar" style="width:\${w}%;background:\${color}"></div>
+        <div class="funnel-bar" style="width:${w}%;background:${color}"></div>
       </div>
-      <div class="funnel-val">\${val.toLocaleString('ru')}</div>
-      <div class="funnel-pct">\${(w).toFixed(1)}%</div>
+      <div class="funnel-val">${val.toLocaleString('ru')}</div>
+      <div class="funnel-pct">${(w).toFixed(1)}%</div>
     </div>
-  \`;
+  `;
 }
 
 function esc(s) {
