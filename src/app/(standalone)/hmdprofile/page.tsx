@@ -320,12 +320,12 @@ export default function HMDProfile() {
           var lastCons = p.consultations && p.consultations.length ? 'Консультаций: ' + p.consultations.length : 'Первичный приём';
           var actionBtn = isClosed
             ? '<div style="display:flex;gap:8px">' +
-              '<button class="card-btn secondary" style="flex:1" onclick="openPatient(event,\'' + esc(p.id) + '\')">📋 История</button>' +
-              '<button class="card-btn" style="flex:1" onclick="repeatConsultation(event,\'' + esc(p.id) + '\')">🔄 Повторно</button>' +
+              '<button class="card-btn secondary" style="flex:1" onclick="openPatient(event, \\"' + esc(p.id) + '\\")">📋 История</button>' +
+              '<button class="card-btn" style="flex:1" onclick="repeatConsultation(event, \\"' + esc(p.id) + '\\")">🔄 Повторно</button>' +
               '</div>'
-            : '<button class="card-btn" onclick="startConsultation(event,\'' + esc(p.id) + '\')">▶️ Начать приём</button>';
+            : '<button class="card-btn" onclick="startConsultation(event, \\"' + esc(p.id) + '\\")">▶️ Начать приём</button>';
 
-          return '<div class="patient-card" onclick="openPatient(event,\'' + esc(p.id) + '\')">' +
+          return '<div class="patient-card" onclick="openPatient(event,\\"' + esc(p.id) + '\\")">' +
             '<div class="card-inner">' +
               '<div class="card-stripe ' + stripeClass + '"></div>' +
               '<div class="card-body">' +
@@ -433,7 +433,7 @@ export default function HMDProfile() {
               '</div>' +
               '<div style="font-size:13px;color:var(--text2);font-style:italic;margin-top:8px">' + esc(pat.chief_complaint) + '</div>' +
             '</div>' +
-            (!isClosed ? '<button class="btn-primary" style="margin-bottom:20px" onclick="startConsultation(event,\'' + esc(pat.id) + '\')">Начать приём</button>' : '') +
+            (!isClosed ? '<button class="btn-primary" style="margin-bottom:20px" onclick="startConsultation(event, \\"' + esc(pat.id) + '\\")">Начать приём</button>' : '') +
             (isClosed ? '<div style="background:var(--pink-pale);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px"><div style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--pink);margin-bottom:6px">Истинный диагноз</div><div style="font-size:15px;font-weight:700;color:var(--text)">' + esc(pat.true_diagnosis||'Не установлен') + '</div></div>' : '') +
             (starsHtml ? '<div class="panel-section"><div class="panel-section-title">Последняя оценка</div>' + starsHtml + '</div>' : '') +
             '<div class="panel-section"><div class="panel-section-title">Консультации</div>' + consListHtml + '</div>' +
@@ -661,7 +661,7 @@ export default function HMDProfile() {
                 '<div style="padding:14px">' +
                   '<div style="font-size:16px;font-weight:800;margin-bottom:4px">' + esc(t.pat_name) + '</div>' +
                   '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">' + esc(t.specialization||'') + ' · 5 вопросов</div>' +
-                  '<button class="btn-primary" onclick="startTest(\'' + esc(t.pat_id) + '\')">' + (t.status==='in_progress'?'▶️ Продолжить тест':'📝 Начать тест') + '</button>' +
+                  '<button class="btn-primary" onclick="startTest(\\"' + esc(t.pat_id) + '\\")">' + (t.status==='in_progress'?'▶️ Продолжить тест':'📝 Начать тест') + '</button>' +
                 '</div></div>';
             }).join('');
           }
