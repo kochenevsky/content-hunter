@@ -202,20 +202,49 @@ function renderPanel(pat) {
   }).join('') : '<div style="color:var(--text3);font-size:13px">Обследований не назначалось</div>';
 
   var feedbackHtml = '';
-  if (lastCons && lastCons.feedback) {
-    var fb = lastCons.feedback;
-    if (fb.good && fb.good.length) feedbackHtml += fb.good.map(function(g) {
-      return '<div class="feedback-block good"><span class="feedback-icon">✅</span><span class="feedback-text">' + esc(g) + '</span></div>';
-    }).join('');
-    if (fb.missed && fb.missed.length) feedbackHtml += fb.missed.map(function(m) {
-      return '<div class="feedback-block missed"><span class="feedback-icon">⚠️</span><span class="feedback-text">' + esc(m) + '</span></div>';
-    }).join('');
-    if (fb.errors && fb.errors.length) feedbackHtml += fb.errors.map(function(e) {
-      return '<div class="feedback-block error"><span class="feedback-icon">❌</span><span class="feedback-text">' + esc(e) + '</span></div>';
-    }).join('');
-    if (fb.recommendation) feedbackHtml += '<div class="feedback-block missed" style="margin-top:6px"><span class="feedback-icon">📚</span><span class="feedback-text"><strong>Изучить:</strong> ' + esc(fb.recommendation) + '</span></div>';
-    if (fb.missed_opportunity) feedbackHtml += '<div class="feedback-block error" style="margin-top:6px"><span class="feedback-icon">💡</span><span class="feedback-text"><strong>Упущено:</strong> ' + esc(fb.missed_opportunity) + '</span></div>';
-  }
+          if (lastCons && lastCons.feedback) {
+            var fb = lastCons.feedback;
+            // Новый формат
+            if (fb.expert_text) {
+              feedbackHtml += '<div class="feedback-block good" style="background:var(--surface2)">' +
+                '<div style="font-size:12px;font-weight:800;color:var(--text3);margin-bottom:6px">РАЗБОР ЭКСПЕРТА</div>' +
+                '<div class="feedback-text">' + esc(fb.expert_text) + '</div></div>';
+            }
+            if (fb.dialog_moments && fb.dialog_moments.length) {
+              fb.dialog_moments.forEach(function(m) {
+                feedbackHtml += '<div class="feedback-block missed">' +
+                  '<div style="font-size:12px;font-style:italic;margin-bottom:4px">💬 «' + esc(m.quote) + '»</div>' +
+                  '<div class="feedback-text">→ ' + esc(m.comment) + '</div></div>';
+              });
+            }
+            // Старый формат для обратной совместимости
+            if (!fb.expert_text) {
+              if (fb.good && fb.good.length) feedbackHtml += fb.good.map(function(g) {
+                return '<div class="feedback-block good"><span class="feedback-icon">✅</span><span class="feedback-text">' + esc(g) + '</span></div>';
+              }).join('');
+              if (fb.missed && fb.missed.length) feedbackHtml += fb.missed.map(function(m) {
+                return '<div class="feedback-block missed"><span class="feedback-icon">⚠️</span><span class="feedback-text">' + esc(m) + '</span></div>';
+              }).join('');
+              if (fb.errors && fb.errors.length) feedbackHtml += fb.errors.map(function(e) {
+                return '<div class="feedback-block error"><span class="feedback-icon">❌</span><span class="feedback-text">' + esc(e) + '</span></div>';
+              }).join('');
+            }
+            // Оси
+            if (fb.axes) {
+              var axHtml = '<div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">';
+              var axMap = {diagnosis:'🧠 Диагн.',communication:'🗣 Общение',treatment:'💊 Лечение'};
+              Object.keys(axMap).forEach(function(k) {
+                if (fb.axes[k] !== undefined) {
+                  axHtml += '<div style="text-align:center">' +
+                    '<div style="font-size:10px;color:var(--text3);font-weight:700">' + axMap[k] + '</div>' +
+                    '<div style="font-size:16px">' + '⭐'.repeat(fb.axes[k]) + '☆'.repeat(5-fb.axes[k]) + '</div>' +
+                  '</div>';
+                }
+              });
+              axHtml += '</div>';
+              feedbackHtml = axHtml + feedbackHtml;
+            }
+          }
 
   var consListHtml = (pat.consultations || []).map(function(c, i) {
     return '<div class="cons-item">' +
