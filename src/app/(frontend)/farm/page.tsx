@@ -39,7 +39,11 @@ export default function FarmPage() {
             <p className="text-neutral-400 mb-10">
               Вы присылаете ролик — мы делаем всё остальное. Еженедельная аналитика в личном кабинете.
             </p>
-            <StickyCta href="https://sbsite.pro//eu_site_calc_1" label="Получить экскурсию" />
+            <StickyCta 
+  href="https://sbsite.pro//eu_site_calc_1" 
+  label="Получить экскурсию" 
+  stickyLabel="Рассчитать для моей ниши"
+/>
           </div>
         </div>
       </section>
@@ -93,7 +97,11 @@ export default function FarmPage() {
                 </li>
               ))}
             </ul>
-            <StickyCta href="https://sbsite.pro//eu_site_calc_1" label="Рассчитать для моей ниши" />
+            <StickyCta 
+  href="https://sbsite.pro//eu_site_calc_1" 
+  label="Рассчитать для моей ниши"
+  stickyLabel="Получить консультацию"
+/>
           </div>
         </div>
       </section>
