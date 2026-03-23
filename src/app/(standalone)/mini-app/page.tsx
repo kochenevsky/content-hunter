@@ -131,7 +131,7 @@ export default function MiniAppPage() {
   const plan      = PLANS.find((p) => p.id === planId) ?? null;
   const nicheCase = niche ? CASES[niche] : null;
   const canCalc   = niche && avgCheck && planId;
-  const SLIDE_URLS = Array.from({ length: 28 }, (_, i) =>
+  const SLIDE_URLS = Array.from({ length: 27 }, (_, i) =>
   `/slides/Content%20Hunter%20%D0%B2%D0%B5%D1%80%D1%82%D0%B8%D0%BA%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F_page-${String(i + 1).padStart(4, "0")}.jpg`
 );
   return (
@@ -333,7 +333,7 @@ export default function MiniAppPage() {
 
             {/* CTA */}
             <a
-              href="https://sbsite.pro//ru_site_ch_1?utm_source=telegram&utm_medium=miniapp&utm_campaign=result"
+              href="https://t.me/m/bqsD11vFZjVi"
               target="_blank" rel="noopener noreferrer"
               className="cta-pulse"
               style={{
@@ -346,7 +346,7 @@ export default function MiniAppPage() {
               Получить консультацию →
             </a>
             <p style={{ textAlign: "center", fontSize: 11, color: "#334155", marginTop: 8 }}>
-              Бесплатно · Гарантия просмотров в договоре
+              Ответим на вопросы и поможем с запуском
             </p>
           </div>
         )}
@@ -354,9 +354,9 @@ export default function MiniAppPage() {
 
       {/* ЭКСКУРСИЯ */}
       <section style={{ padding: "0 20px 40px" }}>
-  <SectionTitle label="Экскурсия на контент-ферму" />
+  <SectionTitle label="Экскурсия по контент-ферме" />
   <p style={{ fontSize: 11, color: "#334155", marginBottom: 12, textAlign: "center" }}>
-    28 слайдов · прокрутите вниз
+    Посмотрите как это работает
   </p>
   {SLIDE_URLS.map((url, i) => (
     <img
@@ -378,7 +378,7 @@ export default function MiniAppPage() {
         zIndex: 100,
       }}>
         <a
-          href="https://sbsite.pro//ru_site_ch_1?utm_source=telegram&utm_medium=miniapp&utm_campaign=sticky"
+          href="https://t.me/m/bqsD11vFZjVi"
           target="_blank" rel="noopener noreferrer"
           style={{
             display: "block", padding: 15, borderRadius: 14,
