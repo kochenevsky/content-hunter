@@ -1,4 +1,4 @@
-import { StickyCta } from '../_components/StickyCta'
+import { StickyCta } from '../case-farm/_components/StickyCta'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight } from 'lucide-react'
 
