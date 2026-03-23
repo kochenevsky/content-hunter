@@ -3,8 +3,8 @@ import { ArrowRight } from 'lucide-react'
 import { StickyCta } from './_components/StickyCta'
 
 export const metadata = {
-  title: 'Контент-ферма — масштабируй SMM',
-  description: 'Система публикации рилсов через сеть аккаунтов. Гарантируем просмотры в договоре.',
+  title: 'Система масштабирования SMM — Content Hunter',
+  description: 'Загружай ролики — платформа распространяет их по десяткам прогретых аккаунтов автоматически. Гарантия просмотров в договоре.',
 }
 
 export default function FarmPage() {
@@ -15,21 +15,20 @@ export default function FarmPage() {
         <div className="container">
           <div className="max-w-3xl">
             <h1 className="heading-display text-white mb-6 break-words !text-4xl md:!text-7xl">
-              Масштабируйте свой SMM через контент-ферму
+              Система масштабирования SMM для вашего бизнеса
             </h1>
             <p className="text-xl text-neutral-400 mb-4">
-              Ведёте блог и публикуете классные рилсы, но набирается мало просмотров?
+              Загружаете ролики — платформа распространяет их по десяткам прогретых аккаунтов автоматически.
             </p>
             <p className="text-xl text-neutral-400 mb-8">
-              Контент-ферма — это система, в которой ваши рилсы публикуются через сеть аккаунтов
-              и набирают кратно больше просмотров.
+              Больше охватов, больше клиентов. Без увеличения бюджета на съёмку.
             </p>
             <ul className="space-y-2 mb-10 text-neutral-300 text-lg">
               {[
-                'Регистрируем 30+ аккаунтов',
-                'Настраиваем их под вашу ЦА',
-                'Публикуем 1000+ роликов в месяц',
-                'Гарантируем просмотры в договоре',
+                'Бесплатно настраиваем всё оборудование под вас',
+                'Прогреваем аккаунты под вашу ЦА и ГЕО',
+                'Публикуем 200–1000 роликов в месяц автоматически',
+                'Гарантия просмотров прописана в договоре',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">—</span>
@@ -38,7 +37,7 @@ export default function FarmPage() {
               ))}
             </ul>
             <p className="text-neutral-400 mb-10">
-              Без увеличения команды. Без хаоса. Сделаем всё под ключ, с отчётностью.
+              Вы присылаете ролик — мы делаем всё остальное. Еженедельная аналитика в личном кабинете.
             </p>
             <StickyCta href="https://sbsite.pro//eu_site_calc_1" label="Получить экскурсию" />
           </div>
@@ -50,7 +49,7 @@ export default function FarmPage() {
         <div className="container">
           <div className="max-w-3xl mx-auto">
             <h2 className="heading-1 text-neutral-900 mb-10">
-              Вы упёрлись в потолок
+              Один аккаунт — потолок. Система аккаунтов — рост.
             </h2>
 
             <div className="grid md:grid-cols-2 gap-6 mb-12">
@@ -67,7 +66,7 @@ export default function FarmPage() {
               </div>
               <div className="p-8 rounded-2xl bg-neutral-950 border border-neutral-800 text-white">
                 <p className="text-sm font-medium text-primary-400 uppercase tracking-widest mb-4">
-                  С контент-фермой
+                  С системой Content Hunter
                 </p>
                 <p className="text-lg text-neutral-300">
                   30 роликов × 30 копий × 30 аккаунтов
@@ -79,14 +78,14 @@ export default function FarmPage() {
             </div>
 
             <p className="text-xl text-neutral-600 mb-8">
-              Воспользуйтесь нашим калькулятором, чтобы рассчитать:
+              Воспользуйтесь калькулятором, чтобы рассчитать результат для своей ниши:
             </p>
             <ul className="space-y-2 mb-10 text-neutral-600 text-lg">
               {[
-                'Сколько аккаунтов нужно в вашей нише',
-                'Сколько будет публикаций каждый месяц',
-                'Какие охваты и просмотры даст система',
-                'Какие бюджеты нужны для запуска',
+                'Сколько аккаунтов нужно под вашу нишу',
+                'Сколько публикаций выйдет каждый месяц',
+                'Какие охваты гарантирует система',
+                'Сколько стоит запуск и аренда',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">—</span>
@@ -94,7 +93,7 @@ export default function FarmPage() {
                 </li>
               ))}
             </ul>
-            <StickyCta href="https://sbsite.pro//eu_site_calc_1" label="Получить калькулятор" />
+            <StickyCta href="https://sbsite.pro//eu_site_calc_1" label="Рассчитать для моей ниши" />
           </div>
         </div>
       </section>
