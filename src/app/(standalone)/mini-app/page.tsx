@@ -298,7 +298,7 @@ export default function MiniAppPage() {
                   { label: "Телефонов",         value: String(plan.phones)     },
                   { label: "Аккаунтов",          value: String(plan.accounts)   },
                   { label: "Публикаций",         value: fmt(plan.pubs)          },
-                  { label: "Просмотров",         value: fmt(plan.views)         },
+                  { label: "Гарантия просмотров",         value: fmt(plan.views)         },
                   { label: "Цена публикации",    value: `${plan.pricePerPub} ₽` },
                   { label: "Цена оборудования",  value: "0 ₽"                  },
                 ].map((m) => (
