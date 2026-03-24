@@ -110,7 +110,49 @@
           if(lockedHtml)html+='<div class="ach-divider"></div><div class="ach-locked-label">Ещё не получены</div>'+lockedHtml;
           document.getElementById('ach-grid').innerHTML=html;
         }
+        function openChannel() {
+  var url = 'https://t.me/fandom_whatafaaanfik';
+  if (tg) tg.openLink(url);
+  else window.open(url, '_blank');
+  // Сохраняем что открыл — для проверки
+  if (myUid) localStorage.setItem('channel_opened_' + myUid, '1');
+}
 
+async function checkChannel() {
+  if (!myUid) return;
+  var btn = document.querySelector('#task-channel-actions .task-btn.primary');
+  if (btn) { btn.textContent = 'Проверяем...'; btn.disabled = true; }
+
+  try {
+    var r = await fetch('/api/wf/check-task?uid=' + myUid + '&task=channel');
+    var d = await r.json();
+
+    if (d.ok) {
+      // Задание выполнено — обновляем карточку
+      var card = document.getElementById('task-channel');
+      card.classList.add('done');
+      card.querySelector('.task-icon').textContent = '✅';
+      var actions = document.getElementById('task-channel-actions');
+      actions.innerHTML = '<button class="task-btn done-btn" style="flex:1">+ 3 генерации начислены</button>';
+    } else {
+      if (btn) { btn.textContent = 'Проверить'; btn.disabled = false; }
+      // Показываем подсказку
+      var hint = document.createElement('div');
+      hint.style.cssText = 'font-size:11px;color:var(--muted);margin-top:8px;text-align:center';
+      hint.textContent = 'Сначала подпишись на канал, потом проверь';
+      var existing = document.querySelector('#task-channel .task-hint');
+      if (!existing) {
+        hint.className = 'task-hint';
+        document.getElementById('task-channel-actions').after(hint);
+      }
+    }
+  } catch(e) {
+    if (btn) { btn.textContent = 'Проверить'; btn.disabled = false; }
+  }
+}
+
+window.openChannel = openChannel;
+window.checkChannel = checkChannel;
         async function loadRating(){
           var listEl=document.getElementById('rating-list');
           var myPlaceEl=document.getElementById('rating-myplace');
