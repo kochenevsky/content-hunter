@@ -35,6 +35,29 @@ export default function WFProfile() {
           --safe-bottom: env(safe-area-inset-bottom, 0px); --nav-height: 64px;
         }
         html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); overflow: hidden; }
+        .tasks-header { margin-bottom: 20px; }
+.tasks-title { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
+.tasks-sub { font-size: 12px; color: var(--muted); }
+.task-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 12px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+.task-card.done { border-color: rgba(255,45,120,0.3); }
+.task-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: radial-gradient(circle, var(--pink-dim) 0%, transparent 70%); pointer-events: none; }
+.task-card.done::before { opacity: 0.6; }
+.task-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.task-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.task-card.done .task-icon { background: var(--pink-dim); border-color: rgba(255,45,120,0.25); }
+.task-info { flex: 1; }
+.task-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; letter-spacing: -0.01em; }
+.task-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.task-reward { display: flex; align-items: center; gap: 4px; background: var(--pink-dim); border: 1px solid rgba(255,45,120,0.2); border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--pink); white-space: nowrap; flex-shrink: 0; }
+.task-actions { display: flex; gap: 8px; }
+.task-btn { flex: 1; padding: 11px 14px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; -webkit-tap-highlight-color: transparent; letter-spacing: 0.02em; }
+.task-btn:active { transform: scale(0.97); }
+.task-btn.primary { background: var(--pink); color: white; }
+.task-btn.primary:active { background: #e0245f; }
+.task-btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.task-btn.done-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); cursor: default; font-size: 11px; }
+.task-divider { height: 1px; background: var(--border); margin: 6px 0 12px; }
+.task-repeat { font-size: 10px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
         .bg-glow { position: fixed; top: -120px; left: 50%; transform: translateX(-50%); width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,45,120,0.12) 0%, transparent 70%); pointer-events: none; z-index: 0; }
         .screen { position: fixed; inset: 0; bottom: calc(var(--nav-height) + var(--safe-bottom)); overflow-y: auto; overflow-x: hidden; padding: 24px 16px; padding-top: max(24px, env(safe-area-inset-top)); display: none; z-index: 1; -webkit-overflow-scrolling: touch; }
         .screen.active { display: block; }
@@ -185,12 +208,44 @@ export default function WFProfile() {
       </div>
 
       <div className="screen" id="screen-tasks">
-        <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',minHeight:'300px',gap:'12px',textAlign:'center',padding:'40px 24px'}}>
-          <div style={{fontSize:'48px',opacity:0.3}}>⚡</div>
-          <div style={{fontSize:'16px',fontWeight:700,color:'var(--muted)'}}>Скоро</div>
-          <div style={{fontSize:'13px',color:'var(--muted2)',lineHeight:1.5}}>Ежедневные задания<br/>за бонусные генерации</div>
-        </div>
+  <div className="tasks-header">
+    <div className="tasks-title">Задания</div>
+    <div className="tasks-sub">Выполняй и получай бонусные генерации</div>
+  </div>
+
+  {/* Подписка на канал */}
+  <div className="task-card" id="task-channel">
+    <div className="task-top">
+      <div className="task-icon">📢</div>
+      <div className="task-info">
+        <div className="task-name">Подписаться на канал</div>
+        <div className="task-desc">Фандом живёт здесь — посты про сериалы, аниме и фильмы</div>
       </div>
+      <div className="task-reward">+3 ⚡</div>
+    </div>
+    <div className="task-actions" id="task-channel-actions">
+      <button className="task-btn secondary" onClick={() => (window as any).openChannel()}>Открыть канал</button>
+      <button className="task-btn primary" onClick={() => (window as any).checkChannel()}>Проверить</button>
+    </div>
+  </div>
+
+  <div className="task-repeat">Бесконечное задание</div>
+
+  {/* Пригласить друга */}
+  <div className="task-card" id="task-referral">
+    <div className="task-top">
+      <div className="task-icon">👯</div>
+      <div className="task-info">
+        <div className="task-name">Пригласить подругу</div>
+        <div className="task-desc">За каждую подругу которая зарегистрируется по твоей ссылке</div>
+      </div>
+      <div className="task-reward">+5 ⚡</div>
+    </div>
+    <div className="task-actions">
+      <button className="task-btn primary" style={{flex:1}} onClick={() => (window as any).handleFanficAction('show_friend')}>Пригласить</button>
+    </div>
+  </div>
+</div>
 
       <div className="screen" id="screen-rating">
         <div className="rating-header">
@@ -209,9 +264,9 @@ export default function WFProfile() {
         <div className="nav-item" onClick={() => (window as any).showScreen('subs')} id="nav-subs">
           <div className="nav-pip"></div><div className="nav-icon">👑</div><div className="nav-label">Подписка</div>
         </div>
-        <div className="nav-item locked" id="nav-tasks">
-          <div className="nav-icon">⚡</div><div className="nav-label">Задания</div>
-        </div>
+        <div className="nav-item" onClick={() => (window as any).showScreen('tasks')} id="nav-tasks">
+  <div className="nav-pip"></div><div className="nav-icon">⚡</div><div className="nav-label">Задания</div>
+</div>
         <div className="nav-item" onClick={() => (window as any).showScreen('rating')} id="nav-rating">
           <div className="nav-pip"></div><div className="nav-icon">★</div><div className="nav-label">Рейтинг</div>
         </div>
