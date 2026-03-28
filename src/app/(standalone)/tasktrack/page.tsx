@@ -88,14 +88,14 @@ function ParticleCanvas({ theme, listening }: { theme: Theme; listening: boolean
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = color + Math.floor(p.opacity * 180).toString(16).padStart(2, "0");
+        ctx.fillStyle = color + Math.min(255, Math.max(0, Math.floor(p.opacity * 180))).toString(16).padStart(2, "0");
         ctx.fill();
 
         // Glow
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
         const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5);
-        grad.addColorStop(0, color + Math.floor(p.opacity * 60).toString(16).padStart(2, "0"));
+        grad.addColorStop(0, color + Math.min(255, Math.max(0, Math.floor(p.opacity * 60))).toString(16).padStart(2, "0"));
         grad.addColorStop(1, "transparent");
         ctx.fillStyle = grad;
         ctx.fill();
