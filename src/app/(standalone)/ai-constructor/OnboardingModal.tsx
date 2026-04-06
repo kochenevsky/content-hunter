@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { BotStructure, BotContent, Button } from './types';
 
-const API_URL = https://ai-constructor.oxion-ezhkov.workers.dev;
+const API_URL = "https://ai-constructor.oxion-ezhkov.workers.dev";
 
 interface OnboardingProps {
   onComplete: (config: { idea: string; structure: BotStructure; content: BotContent; tgToken: string }) => void;
