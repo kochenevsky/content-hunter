@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BotConfig, BotAnalytics } from './types';
+const API_URL = https://ai-constructor.oxion-ezhkov.workers.dev;
+
 
 interface DashboardProps {
   userId: string;
@@ -17,7 +19,11 @@ export function Dashboard({ userId }: DashboardProps) {
 
   async function fetchBots() {
     try {
-      const res = await fetch(`/api/bots?userId=${userId}`);
+      const res = await fetch(`${API_URL}/api/bots?userId=${userId}`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ idea }),
+});
       const data = await res.json();
       if (data.success) {
         setBots(data.data);
@@ -35,7 +41,11 @@ export function Dashboard({ userId }: DashboardProps) {
 
   async function fetchAnalytics(botId: string) {
     try {
-      const res = await fetch(`/api/bots/${botId}/analytics`);
+      const res = await fetch(`${API_URL}/api/bots/${botId}/analytics`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ idea }),
+});
       const data = await res.json();
       if (data.success) setAnalytics(data.data);
     } catch (e) {
@@ -167,7 +177,7 @@ function AIEditor({ botId, onUpdate }: { botId: string; onUpdate: () => void }) 
 
     try {
       // In real implementation, send to AI editor API
-      const response = await fetch(`/api/bots/${botId}/ai-edit`, {
+      const response = await fetch(`${API_URL}/api/bots/${botId}/ai-edit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ instruction: userMessage }),
