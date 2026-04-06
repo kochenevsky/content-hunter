@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BotConfig, BotAnalytics } from './types';
-const API_URL = https://ai-constructor.oxion-ezhkov.workers.dev;
+const API_URL = "https://ai-constructor.oxion-ezhkov.workers.dev";
 
 
 interface DashboardProps {
