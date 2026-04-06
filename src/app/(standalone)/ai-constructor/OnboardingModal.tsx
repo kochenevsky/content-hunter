@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { BotStructure, BotContent, Button } from './types';
 
+const API_URL = https://ai-constructor.oxion-ezhkov.workers.dev;
+
 interface OnboardingProps {
   onComplete: (config: { idea: string; structure: BotStructure; content: BotContent; tgToken: string }) => void;
   onClose: () => void;
@@ -24,11 +26,11 @@ export function OnboardingModal({ onComplete, onClose }: OnboardingProps) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/bots/generate-structure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idea }),
-      });
+      const res = await fetch(`${API_URL}/api/bots/generate-structure`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ idea }),
+});
       const data = await res.json();
       if (data.success) {
         setStructure(data.data);
