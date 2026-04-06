@@ -114,37 +114,52 @@ function renderPatients() {
 
 function patientCard(p, idx, isClosed) {
   var isAlien = p.is_alien;
-  var hasResults = (p.test_results || []).length > 0;
   var stripeClass = isAlien ? 'alien' : isClosed ? 'closed' : 'active';
   var tagClass = isAlien ? 'alien' : '';
   var tagText = isAlien ? '👽 Особый' : (p.specialization || '');
-  var lastCons = p.consultations && p.consultations.length ? 'Консультаций: ' + p.consultations.length : 'Первичный приём';
   var pid = esc(p.id);
-  var actionBtn = isClosed
-    ? '<div style="display:flex;gap:8px">' +
-      '<button class="card-btn secondary" style="flex:1" onclick="openPatient(event, \'' + pid + '\')">📋 История</button>' +
-      '<button class="card-btn" style="flex:1" onclick="repeatConsultation(event, \'' + pid + '\')">🔄 Повторно</button>' +
-      '</div>'
-    : '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')">▶️ Начать приём</button>';
+
+  var cardBody = '';
+  if (isClosed) {
+    var lastCons = p.consultations && p.consultations.length ? p.consultations[p.consultations.length-1] : null;
+    var rating = lastCons ? (lastCons.rating || 0) : 0;
+    var stars = rating ? '⭐'.repeat(Math.min(Math.round(rating),5)) + ' ' + rating.toFixed(1) : '—';
+    var diag = esc(p.true_diagnosis || 'Диагноз не установлен');
+
+    cardBody =
+      '<div class="card-top">' +
+        '<div><div class="card-name">' + esc(p.name) + '</div>' +
+        '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
+        '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
+      '</div>' +
+      '<div style="font-size:13px;color:var(--text2);margin-bottom:4px">🔬 ' + diag + '</div>' +
+      '<div style="font-size:13px;font-weight:700;margin-bottom:10px">' + stars + '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<button class="card-btn secondary" style="flex:1" onclick="openPatientTest(event,\'' + pid + '\')">📝 Тест</button>' +
+        '<button class="card-btn" style="flex:1" onclick="repeatConsultation(event,\'' + pid + '\')">🔄 Заново</button>' +
+      '</div>';
+  } else {
+    var hasResults = (p.test_results || []).length > 0;
+    var lastCons = p.consultations && p.consultations.length ? 'Консультаций: ' + p.consultations.length : 'Первичный приём';
+    cardBody =
+      '<div class="card-top">' +
+        '<div><div class="card-name">' + esc(p.name) + '</div>' +
+        '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
+        '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
+      '</div>' +
+      '<div class="card-complaint">' + esc(p.chief_complaint) + '</div>' +
+      '<div class="card-meta">' +
+        '<div class="card-meta-item">' + lastCons + '</div>' +
+        (hasResults ? '<div class="card-meta-item has-results">✅ Результаты готовы</div>' : '') +
+      '</div>' +
+      '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')">▶️ Начать приём</button>';
+  }
 
   return '<div class="patient-card" onclick="openPatient(event, \'' + pid + '\')">' +
     '<div class="card-inner">' +
       '<div class="card-stripe ' + stripeClass + '"></div>' +
-      '<div class="card-body">' +
-        '<div class="card-top">' +
-          '<div><div class="card-name">' + esc(p.name) + '</div>' +
-          '<div class="card-age">' + esc(String(p.age)) + (isAlien ? '' : ' лет') + ' · ' + (p.sex === 'female' ? 'Жен.' : p.sex === 'male' ? 'Муж.' : '?') + '</div></div>' +
-          '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
-        '</div>' +
-        '<div class="card-complaint">' + esc(p.chief_complaint) + '</div>' +
-        '<div class="card-meta">' +
-          '<div class="card-meta-item">' + lastCons + '</div>' +
-          (hasResults ? '<div class="card-meta-item has-results">✅ Результаты готовы</div>' : '') +
-        '</div>' +
-        actionBtn +
-      '</div>' +
-    '</div>' +
-  '</div>';
+      '<div class="card-body">' + cardBody + '</div>' +
+    '</div></div>';
 }
 
 function repeatConsultation(event, patId) {
@@ -176,6 +191,13 @@ async function openPatient(event, patId) {
     document.getElementById('patient-panel').classList.add('open');
   } catch(e) { console.error(e); }
 }
+
+function openPatientTest(event, patId) {
+  event.stopPropagation();
+  fetch(api('/mini-app/action?uid=' + myUid + '&action=start_test&pat_id=' + patId));
+  if (tg) tg.close();
+}
+window.openPatientTest = openPatientTest;
 
 function closePanel() {
   document.getElementById('panel-overlay').classList.remove('visible');
@@ -273,9 +295,10 @@ function renderPanel(pat) {
       '<div style="font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--pink);margin-bottom:6px">Истинный диагноз</div>' +
       '<div style="font-size:15px;font-weight:700;color:var(--text)">' + esc(pat.true_diagnosis || 'Не установлен') + '</div>' +
     '</div>' : '') +
-    (starsHtml ? '<div class="panel-section"><div class="panel-section-title">Последняя оценка</div>' + starsHtml + '</div>' : '') +
-    '<div class="panel-section"><div class="panel-section-title">Консультации</div>' + consListHtml + '</div>' +
-    '<div class="panel-section"><div class="panel-section-title">Результаты обследований</div>' + testsHtml + '</div>' +
+    (isClosed && pat.post_story ? '<div class="panel-section"><div class="panel-section-title">Что случилось дальше</div><div style="font-size:14px;line-height:1.6;color:var(--text2)">' + esc(pat.post_story) + '</div></div>' : '') +
+    (starsHtml ? '<div class="panel-section"><div class="panel-section-title">Jценка</div>' + starsHtml + '</div>' : '') +
+    (!isClosed ? '<div class="panel-section"><div class="panel-section-title">Консультации</div>' + consListHtml + '</div>' : '') +
+    (!isClosed ? '<div class="panel-section"><div class="panel-section-title">Результаты обследований</div>' + testsHtml + '</div>' : '') +
     (feedbackHtml ? '<div class="panel-section"><div class="panel-section-title">Разбор последней консультации</div>' + feedbackHtml + '</div>' : '');
 }
 
@@ -376,22 +399,6 @@ function renderProfile() {
     return '<option value="' + esc(pr) + '"' + (p.profession === pr ? ' selected' : '') + '>' + esc(pr) + '</option>';
   }).join('');
 
-  var strengths = p.strengths && p.strengths.length
-    ? '<div class="section-label" style="margin-top:20px">Сильные стороны</div><ul class="strengths-list">' +
-      p.strengths.slice(0, 5).map(function(s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>'
-    : '';
-
-  var weaknesses = p.weaknesses && p.weaknesses.length
-    ? '<div class="section-label" style="margin-top:16px">Слабые стороны</div><ul class="weak-list">' +
-      p.weaknesses.slice(0, 5).map(function(w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>'
-    : '';
-
-  var recs = p.recommendations && p.recommendations.length
-    ? '<div class="section-label" style="margin-top:16px">📚 Рекомендации</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">' +
-      p.recommendations.slice(0, 5).map(function(r) { return '<span class="rec-chip">' + esc(r) + '</span>'; }).join('') + '</div>'
-    : '';
-
   document.getElementById('profile-content').innerHTML =
     '<div style="background:linear-gradient(135deg,#FFB5C8,#FF8FAB);border-radius:var(--radius);padding:24px 20px;margin-bottom:16px;text-align:center;color:white">' +
       '<div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;margin:0 auto 12px">' + esc(initial) + '</div>' +
@@ -434,7 +441,7 @@ function renderProfile() {
       '<div class="stat-card"><div class="stat-val pink">' + (avgRating ? avgRating.toFixed(1) + ' ⭐' : '—') + '</div><div class="stat-label">Ср. рейтинг</div></div>' +
       '<div class="stat-card"><div class="stat-val ' + ((p.stats && p.stats.critical_outcomes || 0) > 0 ? 'coral' : '') + '">' + (p.stats && p.stats.critical_outcomes || 0) + '</div><div class="stat-label">Тяж. исходов</div></div>' +
     '</div>' +
-    strengths + weaknesses + recs;
+;
 }
 
 async function saveLevel(level) {
@@ -506,57 +513,62 @@ async function saveCustomProfession(val) {
 // ---- TESTS ----
 
 function renderTests() {
-  var pending = myTests.filter(function(t) { return t.status !== 'done'; });
-  var done = myTests.filter(function(t) { return t.status === 'done'; });
-
-  if (!myTests.length) {
-    document.getElementById('tests-content').innerHTML =
-      '<div style="text-align:center;padding:40px 20px;color:var(--text3)">' +
-      '<div style="font-size:48px;margin-bottom:12px">📝</div>' +
-      '<div style="font-size:15px;font-weight:700;margin-bottom:6px">Тестов пока нет</div>' +
-      '<div style="font-size:13px">После завершения приёма появится тест по ошибкам</div>' +
-      '</div>';
-    return;
+  var p = myProfile;
+  var hasSub = p && p.sub_until && (p.sub_until === -1 || Date.now() < p.sub_until);
+  var subLabel = '';
+  if (hasSub) {
+    if (p.sub_until === -1) subLabel = 'Навсегда';
+    else subLabel = 'до ' + new Date(p.sub_until).toLocaleDateString('ru', {day:'numeric',month:'long'});
   }
 
   var html = '';
-  if (pending.length) {
-    html += '<div class="section-label">Пройти</div>';
-    html += pending.map(function(t) {
-      return '<div style="background:var(--surface);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;margin-bottom:12px">' +
-        '<div style="width:100%;height:4px;background:var(--pink)"></div>' +
-        '<div style="padding:14px">' +
-          '<div style="font-size:16px;font-weight:800;margin-bottom:4px">' + esc(t.pat_name) + '</div>' +
-          '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">' + esc(t.specialization || '') + ' · 5 вопросов</div>' +
-          '<button class="btn-primary" onclick="startTest(\'' + esc(t.pat_id) + '\')">' +
-            (t.status === 'in_progress' ? '▶️ Продолжить тест' : '📝 Начать тест') +
-          '</button>' +
-        '</div></div>';
-    }).join('');
+
+  if (hasSub) {
+    html += '<div style="background:linear-gradient(135deg,#FFB5C8,#FF8FAB);border-radius:var(--radius);padding:20px;margin-bottom:16px;color:white;text-align:center">' +
+      '<div style="font-size:32px;margin-bottom:8px">💎</div>' +
+      '<div style="font-size:18px;font-weight:900;margin-bottom:4px">Подписка активна</div>' +
+      '<div style="font-size:14px;opacity:0.9">' + subLabel + '</div>' +
+    '</div>';
+  } else {
+    html += '<div style="background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:16px;border:1px solid var(--border)">' +
+      '<div style="font-size:15px;font-weight:800;margin-bottom:6px">Бесплатно</div>' +
+      '<div style="font-size:13px;color:var(--text2);line-height:1.5">1 пациент в день. Результаты обследований, разбор приёма, тесты по ошибкам — всё включено.</div>' +
+    '</div>';
+
+    var plans = [
+      {key:'day',    icon:'☀️', label:'1 день',   price:'30 ₽',   sub:'Попробовать без ограничений'},
+      {key:'week',   icon:'📅', label:'1 неделя', price:'150 ₽',  sub:'21 ₽/день'},
+      {key:'month',  icon:'🗓', label:'1 месяц',  price:'350 ₽',  sub:'12 ₽/день'},
+      {key:'forever',icon:'♾️', label:'Навсегда', price:'1990 ₽', sub:'Единоразово'},
+    ];
+
+    plans.forEach(function(plan) {
+      html += '<div style="background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="buyPlan(\'' + plan.key + '\')">' +
+        '<div style="display:flex;align-items:center;gap:12px">' +
+          '<span style="font-size:24px">' + plan.icon + '</span>' +
+          '<div>' +
+            '<div style="font-size:15px;font-weight:800">' + plan.label + '</div>' +
+            '<div style="font-size:12px;color:var(--text3)">' + plan.sub + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="background:var(--pink);color:white;border-radius:20px;padding:8px 16px;font-size:14px;font-weight:800">' + plan.price + '</div>' +
+      '</div>';
+    });
   }
 
-  if (done.length) {
-    html += '<div class="section-label" style="margin-top:16px">Пройденные</div>';
-    html += done.map(function(t) {
-      var icons = t.answers ? t.answers.map(function(a) { return a.is_correct ? '✅' : '❌'; }).join('') : '';
-      var score = t.score || 0;
-      var color = score >= 4 ? 'var(--green)' : score >= 3 ? 'var(--yellow)' : 'var(--coral)';
-      return '<div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:10px;overflow:hidden">' +
-        '<div style="width:100%;height:4px;background:var(--border)"></div>' +
-        '<div style="padding:14px">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center">' +
-            '<div>' +
-              '<div style="font-size:15px;font-weight:800">' + esc(t.pat_name) + '</div>' +
-              '<div style="font-size:12px;color:var(--text3);margin-top:2px">' + esc(t.specialization || '') + '</div>' +
-            '</div>' +
-            '<div style="font-size:22px;font-weight:900;color:' + color + '">' + score + '/5</div>' +
-          '</div>' +
-          '<div style="font-size:16px;margin-top:8px;letter-spacing:2px">' + icons + '</div>' +
-        '</div></div>';
-    }).join('');
-  }
+  html += '<div style="margin-top:20px;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);text-align:center">' +
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:10px">Вопросы по подписке — пишите менеджеру</div>' +
+    '<a href="https://t.me/oleg_ezhkov" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--pink);color:white;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:800;text-decoration:none">' +
+      '✈️ Написать Олегу' +
+    '</a>' +
+  '</div>';
 
   document.getElementById('tests-content').innerHTML = html;
+}
+
+function buyPlan(planKey) {
+  fetch(api('/mini-app/action?uid=' + myUid + '&action=buy_plan&pat_id=' + planKey));
+  if (tg) tg.close();
 }
 
 function startTest(patId) {
