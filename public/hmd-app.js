@@ -440,8 +440,7 @@ function renderProfile() {
       '<div class="stat-card"><div class="stat-val">' + (p.stats && p.stats.consultations_total || 0) + '</div><div class="stat-label">Консультаций</div></div>' +
       '<div class="stat-card"><div class="stat-val pink">' + (avgRating ? avgRating.toFixed(1) + ' ⭐' : '—') + '</div><div class="stat-label">Ср. рейтинг</div></div>' +
       '<div class="stat-card"><div class="stat-val ' + ((p.stats && p.stats.critical_outcomes || 0) > 0 ? 'coral' : '') + '">' + (p.stats && p.stats.critical_outcomes || 0) + '</div><div class="stat-label">Тяж. исходов</div></div>' +
-    '</div>' +
-;
+    '</div>';
 }
 
 async function saveLevel(level) {
