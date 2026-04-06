@@ -9,7 +9,7 @@ export default function ConstructorPage() {
 
   const handleComplete = async (config: any) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bots/create`, {
+      const res = await fetch(`https://ai-constructor.oxion-ezhkov.workers.dev/api/bots/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
