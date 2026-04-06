@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { BotStructure, BotContent, Button, Flow } from './types';
-
 import type { BotStructure, BotContent, Button } from './types';
 
 interface OnboardingProps {
