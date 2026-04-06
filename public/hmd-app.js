@@ -64,6 +64,9 @@ async function initApp() {
     renderPatients();
     renderProfile();
     renderTests();
+    // Открываем нужный экран если передан параметр
+    var screenParam = new URLSearchParams(location.search).get('screen');
+    if (screenParam) showScreen(screenParam);
     hide('loading');
   } catch(e) {
     console.error(e);
@@ -542,18 +545,17 @@ function renderTests() {
     ];
 
     plans.forEach(function(plan) {
-      html += '<div style="background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="buyPlan(\'' + plan.key + '\')">' +
-        '<div style="display:flex;align-items:center;gap:12px">' +
-          '<span style="font-size:24px">' + plan.icon + '</span>' +
-          '<div>' +
-            '<div style="font-size:15px;font-weight:800">' + plan.label + '</div>' +
-            '<div style="font-size:12px;color:var(--text3)">' + plan.sub + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div style="background:var(--pink);color:white;border-radius:20px;padding:8px 16px;font-size:14px;font-weight:800">' + plan.price + '</div>' +
-      '</div>';
-    });
-  }
+  html += '<div style="background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="buyPlan(\'' + plan.key + '\')">' +
+    '<div style="display:flex;align-items:center;gap:12px">' +
+      '<span style="font-size:24px">' + plan.icon + '</span>' +
+      '<div>' +
+        '<div style="font-size:15px;font-weight:800">' + plan.label + '</div>' +
+        '<div style="font-size:12px;color:var(--text3)">' + plan.sub + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div id="buy-btn-' + plan.key + '" style="background:var(--pink);color:white;border-radius:20px;padding:8px 16px;font-size:14px;font-weight:800">' + plan.price + '</div>' +
+  '</div>';
+});
 
   html += '<div style="margin-top:20px;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);text-align:center">' +
     '<div style="font-size:13px;color:var(--text2);margin-bottom:10px">Вопросы по подписке — пишите менеджеру</div>' +
@@ -565,9 +567,32 @@ function renderTests() {
   document.getElementById('tests-content').innerHTML = html;
 }
 
-function buyPlan(planKey) {
-  fetch(api('/mini-app/action?uid=' + myUid + '&action=buy_plan&pat_id=' + planKey));
-  if (tg) tg.close();
+async function buyPlan(planKey) {
+  var btn = document.getElementById('buy-btn-' + planKey);
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+
+  try {
+    var r = await fetch(api('/mini-app/payment?uid=' + myUid + '&plan=' + planKey));
+    var data = await r.json();
+    if (data.link) {
+      if (tg && tg.openLink) {
+        tg.openLink(data.link);
+      } else {
+        window.open(data.link, '_blank');
+      }
+    } else {
+      alert('Ошибка при создании платежа');
+    }
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+
+  if (btn) { btn.textContent = getPlanPrice(planKey); btn.disabled = false; }
+}
+
+function getPlanPrice(key) {
+  var prices = {day:'30 ₽', week:'150 ₽', month:'350 ₽', forever:'1990 ₽'};
+  return prices[key] || '';
 }
 
 function startTest(patId) {
