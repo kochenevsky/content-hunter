@@ -22,7 +22,7 @@ export function Dashboard({ userId }: DashboardProps) {
       const res = await fetch(`${API_URL}/api/bots?userId=${userId}`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ idea }),
+  body: JSON.stringify({ userId }),
 });
       const data = await res.json();
       if (data.success) {
@@ -44,7 +44,7 @@ export function Dashboard({ userId }: DashboardProps) {
       const res = await fetch(`${API_URL}/api/bots/${botId}/analytics`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ idea }),
+  body: JSON.stringify({ botId }),
 });
       const data = await res.json();
       if (data.success) setAnalytics(data.data);
