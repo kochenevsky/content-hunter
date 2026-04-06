@@ -163,12 +163,12 @@ export default function HMDProfile() {
       </div>
 
       <div className="screen" id="screen-tests">
-        <div className="page-header">
-          <div className="page-title">Тесты</div>
-          <div className="page-sub">По завершённым пациентам</div>
-        </div>
-        <div id="tests-content"></div>
-      </div>
+  <div className="page-header">
+    <div className="page-title">Тарифы</div>
+    <div className="page-sub">Подписка на безлимит</div>
+  </div>
+  <div id="tests-content"></div>
+</div>
 
       <nav>
         <div className="nav-item active" id="nav-patients" onClick={() => (window as any).showScreen('patients')}>
@@ -182,10 +182,10 @@ export default function HMDProfile() {
           <div className="nav-label">Профиль</div>
         </div>
         <div className="nav-item" id="nav-tests" onClick={() => (window as any).showScreen('tests')}>
-          <div className="nav-dot" id="dot-tests"></div>
-          <div className="nav-icon">📝</div>
-          <div className="nav-label">Тесты</div>
-        </div>
+  <div className="nav-dot" id="dot-tests"></div>
+  <div className="nav-icon">💎</div>
+  <div className="nav-label">Тарифы</div>
+</div>
       </nav>
       
       <Script
