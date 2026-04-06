@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { BotStructure, BotContent, Button, Flow } from './types';
 
+import type { BotStructure, BotContent, Button } from './types';
+
 interface OnboardingProps {
   onComplete: (config: { idea: string; structure: BotStructure; content: BotContent; tgToken: string }) => void;
   onClose: () => void;
@@ -136,14 +138,26 @@ export function OnboardingModal({ onComplete, onClose }: OnboardingProps) {
 }
 
 // ── Step 1: Idea ──
-function StepIdea({ idea, setIdea, loading, error, onNext }: any) {
+function StepIdea({ 
+  idea, 
+  setIdea, 
+  loading, 
+  error, 
+  onNext 
+}: {
+  idea: string;
+  setIdea: (value: string) => void;
+  loading: boolean;
+  error: string;
+  onNext: () => void;
+}) {
   return (
     <div>
       <h3>Опишите идею вашего бота</h3>
       <p className="subtitle">Например: "Бот для записи в барбершоп" или "FAQ помощник"</p>
       <textarea
         value={idea}
-        onChange={(e) => setIdea(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setIdea(e.target.value)}
         placeholder="Мой бот будет..."
         rows={4}
         disabled={loading}
@@ -156,7 +170,19 @@ function StepIdea({ idea, setIdea, loading, error, onNext }: any) {
 }
 
 // ── Step 2: Structure ──
-function StepStructure({ structure, error, onEditGreeting, onEditButton, onNext }: any) {
+function StepStructure({ 
+  structure, 
+  error, 
+  onEditGreeting, 
+  onEditButton, 
+  onNext 
+}: {
+  structure: BotStructure;
+  error: string;
+  onEditGreeting: (value: string) => void;
+  onEditButton: (index: number, field: string, value: string) => void;
+  onNext: () => void;
+}) {
   return (
     <div>
       <h3>Согласование структуры</h3>
@@ -165,7 +191,7 @@ function StepStructure({ structure, error, onEditGreeting, onEditButton, onNext 
         <label>Приветственное сообщение</label>
         <textarea
           value={structure.greeting}
-          onChange={(e) => onEditGreeting(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onEditGreeting(e.target.value)}
           rows={2}
           className="input-textarea"
         />
@@ -173,20 +199,20 @@ function StepStructure({ structure, error, onEditGreeting, onEditButton, onNext 
 
       <div className="form-group">
         <label>Главные кнопки</label>
-        {structure.mainButtons.map((btn: any, idx: number) => (
+        {structure.mainButtons.map((btn: Button, idx: number) => (
           <div key={idx} className="button-edit">
             <input
               type="text"
               placeholder="Текст кнопки"
               value={btn.text}
-              onChange={(e) => onEditButton(idx, 'text', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEditButton(idx, 'text', e.target.value)}
               className="input"
             />
             <input
               type="text"
               placeholder="Action ID"
               value={btn.action}
-              onChange={(e) => onEditButton(idx, 'action', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEditButton(idx, 'action', e.target.value)}
               className="input"
             />
           </div>
@@ -198,7 +224,7 @@ function StepStructure({ structure, error, onEditGreeting, onEditButton, onNext 
         <input
           type="text"
           value={structure.fallbackMessage}
-          onChange={(e) => onEditGreeting(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEditGreeting(e.target.value)}
           className="input"
         />
       </div>
@@ -209,7 +235,17 @@ function StepStructure({ structure, error, onEditGreeting, onEditButton, onNext 
 }
 
 // ── Step 3: Content ──
-function StepContent({ structure, content, onChangeContent, onNext }: any) {
+function StepContent({ 
+  structure, 
+  content, 
+  onChangeContent, 
+  onNext 
+}: {
+  structure: BotStructure;
+  content: BotContent;
+  onChangeContent: (key: string, value: string) => void;
+  onNext: () => void;
+}) {
   return (
     <div>
       <h3>Наполнение контента</h3>
@@ -219,18 +255,18 @@ function StepContent({ structure, content, onChangeContent, onNext }: any) {
         <label>Приветствие</label>
         <textarea
           value={content['greeting'] || ''}
-          onChange={(e) => onChangeContent('greeting', e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChangeContent('greeting', e.target.value)}
           rows={2}
           className="input-textarea"
         />
       </div>
 
-      {structure.mainButtons.map((btn: any, idx: number) => (
+      {structure.mainButtons.map((btn: Button, idx: number) => (
         <div key={idx} className="form-group">
           <label>{btn.text}</label>
           <textarea
             value={content[btn.action] || ''}
-            onChange={(e) => onChangeContent(btn.action, e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChangeContent(btn.action, e.target.value)}
             rows={2}
             placeholder={`Текст для ${btn.text}`}
             className="input-textarea"
@@ -242,7 +278,19 @@ function StepContent({ structure, content, onChangeContent, onNext }: any) {
 }
 
 // ── Step 4: Telegram Token ──
-function StepTgToken({ tgToken, setTgToken, loading, error, onSubmit }: any) {
+function StepTgToken({ 
+  tgToken, 
+  setTgToken, 
+  loading, 
+  error, 
+  onSubmit 
+}: {
+  tgToken: string;
+  setTgToken: (value: string) => void;
+  loading: boolean;
+  error: string;
+  onSubmit: () => void;
+}) {
   return (
     <div>
       <h3>Подключение Telegram бота</h3>
@@ -262,7 +310,7 @@ function StepTgToken({ tgToken, setTgToken, loading, error, onSubmit }: any) {
         <input
           type="password"
           value={tgToken}
-          onChange={(e) => setTgToken(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTgToken(e.target.value)}
           placeholder="123456:ABCdefGHIjklmnoPQRstuvWXYZ"
           className="input"
         />
