@@ -41,6 +41,7 @@ async function initApp() {
   document.getElementById('panel-overlay').addEventListener('click', closePanel);
   tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { tg.ready(); tg.expand(); }
+
   try {
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
       myUid = String(tg.initDataUnsafe.user.id);
@@ -49,24 +50,21 @@ async function initApp() {
     }
     if (!myUid) { showUnregistered(); return; }
 
-    var results = await Promise.all([
-      fetch(api('/mini-app/profile?uid=' + myUid)),
-      fetch(api('/mini-app/patients?uid=' + myUid)),
-      fetch(api('/mini-app/tests?uid=' + myUid)),
-    ]);
+    var r = await fetch(api('/mini-app/init?uid=' + myUid));
+    var data = await r.json();
+    if (data.not_registered) { showUnregistered(); return; }
 
-    var prof = await results[0].json();
-    if (prof.not_registered) { showUnregistered(); return; }
-    myProfile = prof;
-    myPatients = await results[1].json();
-    myTests = await results[2].json();
+    myProfile = data.profile;
+    myPatients = data.patients;
+    myTests = data.tests;
 
     renderPatients();
     renderProfile();
     renderTests();
-    // Открываем нужный экран если передан параметр
+
     var screenParam = new URLSearchParams(location.search).get('screen');
     if (screenParam) showScreen(screenParam);
+
     hide('loading');
   } catch(e) {
     console.error(e);
