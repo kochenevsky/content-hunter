@@ -1,4 +1,5 @@
 const WORKER_URL = 'https://helpmedoctor.oxion-ezhkov.workers.dev';
+export const maxDuration = 30;
 
 export async function GET(request: Request) {
   const { searchParams, pathname } = new URL(request.url);
