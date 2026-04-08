@@ -15,20 +15,20 @@ export default function FarmPage() {
         <div className="container">
           <div className="max-w-3xl">
             <h1 className="heading-display text-white mb-6 break-words !text-4xl md:!text-7xl">
-              Система масштабирования SMM для вашего бизнеса
+              Вы недополучаете ×10–30 охвата с каждого ролика
             </h1>
             <p className="text-xl text-neutral-400 mb-4">
-              Загружаете ролики — платформа распространяет их по десяткам прогретых аккаунтов автоматически.
+              Пока вы публикуете ролик в 1 аккаунт, его можно масштабировать в десятки аккаунтов и получать в разы больше просмотров с тем же контентом.
             </p>
             <p className="text-xl text-neutral-400 mb-8">
-              Больше охватов, больше клиентов. Без увеличения бюджета на съёмку.
+              Проверьте, какой охват может давать ваша ниша:
             </p>
             <ul className="space-y-2 mb-10 text-neutral-300 text-lg">
               {[
-                'Бесплатно настраиваем всё оборудование под вас',
-                'Прогреваем аккаунты под вашу ЦА и ГЕО',
-                'Публикуем 200–1000 роликов в месяц автоматически',
-                'Гарантия просмотров прописана в договоре',
+                'Cколько аккаунтов нужно',
+                'Cколько публикаций можно масштабировать',
+                'Rакой охват может давать система',
+                'Cколько стоит запуск',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">—</span>
@@ -37,11 +37,11 @@ export default function FarmPage() {
               ))}
             </ul>
             <p className="text-neutral-400 mb-10">
-              Вы присылаете ролик — мы делаем всё остальное. Еженедельная аналитика в личном кабинете.
+              Иногда расчёт показывает, что масштабирование не даст эффекта. И это лучше узнать до запуска.
             </p>
             <StickyCta 
   href="https://sbsite.pro//eu_site_calc_1" 
-  label="Получить экскурсию" 
+  label="Рассчитать для моей ниши" 
   stickyLabel="Рассчитать для моей ниши"
 />
           </div>
@@ -70,26 +70,25 @@ export default function FarmPage() {
               </div>
               <div className="p-8 rounded-2xl bg-neutral-950 border border-neutral-800 text-white">
                 <p className="text-sm font-medium text-primary-400 uppercase tracking-widest mb-4">
-                  С системой Content Hunter
+                  С нашей платформой
                 </p>
                 <p className="text-lg text-neutral-300">
                   30 роликов × 30 копий × 30 аккаунтов
                 </p>
                 <p className="text-4xl font-bold text-white mt-2">
-                  = 1 000 000 просмотров
+                  = от 1 000 000 просмотров
                 </p>
               </div>
             </div>
 
             <p className="text-xl text-neutral-600 mb-8">
-              Воспользуйтесь калькулятором, чтобы рассчитать результат для своей ниши:
+              Почему вы сейчас упираетесь в потолок
             </p>
             <ul className="space-y-2 mb-10 text-neutral-600 text-lg">
               {[
-                'Сколько аккаунтов нужно под вашу нишу',
-                'Сколько публикаций выйдет каждый месяц',
-                'Какие охваты гарантирует система',
-                'Сколько стоит запуск и аренда',
+                '1 аккаунт ограничивает охват',
+                'Алгоритмы не масштабируют один источник',
+                'Даже хороший ролик быстро умирает',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">—</span>
@@ -99,8 +98,8 @@ export default function FarmPage() {
             </ul>
             <StickyCta 
   href="https://sbsite.pro//eu_site_calc_1" 
-  label="Рассчитать для моей ниши"
-  stickyLabel="Получить консультацию"
+  label="Сделать расчеты"
+  stickyLabel="Сделать расчеты"
 />
           </div>
         </div>
