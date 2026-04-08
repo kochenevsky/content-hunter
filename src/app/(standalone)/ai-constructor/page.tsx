@@ -13,7 +13,7 @@ export default function ConstructorPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: '1', // TODO: Get from auth
+          userId: '1',
           idea: config.idea,
           structure: config.structure,
           content: config.content,
@@ -25,7 +25,6 @@ export default function ConstructorPage() {
       if (data.success) {
         setBotCreated(true);
         setShowOnboarding(false);
-        // Redirect to dashboard
         setTimeout(() => {
           window.location.href = '/ai-constructor-lk';
         }, 2000);
@@ -38,167 +37,219 @@ export default function ConstructorPage() {
 
   return (
     <div className="constructor-page">
-      <div className="constructor-header">
-        <h1>🤖 BotStudio</h1>
-        <p>Создай бота за 5 минут без кода</p>
-      </div>
-
-      {botCreated ? (
-        <div className="success-state">
-          <div className="success-icon">✅</div>
-          <h2>Бот создан!</h2>
-          <p>Перенаправляем в кабинет...</p>
+      <div className="constructor-container">
+        <div className="constructor-header">
+          <h1>BotStudio</h1>
+          <p>Создайте бота за 5 минут без кода</p>
         </div>
-      ) : (
-        <div className="constructor-content">
-          <button
-            className="btn-create-large"
-            onClick={() => setShowOnboarding(true)}
-          >
-            + Создать бота
-          </button>
 
-          <div className="features">
-            <div className="feature">
-              <div className="feature-icon">⚡</div>
-              <h3>5 минут</h3>
-              <p>Создаёшь бота за 5 минут</p>
-            </div>
-            <div className="feature">
-              <div className="feature-icon">🆓</div>
-              <h3>Тестируй</h3>
-              <p>Бесплатно протестируй идею</p>
-            </div>
-            <div className="feature">
-              <div className="feature-icon">💰</div>
-              <h3>Зарабатывай</h3>
-              <p>Подключи платежи и зарабатывай</p>
+        {botCreated ? (
+          <div className="success-state">
+            <div className="success-indicator" />
+            <h2>Бот создан</h2>
+            <p>Перенаправляем в кабинет...</p>
+          </div>
+        ) : (
+          <div className="constructor-content">
+            <button
+              className="btn-primary"
+              onClick={() => setShowOnboarding(true)}
+            >
+              <span>Создать бота</span>
+              <span className="arrow">→</span>
+            </button>
+
+            <div className="features-grid">
+              <div className="feature-item">
+                <div className="feature-meta">
+                  <span>01</span>
+                  <h3>Быстрый старт</h3>
+                </div>
+                <p>Создайте и запустите бота всего за 5 минут</p>
+              </div>
+              <div className="feature-item">
+                <div className="feature-meta">
+                  <span>02</span>
+                  <h3>Тестирование</h3>
+                </div>
+                <p>Бесплатно проверьте гипотезы и идеи</p>
+              </div>
+              <div className="feature-item">
+                <div className="feature-meta">
+                  <span>03</span>
+                  <h3>Монетизация</h3>
+                </div>
+                <p>Подключите приём платежей и зарабатывайте</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {showOnboarding && (
-        <OnboardingModal
-          onComplete={handleComplete}
-          onClose={() => setShowOnboarding(false)}
-        />
-      )}
+        {showOnboarding && (
+          <OnboardingModal
+            onComplete={handleComplete}
+            onClose={() => setShowOnboarding(false)}
+          />
+        )}
+      </div>
 
       <style jsx>{`
         .constructor-page {
           min-height: 100vh;
-          background: linear-gradient(135deg, #f7f6f3 0%, #fff 100%);
+          background: #fafaf9;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 24px;
+          padding: 1.5rem;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .constructor-container {
+          max-width: 680px;
+          width: 100%;
         }
 
         .constructor-header {
-          text-align: center;
-          margin-bottom: 48px;
+          text-align: left;
+          margin-bottom: 3rem;
         }
 
         .constructor-header h1 {
-          font-size: 48px;
-          font-weight: 800;
-          margin-bottom: 8px;
-          background: linear-gradient(135deg, #f05a1a, #ff8c50);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          font-size: 2.5rem;
+          font-weight: 500;
+          letter-spacing: -0.02em;
+          color: #171717;
+          margin-bottom: 0.5rem;
         }
 
         .constructor-header p {
-          font-size: 18px;
-          color: #6b6860;
+          font-size: 1rem;
+          color: #6b6b6b;
+          font-weight: 400;
         }
 
         .constructor-content {
-          max-width: 600px;
-          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 3rem;
         }
 
-        .btn-create-large {
+        .btn-primary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
           width: 100%;
-          padding: 20px;
-          background: linear-gradient(135deg, #f05a1a, #ff8c50);
-          color: white;
+          padding: 1rem 1.5rem;
+          background: #171717;
+          color: #ffffff;
           border: none;
-          border-radius: 16px;
-          font-size: 18px;
-          font-weight: 700;
+          border-radius: 12px;
+          font-size: 1.125rem;
+          font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s;
-          margin-bottom: 40px;
-          box-shadow: 0 8px 24px rgba(240, 90, 26, 0.3);
+          transition: background 0.2s ease;
+          text-align: left;
         }
 
-        .btn-create-large:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 32px rgba(240, 90, 26, 0.4);
+        .btn-primary:hover {
+          background: #2b2b2b;
         }
 
-        .features {
+        .arrow {
+          font-size: 1.25rem;
+          opacity: 0.8;
+        }
+
+        .features-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
+          gap: 1.5rem;
         }
 
-        .feature {
-          background: white;
-          border: 1px solid #e5e3de;
-          border-radius: 12px;
-          padding: 20px;
-          text-align: center;
+        .feature-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
         }
 
-        .feature-icon {
-          font-size: 32px;
-          margin-bottom: 12px;
+        .feature-meta {
+          border-bottom: 1px solid #e2e2e0;
+          padding-bottom: 0.75rem;
         }
 
-        .feature h3 {
-          font-size: 14px;
-          font-weight: 700;
-          margin-bottom: 6px;
+        .feature-meta span {
+          display: block;
+          font-size: 0.75rem;
+          font-weight: 500;
+          color: #a1a09a;
+          margin-bottom: 0.25rem;
         }
 
-        .feature p {
-          font-size: 12px;
-          color: #a09e97;
+        .feature-meta h3 {
+          font-size: 1rem;
+          font-weight: 500;
+          color: #171717;
+          margin: 0;
+        }
+
+        .feature-item p {
+          font-size: 0.875rem;
+          color: #6b6b6b;
+          line-height: 1.4;
+          margin: 0;
         }
 
         .success-state {
           text-align: center;
-          padding: 40px;
-          background: white;
-          border-radius: 16px;
-          border: 2px solid #1a8a4a;
+          padding: 2.5rem;
+          background: #ffffff;
+          border-radius: 24px;
+          border: 1px solid #e2e2e0;
         }
 
-        .success-icon {
-          font-size: 64px;
-          margin-bottom: 16px;
+        .success-indicator {
+          width: 48px;
+          height: 48px;
+          background: #171717;
+          border-radius: 50%;
+          margin: 0 auto 1.5rem;
+          position: relative;
+        }
+
+        .success-indicator::after {
+          content: '✓';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
+          font-size: 1.5rem;
         }
 
         .success-state h2 {
-          color: #1a8a4a;
-          margin-bottom: 8px;
+          font-size: 1.5rem;
+          font-weight: 500;
+          color: #171717;
+          margin-bottom: 0.5rem;
         }
 
         .success-state p {
-          color: #6b6860;
+          color: #6b6b6b;
+          margin: 0;
         }
 
-        @media (max-width: 768px) {
-          .features {
+        @media (max-width: 640px) {
+          .features-grid {
             grid-template-columns: 1fr;
+            gap: 2rem;
           }
 
           .constructor-header h1 {
-            font-size: 32px;
+            font-size: 2rem;
+          }
+
+          .btn-primary {
+            padding: 0.875rem 1.25rem;
           }
         }
       `}</style>
