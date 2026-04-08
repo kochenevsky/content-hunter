@@ -1,4 +1,9 @@
-import { StickyCta } from './_components/StickyCta'
+import dynamic from 'next/dynamic';
+
+const StickyCta = dynamic(
+  () => import('./_components/StickyCta').then(mod => mod.StickyCta),
+  { ssr: false }
+);
 
 export const metadata = {
   title: 'Система масштабирования SMM — Content Hunter',
