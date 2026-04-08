@@ -114,24 +114,22 @@ function showUnregistered() {
 async function initApp() {
   console.log('🚀 initApp started');
   
-  tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) { 
-    tg.ready(); 
-    tg.expand(); 
-  }
+  try {
+    tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) { 
+      tg.ready(); 
+      tg.expand(); 
+    }
 
-  // Небольшая пауза чтобы Telegram успел передать initData
-  await new Promise(function(resolve) { setTimeout(resolve, 200); });
+    await new Promise(function(resolve) { setTimeout(resolve, 200); });
 
-  // Перечитываем после паузы
-  tg = window.Telegram && window.Telegram.WebApp;
-  
-  if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
-    myUid = String(tg.initDataUnsafe.user.id);
-  } else {
-    myUid = new URLSearchParams(location.search).get('uid');
-  }
+    tg = window.Telegram && window.Telegram.WebApp;
     
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+      myUid = String(tg.initDataUnsafe.user.id);
+    } else {
+      myUid = new URLSearchParams(location.search).get('uid');
+    }
     console.log('📱 UID:', myUid);
     
     if (!myUid) {
