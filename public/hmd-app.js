@@ -37,6 +37,42 @@ function showUnregistered() {
     '</div>';
 }
 
+const LOAD_TIMEOUT = 15000; // 15 секунд таймаут
+
+function showNetworkError() {
+  hide('loading');
+  document.getElementById('patients-list').innerHTML =
+    '<div class="empty-screen">' +
+      '<div class="empty-icon">🌐</div>' +
+      '<div class="empty-title">Не удалось загрузить кабинет</div>' +
+      '<div class="empty-sub">Проверьте подключение к интернету</div>' +
+      '<div style="margin-top: 16px; padding: 12px; background: var(--surface2); border-radius: 12px; text-align: left;">' +
+        '<div style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">🔧 Что делать:</div>' +
+        '<ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text2);">' +
+          '<li>Обновите страницу (Ctrl+F5)</li>' +
+          '<li>Проверьте интернет-соединение</li>' +
+          '<li><strong>Если используете VPN</strong> — добавьте домен <code style="background: var(--surface); padding: 2px 6px; border-radius: 4px;">helpmedoctor.oxion-ezhkov.workers.dev</code> в исключения</li>' +
+          '<li>Или временно отключите VPN</li>' +
+        '</ul>' +
+      '</div>' +
+      '<button class="btn-primary" style="max-width:260px;margin-top:16px" onclick="location.reload()">🔄 Перезагрузить</button>' +
+    '</div>';
+}
+
+function showTimeoutError() {
+  hide('loading');
+  document.getElementById('patients-list').innerHTML =
+    '<div class="empty-screen">' +
+      '<div class="empty-icon">⏱️</div>' +
+      '<div class="empty-title">Слишком долгая загрузка</div>' +
+      '<div class="empty-sub">Сервер не отвечает, попробуйте позже</div>' +
+      '<div style="margin-top: 16px;">' +
+        '<button class="btn-primary" style="margin-right: 8px;" onclick="location.reload()">🔄 Повторить</button>' +
+        '<button class="btn-outline" onclick="showScreen(\'profile\')">👤 Перейти в профиль</button>' +
+      '</div>' +
+    '</div>';
+}
+
 async function initApp() {
   document.getElementById('panel-overlay').addEventListener('click', closePanel);
   tg = window.Telegram && window.Telegram.WebApp;
@@ -50,9 +86,79 @@ async function initApp() {
     }
     if (!myUid) { showUnregistered(); return; }
 
-    var r = await fetch(api('/mini-app/init?uid=' + myUid));
-    var data = await r.json();
-    if (data.not_registered) { showUnregistered(); return; }
+    // ПРОВЕРКА ДОСТУПНОСТИ WORKER'А (ОДНА, ОСНОВНАЯ)
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const workerCheck = await fetch('https://helpmedoctor.oxion-ezhkov.workers.dev/cdn-cgi/trace', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!workerCheck.ok) {
+        throw new Error('Worker не отвечает');
+      }
+    } catch (workerError) {
+      console.error('Worker недоступен:', workerError);
+      hide('loading');
+      
+      // Показываем ошибку через Telegram WebApp
+      if (tg && tg.showPopup) {
+        tg.showPopup({
+          title: '⚠️ Ошибка соединения',
+          message: 'Не удалось подключиться к серверу.\n\nЕсли вы используете VPN, добавьте домен helpmedoctor.oxion-ezhkov.workers.dev в исключения (Split Tunneling) или временно отключите VPN.',
+          buttons: [
+            { id: 'retry', type: 'default', text: '🔄 Повторить' },
+            { id: 'close', type: 'cancel', text: 'Закрыть' }
+          ]
+        }, (buttonId) => {
+          if (buttonId === 'retry') {
+            location.reload();
+          } else if (tg && tg.close) {
+            tg.close();
+          }
+        });
+      } else {
+        // Fallback для браузера
+        showNetworkError();
+      }
+      return; // ВАЖНО: выходим, чтобы не продолжать загрузку
+    }
+
+    // ОСНОВНАЯ ЗАГРУЗКА ДАННЫХ с таймаутом
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), LOAD_TIMEOUT);
+    
+    let r;
+    try {
+      r = await fetch(api('/mini-app/init?uid=' + myUid), {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('Таймаут загрузки');
+        showTimeoutError();
+      } else {
+        console.error('Ошибка сети:', fetchError);
+        showNetworkError();
+      }
+      return;
+    }
+    
+    if (!r.ok) {
+      throw new Error(`HTTP ${r.status}`);
+    }
+    
+    const data = await r.json();
+    
+    if (data.not_registered) { 
+      showUnregistered(); 
+      return; 
+    }
 
     myProfile = data.profile;
     myPatients = data.patients;
@@ -69,7 +175,7 @@ async function initApp() {
   } catch(e) {
     console.error(e);
     hide('loading');
-    showUnregistered();
+    showNetworkError();
   }
 }
 
