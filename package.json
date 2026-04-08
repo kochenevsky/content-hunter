@@ -24,6 +24,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@artginzburg/next-ym": "^2.5.0",
+    "react-facebook-pixel": "^1.0.4",
     "@payloadcms/db-postgres": "^3.0.0",
     "@payloadcms/db-sqlite": "^3.76.1",
     "@payloadcms/live-preview-react": "^3.76.1",
