@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import Script from 'next/script';
+import dynamic from 'next/dynamic';
 
-export default function HMDProfile() {
+const HMDProfileContent = dynamic(() => import('@/components/HMDProfileContent'), {
+  ssr: false,
+});
+
+export default function HMDProfilePage() {
   return (
     <>
       <style>{`
@@ -135,69 +138,7 @@ export default function HMDProfile() {
         .outcome-badge.bad { background: var(--coral-pale); color: var(--coral); }
         .outcome-badge.neutral { background: var(--surface2); color: var(--text3); }
       `}</style>
-
-      <div className="loading-screen" id="loading">
-        <div className="loading-logo">🏥</div>
-        <div className="loading-title">Help me, Doctor</div>
-        <div className="loading-sub">Загружаем кабинет...</div>
-        <div className="spinner"></div>
-      </div>
-
-      <div className="panel-overlay" id="panel-overlay"></div>
-      <div className="panel" id="patient-panel">
-        <div className="panel-handle"></div>
-        <div id="panel-content"></div>
-      </div>
-
-      <div className="screen active" id="screen-patients">
-        <div className="page-header">
-          <div className="page-title" id="patients-title">Пациенты</div>
-          <div className="page-sub" id="patients-sub"></div>
-        </div>
-        <div id="patients-list"></div>
-      </div>
-
-      <div className="screen" id="screen-profile">
-        <div className="page-header"><div className="page-title">Мой профиль</div></div>
-        <div id="profile-content"></div>
-      </div>
-
-      <div className="screen" id="screen-tests">
-  <div className="page-header">
-    <div className="page-title">Тарифы</div>
-    <div className="page-sub">Подписка на безлимит</div>
-  </div>
-  <div id="tests-content"></div>
-</div>
-
-      <nav>
-        <div className="nav-item active" id="nav-patients" onClick={() => (window as any).showScreen('patients')}>
-          <div className="nav-dot" id="dot-patients"></div>
-          <div className="nav-icon">🏥</div>
-          <div className="nav-label">Пациенты</div>
-        </div>
-        <div className="nav-item" id="nav-profile" onClick={() => (window as any).showScreen('profile')}>
-          <div className="nav-dot" id="dot-profile"></div>
-          <div className="nav-icon">👤</div>
-          <div className="nav-label">Профиль</div>
-        </div>
-        <div className="nav-item" id="nav-tests" onClick={() => (window as any).showScreen('tests')}>
-  <div className="nav-dot" id="dot-tests"></div>
-  <div className="nav-icon">💎</div>
-  <div className="nav-label">Тарифы</div>
-</div>
-      </nav>
-      
-      <Script
-        src="https://telegram.org/js/telegram-web-app.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          setTimeout(() => {
-            if ((window as any).initApp) (window as any).initApp();
-          }, 50);
-        }}
-      />
-      <Script src="/hmd-app.js" strategy="afterInteractive" />
+      <HMDProfileContent />
     </>
   );
 }
