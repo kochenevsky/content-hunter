@@ -29,7 +29,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://feytgokjblyqzymadfym.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZleXRnb2tqYmx5cXp5bWFkZnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDg3MzksImV4cCI6MjA4NTI4NDczOX0.IjRLp_2URxV43OmkGdHUY2v-Jmb4XynxCgXjRIMqQ-8
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           pnpm build
 
       - name: Deploy to Timeweb (rsync + pm2)
