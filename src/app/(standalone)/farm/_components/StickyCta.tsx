@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import { useMetrica } from '@artginzburg/next-ym';
 import ReactPixel from 'react-facebook-pixel';
 
@@ -7,7 +8,6 @@ type StickyCtaProps = {
   href: string;
   label: string;
   stickyLabel?: string;
-  /** если true — sticky кнопка показывается всегда, без условия по скроллу */
   alwaysShowSticky?: boolean;
 };
 
@@ -17,19 +17,16 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     
-    // Яндекс Метрика
-    reachGoal('click_calc_button');
-    
-    // Meta Pixel
-    ReactPixel.track('Lead', {
-      content_name: 'Расчет для ниши',
-      content_url: href,
-    });
-    
-    // Переход по ссылке
-    window.open(href, '_blank');
+    // Проверка, что мы в браузере
+    if (typeof window !== 'undefined') {
+      reachGoal('click_calc_button');
+      ReactPixel.track('Lead', {
+        content_name: 'Расчет для ниши',
+        content_url: href,
+      });
+      window.open(href, '_blank');
+    }
   };
-
   // Если alwaysShowSticky — рендерим только sticky панель (без inline кнопки)
   if (alwaysShowSticky) {
     return (
