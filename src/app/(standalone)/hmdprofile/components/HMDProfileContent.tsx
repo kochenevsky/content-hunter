@@ -771,4 +771,3 @@ window.initApp = initApp;
 
   return null; // React компонент не рендерит ничего, потому что вся логика в useEffect
 }
-}
