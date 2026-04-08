@@ -114,20 +114,23 @@ function showUnregistered() {
 async function initApp() {
   console.log('🚀 initApp started');
   
-  // Инициализация Telegram
   tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { 
     tg.ready(); 
     tg.expand(); 
   }
+
+  // Небольшая пауза чтобы Telegram успел передать initData
+  await new Promise(function(resolve) { setTimeout(resolve, 200); });
+
+  // Перечитываем после паузы
+  tg = window.Telegram && window.Telegram.WebApp;
   
-  // Получаем UID
-  try {
-    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
-      myUid = String(tg.initDataUnsafe.user.id);
-    } else {
-      myUid = new URLSearchParams(location.search).get('uid');
-    }
+  if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+    myUid = String(tg.initDataUnsafe.user.id);
+  } else {
+    myUid = new URLSearchParams(location.search).get('uid');
+  }
     
     console.log('📱 UID:', myUid);
     
@@ -754,9 +757,7 @@ function formatDate(ts) {
     window.saveProfession = saveProfession;
     window.saveCustomProfession = saveCustomProfession;
     window.initApp = initApp;
-    
-    // Запускаем инициализацию
-    initApp();
+  
   }, []);
 
   return null;
