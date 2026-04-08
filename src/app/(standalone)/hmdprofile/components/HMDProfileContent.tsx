@@ -695,7 +695,6 @@ function renderTests() {
 
   document.getElementById('tests-content').innerHTML = html;
 }
-}
 
 async function buyPlan(planKey) {
   var btn = document.getElementById('buy-btn-' + planKey);
