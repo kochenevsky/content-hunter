@@ -5,7 +5,8 @@ export const metadata = {
   description: 'Загружай ролики — платформа распространяет их по десяткам прогретых аккаунтов автоматически. Гарантия просмотров в договоре.',
 }
 
-const SLIDE_URLS = Array.from({ length: 28 }, (_, i) =>
+// 27 слайдов (28-й убран)
+const SLIDE_URLS = Array.from({ length: 27 }, (_, i) =>
   `/slides/Content%20Hunter%20%D0%B2%D0%B5%D1%80%D1%82%D0%B8%D0%BA%D0%B0%D0%BB%D1%8C%D0%BD%D0%B0%D1%8F_page-${String(i + 1).padStart(4, "0")}.jpg`
 )
 
@@ -13,24 +14,32 @@ export default function FarmPage() {
   return (
     <>
       <style>{`
+        /* сброс — убираем любые внешние отступы/рамки */
+        html, body { margin: 0; padding: 0; overflow-x: hidden; }
+
         .farm-root {
           background: #0b1220;
           min-height: 100vh;
           font-family: -apple-system,'SF Pro Display','Inter',system-ui,sans-serif;
           color: #f1f5f9;
+          /* fix 5: запрещаем горизонтальный скролл */
+          overflow-x: hidden;
+          width: 100%;
         }
 
         .farm-container {
           max-width: 900px;
           margin: 0 auto;
-          padding: 0 20px;
+          /* fix 3,4,5: padding вместо margin для краёв */
+          padding: 0 16px;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         /* ── HERO ── */
         .farm-hero {
           padding: 60px 0 48px;
           position: relative;
-          overflow: hidden;
         }
         @media (min-width: 768px) {
           .farm-hero { padding: 80px 0 64px; }
@@ -53,7 +62,7 @@ export default function FarmPage() {
         }
 
         .farm-hero h1 {
-          font-size: clamp(28px, 5vw, 52px);
+          font-size: clamp(26px, 5vw, 52px);
           font-weight: 900;
           line-height: 1.08;
           letter-spacing: -0.025em;
@@ -66,9 +75,11 @@ export default function FarmPage() {
           border-radius: 18px;
           margin: 28px 0;
           display: block;
-          border: 1px solid rgba(255,255,255,0.07);
           object-fit: cover;
           max-height: 420px;
+          /* fix 1: убираем рамку */
+          border: none;
+          outline: none;
         }
 
         .farm-lead {
@@ -85,6 +96,9 @@ export default function FarmPage() {
           display: flex;
           flex-direction: column;
           gap: 10px;
+          /* fix 3: не выходим за ширину */
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .farm-list li {
@@ -111,48 +125,55 @@ export default function FarmPage() {
           margin-bottom: 28px;
           padding: 14px 16px;
           background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.07);
           border-radius: 12px;
           border-left: 3px solid rgba(34,197,94,0.4);
+          box-sizing: border-box;
+          width: 100%;
         }
 
-        /* ── CEILING ── */
+        /* ── SECTIONS ── */
         .farm-section {
-          padding: 64px 0;
+          padding: 56px 0;
           border-top: 1px solid rgba(255,255,255,0.06);
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .farm-section h2 {
-          font-size: clamp(24px, 4vw, 40px);
+          font-size: clamp(22px, 4vw, 40px);
           font-weight: 900;
           line-height: 1.1;
           letter-spacing: -0.02em;
           color: #fff;
-          margin-bottom: 36px;
+          margin-bottom: 32px;
         }
 
         .farm-cards {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 14px;
-          margin-bottom: 40px;
+          gap: 12px;
+          margin-bottom: 36px;
+          width: 100%;
+          box-sizing: border-box;
         }
         @media (min-width: 600px) {
           .farm-cards { grid-template-columns: 1fr 1fr; }
         }
 
         .farm-card-before {
-          padding: 28px 24px;
+          padding: 24px 20px;
           border-radius: 18px;
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.08);
+          box-sizing: border-box;
         }
 
         .farm-card-after {
-          padding: 28px 24px;
+          padding: 24px 20px;
           border-radius: 18px;
           background: rgba(34,197,94,0.07);
           border: 1px solid rgba(34,197,94,0.2);
+          box-sizing: border-box;
         }
 
         .card-label {
@@ -160,73 +181,93 @@ export default function FarmPage() {
           font-weight: 800;
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
 
         .card-main {
-          font-size: clamp(16px, 2vw, 20px);
+          font-size: clamp(14px, 2vw, 18px);
           font-weight: 700;
           color: #e2e8f0;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
         }
 
         .card-big {
-          font-size: clamp(24px, 4vw, 36px);
+          font-size: clamp(22px, 4vw, 34px);
           font-weight: 900;
-          line-height: 1.1;
+          line-height: 1.15;
           margin-top: 4px;
         }
 
         .farm-section-lead {
           font-size: clamp(15px, 2vw, 18px);
           color: #64748b;
-          margin-bottom: 16px;
+          margin-bottom: 14px;
           font-weight: 600;
+        }
+
+        .farm-divider {
+          width: 40px;
+          height: 3px;
+          background: #22c55e;
+          border-radius: 2px;
+          margin-bottom: 28px;
         }
 
         /* ── SLIDES ── */
         .farm-slides-section {
-          padding: 64px 0 80px;
+          padding: 56px 0 100px;
           border-top: 1px solid rgba(255,255,255,0.06);
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .farm-slides-title {
           font-size: clamp(22px, 3.5vw, 36px);
           font-weight: 900;
           color: #fff;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
           letter-spacing: -0.02em;
           line-height: 1.1;
         }
 
         .farm-slides-sub {
-          font-size: 13px;
+          font-size: 12px;
           color: #334155;
-          margin-bottom: 24px;
+          margin-bottom: 20px;
         }
 
+        /* fix 7: явная сетка 3 колонки, равные строки */
         .farm-slides-grid {
-          columns: 1;
+          display: grid;
+          grid-template-columns: 1fr;
           gap: 10px;
+          width: 100%;
+          box-sizing: border-box;
         }
-        @media (min-width: 600px) {
-          .farm-slides-grid { columns: 2; gap: 12px; }
+        @media (min-width: 540px) {
+          .farm-slides-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+          }
         }
-        @media (min-width: 900px) {
-          .farm-slides-grid { columns: 3; gap: 14px; }
+        @media (min-width: 800px) {
+          .farm-slides-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+          }
         }
 
         .farm-slide-wrap {
-          break-inside: avoid;
-          margin-bottom: 10px;
           position: relative;
-          border-radius: 14px;
+          border-radius: 12px;
           overflow: hidden;
+          width: 100%;
+          box-sizing: border-box;
         }
-        @media (min-width: 600px) { .farm-slide-wrap { margin-bottom: 12px; } }
 
         .farm-slide-wrap img {
           width: 100%;
+          height: auto;
           display: block;
           transition: transform 0.2s ease;
         }
@@ -241,7 +282,7 @@ export default function FarmPage() {
           background: rgba(0,0,0,0.55);
           backdrop-filter: blur(4px);
           border-radius: 6px;
-          padding: 3px 8px;
+          padding: 3px 7px;
           font-size: 10px;
           font-weight: 700;
           color: rgba(255,255,255,0.55);
@@ -251,17 +292,19 @@ export default function FarmPage() {
         .farm-final {
           background: linear-gradient(135deg,rgba(34,197,94,0.1),rgba(22,163,74,0.04));
           border: 1px solid rgba(34,197,94,0.2);
-          border-radius: 24px;
-          padding: 40px 28px;
+          border-radius: 20px;
+          padding: 36px 24px;
           text-align: center;
           margin-top: 16px;
+          box-sizing: border-box;
+          width: 100%;
         }
         @media (min-width: 768px) {
-          .farm-final { padding: 56px 80px; }
+          .farm-final { padding: 52px 72px; }
         }
 
         .farm-final h3 {
-          font-size: clamp(22px, 3vw, 32px);
+          font-size: clamp(20px, 3vw, 30px);
           font-weight: 900;
           color: #fff;
           margin-bottom: 12px;
@@ -273,18 +316,18 @@ export default function FarmPage() {
           font-size: 14px;
           color: #64748b;
           line-height: 1.7;
-          margin-bottom: 24px;
+          margin-bottom: 22px;
         }
 
         .farm-final-btn {
           display: block;
           max-width: 360px;
           margin: 0 auto;
-          padding: 17px;
+          padding: 16px;
           border-radius: 14px;
           background: linear-gradient(135deg,#22c55e,#16a34a);
           color: #fff;
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 800;
           text-decoration: none;
           letter-spacing: -0.01em;
@@ -299,21 +342,12 @@ export default function FarmPage() {
           color: #334155;
           margin-top: 10px;
         }
-
-        /* ── SECTION DIVIDER ── */
-        .farm-divider {
-          width: 40px;
-          height: 3px;
-          background: #22c55e;
-          border-radius: 2px;
-          margin-bottom: 32px;
-        }
       `}</style>
 
       <div className="farm-root">
         <div className="farm-container">
 
-          {/* ── HERO ── */}
+          {/* HERO */}
           <section className="farm-hero">
             <div className="farm-badge">
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
@@ -325,7 +359,6 @@ export default function FarmPage() {
               <span style={{ color: '#4ade80' }}>с каждого ролика</span>
             </h1>
 
-            {/* Горизонтальная картинка — загрузите farm-hero.jpg в /public/ */}
             <img
               src="/farm-hero.jpg"
               alt="Контент-ферма Content Hunter"
@@ -361,7 +394,7 @@ export default function FarmPage() {
             />
           </section>
 
-          {/* ── CEILING ── */}
+          {/* CEILING */}
           <section className="farm-section">
             <div className="farm-divider" />
             <h2>
@@ -400,16 +433,14 @@ export default function FarmPage() {
             />
           </section>
 
-          {/* ── ПРЕЗЕНТАЦИЯ ── */}
+          {/* SLIDES */}
           <section className="farm-slides-section">
             <div className="farm-divider" />
             <h2 className="farm-slides-title">
               Экскурсия на<br />
               <span style={{ color: '#4ade80' }}>контент-ферму</span>
             </h2>
-            <p className="farm-slides-sub">
-              {SLIDE_URLS.length} слайдов · прокрутите вниз
-            </p>
+            <p className="farm-slides-sub">{SLIDE_URLS.length} слайдов</p>
 
             <div className="farm-slides-grid">
               {SLIDE_URLS.map((url, i) => (
@@ -417,16 +448,15 @@ export default function FarmPage() {
                   <img
                     src={url}
                     alt={`Слайд ${i + 1}`}
-                    loading={i < 4 ? 'eager' : 'lazy'}
+                    loading={i < 6 ? 'eager' : 'lazy'}
                   />
-                  <div className="farm-slide-num">{i + 1} / {SLIDE_URLS.length}</div>
+                  <div className="farm-slide-num">{i + 1}</div>
                 </div>
               ))}
             </div>
 
-            {/* Финальный CTA */}
             <div className="farm-final">
-              <div style={{ fontSize: 36, marginBottom: 14 }}>🚀</div>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
               <h3>
                 Готовы запустить<br />
                 <span style={{ color: '#4ade80' }}>свою ферму?</span>
@@ -448,8 +478,16 @@ export default function FarmPage() {
             </div>
           </section>
 
-        </div>{/* /farm-container */}
+        </div>
       </div>
+
+      {/* sticky — вне farm-container чтобы не обрезался */}
+      <StickyCta
+        href="https://sbsite.pro//eu_site_calc_1"
+        label="Рассчитать для моей ниши"
+        stickyLabel="Рассчитать для моей ниши"
+        alwaysShowSticky
+      />
     </>
   )
 }
