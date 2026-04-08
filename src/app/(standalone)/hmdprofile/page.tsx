@@ -2,9 +2,10 @@
 
 import dynamic from 'next/dynamic';
 
-const HMDProfileContent = dynamic(() => import('@/components/HMDProfileContent'), {
-  ssr: false,
-});
+const HMDProfileContent = dynamic(
+  () => import('./components/HMDProfileContent'),  // относительный путь
+  { ssr: false }
+);
 
 export default function HMDProfilePage() {
   return (
