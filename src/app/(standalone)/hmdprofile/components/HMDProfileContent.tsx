@@ -739,29 +739,25 @@ function formatDate(ts) {
   return d.toLocaleDateString('ru', { day: 'numeric', month: 'short' });
 }
 
-// ---- EXPOSE GLOBALS ----
-window.showScreen = showScreen;
-window.openPatient = openPatient;
-window.closePanel = closePanel;
-window.startConsultation = startConsultation;
-window.repeatConsultation = repeatConsultation;
-window.newPatient = newPatient;
-window.startTest = startTest;
-window.toggleTest = toggleTest;
-window.toggleEditName = toggleEditName;
-window.saveName = saveName;
-window.saveLevel = saveLevel;
-window.saveProfession = saveProfession;
-window.saveCustomProfession = saveCustomProfession;
-window.initApp = initApp;
+    // ---- EXPOSE GLOBALS ----
+    window.showScreen = showScreen;
+    window.openPatient = openPatient;
+    window.closePanel = closePanel;
+    window.startConsultation = startConsultation;
+    window.repeatConsultation = repeatConsultation;
+    window.newPatient = newPatient;
+    window.startTest = startTest;
+    window.toggleTest = toggleTest;
+    window.toggleEditName = toggleEditName;
+    window.saveName = saveName;
+    window.saveLevel = saveLevel;
+    window.saveProfession = saveProfession;
+    window.saveCustomProfession = saveCustomProfession;
+    window.initApp = initApp;
     
     // Запускаем инициализацию
-    (window as any).initApp = initApp;
-    (window as any).showScreen = showScreen;
-    // ... и все остальные функции, которые нужны глобально
-    
     initApp();
   }, []);
 
-  return null; // React компонент не рендерит ничего, потому что вся логика в useEffect
+  return null;
 }
