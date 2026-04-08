@@ -1,14 +1,11 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 
 const StickyCta = dynamic(
   () => import('./_components/StickyCta').then(mod => mod.StickyCta),
   { ssr: false }
 );
-
-export const metadata = {
-  title: 'Система масштабирования SMM — Content Hunter',
-  description: 'Загружай ролики — платформа распространяет их по десяткам прогретых аккаунтов автоматически. Гарантия просмотров в договоре.',
-}
 
 // 27 слайдов (28-й убран)
 const SLIDE_URLS = Array.from({ length: 27 }, (_, i) =>
