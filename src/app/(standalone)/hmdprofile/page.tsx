@@ -140,6 +140,20 @@ export default function HMDProfilePage() {
         .outcome-badge.neutral { background: var(--surface2); color: var(--text3); }
       `}</style>
       <HMDProfileContent />
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      var _tgScript = document.createElement('script');
+      _tgScript.src = 'https://telegram.org/js/telegram-web-app.js';
+      _tgScript.onload = function() {
+        setTimeout(function() {
+          if (window.initApp) window.initApp();
+        }, 100);
+      };
+      document.head.appendChild(_tgScript);
+    `
+  }}
+/>
             <div className="loading-screen" id="loading">
         <div className="loading-logo">🏥</div>
         <div className="loading-title">Help me, Doctor</div>
