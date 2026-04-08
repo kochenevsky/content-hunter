@@ -672,24 +672,25 @@ function renderTests() {
     ];
 
     plans.forEach(function(plan) {
-  html += '<div style="background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="buyPlan(\'' + plan.key + '\')">' +
-    '<div style="display:flex;align-items:center;gap:12px">' +
-      '<span style="font-size:24px">' + plan.icon + '</span>' +
-      '<div>' +
-        '<div style="font-size:15px;font-weight:800">' + plan.label + '</div>' +
-        '<div style="font-size:12px;color:var(--text3)">' + plan.sub + '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div id="buy-btn-' + plan.key + '" style="background:var(--pink);color:white;border-radius:20px;padding:8px 16px;font-size:14px;font-weight:800">' + plan.price + '</div>' +
-  '</div>';
-});
+      html += '<div style="background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="buyPlan(\'' + plan.key + '\')">' +
+        '<div style="display:flex;align-items:center;gap:12px">' +
+          '<span style="font-size:24px">' + plan.icon + '</span>' +
+          '<div>' +
+            '<div style="font-size:15px;font-weight:800">' + plan.label + '</div>' +
+            '<div style="font-size:12px;color:var(--text3)">' + plan.sub + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="buy-btn-' + plan.key + '" style="background:var(--pink);color:white;border-radius:20px;padding:8px 16px;font-size:14px;font-weight:800">' + plan.price + '</div>' +
+      '</div>';
+    });
 
-  html += '<div style="margin-top:20px;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);text-align:center">' +
-    '<div style="font-size:13px;color:var(--text2);margin-bottom:10px">Вопросы по подписке — пишите менеджеру</div>' +
-    '<a href="https://t.me/oleg_ezhkov" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--pink);color:white;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:800;text-decoration:none">' +
-      '✈️ Написать Олегу' +
-    '</a>' +
-  '</div>';
+    html += '<div style="margin-top:20px;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);text-align:center">' +
+      '<div style="font-size:13px;color:var(--text2);margin-bottom:10px">Вопросы по подписке — пишите менеджеру</div>' +
+      '<a href="https://t.me/oleg_ezhkov" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--pink);color:white;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:800;text-decoration:none">' +
+        '✈️ Написать Олегу' +
+      '</a>' +
+    '</div>';
+  }
 
   document.getElementById('tests-content').innerHTML = html;
 }
@@ -754,7 +755,8 @@ function formatDate(ts) {
     window.saveProfession = saveProfession;
     window.saveCustomProfession = saveCustomProfession;
     window.initApp = initApp;
-  
+
+    initApp();
   }, []);
 
   return null;
