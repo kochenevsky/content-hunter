@@ -1,18 +1,14 @@
-// app/layout.tsx
+// src/app/(standalone)/farm/layout.tsx
 import { MetricsProvider } from './providers/MetricsProvider';
 
-export default function RootLayout({
+export default function FarmLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <body>
-        <MetricsProvider>
-          {children}
-        </MetricsProvider>
-      </body>
-    </html>
+    <MetricsProvider>
+      {children}
+    </MetricsProvider>
   );
 }
