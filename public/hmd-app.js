@@ -29,16 +29,15 @@ function showScreen(name) {
 const LOAD_TIMEOUT = 15000; // 15 секунд таймаут
 
 function showNetworkError() {
-  console.log('showNetworkError вызвана'); // Отладка
+  console.log('showNetworkError вызвана');
   hide('loading');
   
-  // Находим контейнер для пациентов или создаем общий контейнер
   let container = document.getElementById('patients-list');
   if (!container) {
-    // Если контейнера нет, создаем его
     container = document.createElement('div');
     container.id = 'patients-list';
-    document.querySelector('.screen.active')?.appendChild(container);
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.appendChild(container);
   }
   
   container.innerHTML = `
@@ -59,26 +58,19 @@ function showNetworkError() {
     </div>
   `;
   
-  // Также показываем ошибку в Telegram, если доступно
-  if (window.tg && window.tg.showPopup) {
-    window.tg.showPopup({
-      title: 'Ошибка соединения',
-      message: 'Не удалось подключиться к серверу. Проверьте интернет или отключите VPN.',
-      buttons: [{ id: 'ok', type: 'default', text: 'OK' }]
-    });
-  }
+  // Убираем вызов tg.showPopup - он не поддерживается!
 }
 
 function showTimeoutError() {
-  console.log('showTimeoutError вызвана'); // Отладка
+  console.log('showTimeoutError вызвана');
   hide('loading');
   
-  // Находим контейнер
   let container = document.getElementById('patients-list');
   if (!container) {
     container = document.createElement('div');
     container.id = 'patients-list';
-    document.querySelector('.screen.active')?.appendChild(container);
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.appendChild(container);
   }
   
   container.innerHTML = `
@@ -95,7 +87,7 @@ function showTimeoutError() {
 }
 
 function showUnregistered() {
-  console.log('showUnregistered вызвана'); // Отладка
+  console.log('showUnregistered вызвана');
   hide('loading');
   
   let container = document.getElementById('patients-list');
@@ -111,7 +103,7 @@ function showUnregistered() {
       <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">🏥</div>
       <div class="empty-title" style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Help me, Doctor 👩‍⚕️</div>
       <div class="empty-sub" style="font-size: 14px; color: var(--text3); margin-bottom: 20px;">Пройдите регистрацию чтобы начать принимать пациентов</div>
-      <button class="btn-primary" style="max-width: 260px; margin: 0 auto;" onclick="if(tg)tg.close()">Пройти регистрацию</button>
+      <button class="btn-primary" style="max-width: 260px; margin: 0 auto;" onclick="if(window.tg) tg.close()">Пройти регистрацию</button>
     </div>
   `;
 }
@@ -129,7 +121,7 @@ async function initApp() {
     }
     if (!myUid) { showUnregistered(); return; }
 
-    // ПРОВЕРКА ДОСТУПНОСТИ WORKER'А (ОДНА, ОСНОВНАЯ)
+    // ПРОВЕРКА ДОСТУПНОСТИ WORKER'А (без showPopup)
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -147,27 +139,15 @@ async function initApp() {
       console.error('Worker недоступен:', workerError);
       hide('loading');
       
-      // Показываем ошибку через Telegram WebApp
-      if (tg && tg.showPopup) {
-        tg.showPopup({
-          title: '⚠️ Ошибка соединения',
-          message: 'Не удалось подключиться к серверу.\n\nЕсли вы используете VPN, добавьте домен helpmedoctor.oxion-ezhkov.workers.dev в исключения (Split Tunneling) или временно отключите VPN.',
-          buttons: [
-            { id: 'retry', type: 'default', text: '🔄 Повторить' },
-            { id: 'close', type: 'cancel', text: 'Закрыть' }
-          ]
-        }, (buttonId) => {
-          if (buttonId === 'retry') {
-            location.reload();
-          } else if (tg && tg.close) {
-            tg.close();
-          }
-        });
-      } else {
-        // Fallback для браузера
-        showNetworkError();
-      }
-      return; // ВАЖНО: выходим, чтобы не продолжать загрузку
+      // Вместо showPopup используем showNetworkError (HTML ошибка)
+      showNetworkError();
+      
+      // Дополнительно показываем alert (работает везде)
+      setTimeout(() => {
+        alert('⚠️ Ошибка соединения\n\nНе удалось подключиться к серверу.\n\nЕсли вы используете VPN, добавьте домен helpmedoctor.oxion-ezhkov.workers.dev в исключения или временно отключите VPN.');
+      }, 100);
+      
+      return;
     }
 
     // ОСНОВНАЯ ЗАГРУЗКА ДАННЫХ с таймаутом
@@ -182,11 +162,11 @@ async function initApp() {
       clearTimeout(timeoutId);
     } catch (fetchError) {
       clearTimeout(timeoutId);
+      console.error('Ошибка fetch:', fetchError);
+      hide('loading');
       if (fetchError.name === 'AbortError') {
-        console.error('Таймаут загрузки');
         showTimeoutError();
       } else {
-        console.error('Ошибка сети:', fetchError);
         showNetworkError();
       }
       return;
