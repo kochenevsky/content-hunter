@@ -26,51 +26,94 @@ function showScreen(name) {
   currentScreen = name;
 }
 
-function showUnregistered() {
-  hide('loading');
-  document.getElementById('patients-list').innerHTML =
-    '<div class="empty-screen">' +
-      '<div class="empty-icon">🏥</div>' +
-      '<div class="empty-title">Help me, Doctor 👩‍⚕️</div>' +
-      '<div class="empty-sub">Пройдите регистрацию чтобы начать принимать пациентов</div>' +
-      '<button class="btn-primary" style="max-width:260px;margin-top:8px" onclick="if(tg)tg.close()">Пройти регистрацию</button>' +
-    '</div>';
-}
-
 const LOAD_TIMEOUT = 15000; // 15 секунд таймаут
 
 function showNetworkError() {
+  console.log('showNetworkError вызвана'); // Отладка
   hide('loading');
-  document.getElementById('patients-list').innerHTML =
-    '<div class="empty-screen">' +
-      '<div class="empty-icon">🌐</div>' +
-      '<div class="empty-title">Не удалось загрузить кабинет</div>' +
-      '<div class="empty-sub">Проверьте подключение к интернету</div>' +
-      '<div style="margin-top: 16px; padding: 12px; background: var(--surface2); border-radius: 12px; text-align: left;">' +
-        '<div style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">🔧 Что делать:</div>' +
-        '<ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text2);">' +
-          '<li>Обновите страницу (Ctrl+F5)</li>' +
-          '<li>Проверьте интернет-соединение</li>' +
-          '<li><strong>Если используете VPN</strong> — добавьте домен <code style="background: var(--surface); padding: 2px 6px; border-radius: 4px;">helpmedoctor.oxion-ezhkov.workers.dev</code> в исключения</li>' +
-          '<li>Или временно отключите VPN</li>' +
-        '</ul>' +
-      '</div>' +
-      '<button class="btn-primary" style="max-width:260px;margin-top:16px" onclick="location.reload()">🔄 Перезагрузить</button>' +
-    '</div>';
+  
+  // Находим контейнер для пациентов или создаем общий контейнер
+  let container = document.getElementById('patients-list');
+  if (!container) {
+    // Если контейнера нет, создаем его
+    container = document.createElement('div');
+    container.id = 'patients-list';
+    document.querySelector('.screen.active')?.appendChild(container);
+  }
+  
+  container.innerHTML = `
+    <div class="empty-screen" style="padding: 40px 20px; text-align: center;">
+      <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">🌐</div>
+      <div class="empty-title" style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Не удалось загрузить кабинет</div>
+      <div class="empty-sub" style="font-size: 14px; color: var(--text3); margin-bottom: 20px;">Проверьте подключение к интернету</div>
+      <div style="margin: 20px auto; padding: 16px; background: var(--surface2); border-radius: 12px; text-align: left; max-width: 300px;">
+        <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">🔧 Что делать:</div>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text2); line-height: 1.6;">
+          <li>Обновите страницу (Ctrl+F5)</li>
+          <li>Проверьте интернет-соединение</li>
+          <li><strong>Если используете VPN</strong> — добавьте домен <code style="background: var(--surface); padding: 2px 6px; border-radius: 4px;">helpmedoctor.oxion-ezhkov.workers.dev</code> в исключения</li>
+          <li>Или временно отключите VPN</li>
+        </ul>
+      </div>
+      <button class="btn-primary" style="max-width: 260px; margin: 0 auto;" onclick="location.reload()">🔄 Перезагрузить</button>
+    </div>
+  `;
+  
+  // Также показываем ошибку в Telegram, если доступно
+  if (window.tg && window.tg.showPopup) {
+    window.tg.showPopup({
+      title: 'Ошибка соединения',
+      message: 'Не удалось подключиться к серверу. Проверьте интернет или отключите VPN.',
+      buttons: [{ id: 'ok', type: 'default', text: 'OK' }]
+    });
+  }
 }
 
 function showTimeoutError() {
+  console.log('showTimeoutError вызвана'); // Отладка
   hide('loading');
-  document.getElementById('patients-list').innerHTML =
-    '<div class="empty-screen">' +
-      '<div class="empty-icon">⏱️</div>' +
-      '<div class="empty-title">Слишком долгая загрузка</div>' +
-      '<div class="empty-sub">Сервер не отвечает, попробуйте позже</div>' +
-      '<div style="margin-top: 16px;">' +
-        '<button class="btn-primary" style="margin-right: 8px;" onclick="location.reload()">🔄 Повторить</button>' +
-        '<button class="btn-outline" onclick="showScreen(\'profile\')">👤 Перейти в профиль</button>' +
-      '</div>' +
-    '</div>';
+  
+  // Находим контейнер
+  let container = document.getElementById('patients-list');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'patients-list';
+    document.querySelector('.screen.active')?.appendChild(container);
+  }
+  
+  container.innerHTML = `
+    <div class="empty-screen" style="padding: 40px 20px; text-align: center;">
+      <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">⏱️</div>
+      <div class="empty-title" style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Слишком долгая загрузка</div>
+      <div class="empty-sub" style="font-size: 14px; color: var(--text3); margin-bottom: 20px;">Сервер не отвечает, попробуйте позже</div>
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn-primary" onclick="location.reload()">🔄 Повторить</button>
+        <button class="btn-outline" onclick="showScreen('profile')">👤 Перейти в профиль</button>
+      </div>
+    </div>
+  `;
+}
+
+function showUnregistered() {
+  console.log('showUnregistered вызвана'); // Отладка
+  hide('loading');
+  
+  let container = document.getElementById('patients-list');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'patients-list';
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.appendChild(container);
+  }
+  
+  container.innerHTML = `
+    <div class="empty-screen" style="padding: 40px 20px; text-align: center;">
+      <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">🏥</div>
+      <div class="empty-title" style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Help me, Doctor 👩‍⚕️</div>
+      <div class="empty-sub" style="font-size: 14px; color: var(--text3); margin-bottom: 20px;">Пройдите регистрацию чтобы начать принимать пациентов</div>
+      <button class="btn-primary" style="max-width: 260px; margin: 0 auto;" onclick="if(tg)tg.close()">Пройти регистрацию</button>
+    </div>
+  `;
 }
 
 async function initApp() {
