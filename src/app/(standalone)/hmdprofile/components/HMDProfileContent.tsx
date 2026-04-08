@@ -1,22 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
+// Добавьте это объявление
 declare global {
   interface Window {
     Telegram: any;
     tg: any;
+    initApp: () => void;
+    showScreen: (name: string) => void;
+    openPatient: (event: any, patId: string) => void;
+    closePanel: () => void;
+    startConsultation: (event: any, patId: string) => void;
+    repeatConsultation: (event: any, patId: string) => void;
+    newPatient: () => void;
+    startTest: (patId: string) => void;
+    toggleTest: (i: number) => void;
+    toggleEditName: () => void;
+    saveName: () => void;
+    saveLevel: (level: string) => void;
+    saveProfession: (val: string) => void;
+    saveCustomProfession: (val: string) => void;
+    buyPlan: (planKey: string) => void;
+    myUid: string | null;
+    myProfile: any;
+    myPatients: any[];
+    myTests: any[];
+    currentScreen: string;
   }
 }
 
 export default function HMDProfileContent() {
   useEffect(() => {
-    var tg = null;
-var myUid = null;
-var myProfile = null;
-var myPatients = [];
-var myTests = [];
-var currentScreen = 'patients';
+    // Теперь TypeScript не будет ругаться
+    var tg: any = null;
+    var myUid: any = null;
+    var myProfile: any = null;
+    var myPatients: any = [];
+    var myTests: any = [];
+    var currentScreen: any = 'patients';
 
 function api(path) {
   return '/api/hmd' + path;
