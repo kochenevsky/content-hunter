@@ -1,57 +1,16 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useMetrica } from '@artginzburg/next-ym';
-import ReactPixel from 'react-facebook-pixel';
-
 type StickyCtaProps = {
   href: string;
   label: string;
   stickyLabel?: string;
+  /** если true — sticky кнопка показывается всегда, без условия по скроллу */
   alwaysShowSticky?: boolean;
 };
 
 export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: StickyCtaProps) {
-  const [isClient, setIsClient] = useState(false);
-  const { reachGoal } = useMetrica();
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    
-    if (typeof window !== 'undefined' && isClient) {
-      reachGoal('click_calc_button');
-      ReactPixel.track('Lead', {
-        content_name: 'Расчет для ниши',
-        content_url: href,
-      });
-      window.open(href, '_blank');
-    }
-  };
-
-  // Если не на клиенте — рендерим без обработчиков
-  if (!isClient) {
-    // Возвращаем упрощённую версию без событий
-    if (alwaysShowSticky) {
-      return (
-        <div className="sticky-panel">
-          <a href={href} target="_blank" rel="noopener noreferrer" className="sticky-btn">
-            {stickyLabel ?? label}
-          </a>
-        </div>
-      );
-    }
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="inline-cta-btn">
-        {label}
-      </a>
-    );
-  }
-
-  // Полная версия с обработчиками для клиента
+  // Если alwaysShowSticky — рендерим только sticky панель (без inline кнопки)
+  // Если нет — рендерим только inline кнопку
   if (alwaysShowSticky) {
     return (
       <>
@@ -61,11 +20,13 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
             bottom: 0;
             left: 0;
             right: 0;
+            /* fix 6: нейтральный фон без градиента на десктопе */
             background: #0b1220;
             border-top: 1px solid rgba(255,255,255,0.07);
             padding: 12px 16px 20px;
             z-index: 200;
           }
+          /* fix 4: кнопка не шире экрана */
           .sticky-btn {
             display: block;
             width: 100%;
@@ -93,7 +54,6 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
             target="_blank"
             rel="noopener noreferrer"
             className="sticky-btn"
-            onClick={handleClick}
           >
             {stickyLabel ?? label}
           </a>
@@ -102,6 +62,7 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
     );
   }
 
+  // Inline кнопка (внутри секций)
   return (
     <>
       <style>{`
@@ -130,7 +91,6 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
         target="_blank"
         rel="noopener noreferrer"
         className="inline-cta-btn"
-        onClick={handleClick}
       >
         {label}
       </a>
