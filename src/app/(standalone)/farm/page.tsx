@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 import { StickyCta } from './_components/StickyCta'
 
 export const metadata = {
