@@ -1,5 +1,8 @@
 "use client";
 
+import { useMetrica } from '@artginzburg/next-ym';
+import ReactPixel from 'react-facebook-pixel';
+
 type StickyCtaProps = {
   href: string;
   label: string;
@@ -9,8 +12,25 @@ type StickyCtaProps = {
 };
 
 export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: StickyCtaProps) {
+  const { reachGoal } = useMetrica();
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    
+    // Яндекс Метрика
+    reachGoal('click_calc_button');
+    
+    // Meta Pixel
+    ReactPixel.track('Lead', {
+      content_name: 'Расчет для ниши',
+      content_url: href,
+    });
+    
+    // Переход по ссылке
+    window.open(href, '_blank');
+  };
+
   // Если alwaysShowSticky — рендерим только sticky панель (без inline кнопки)
-  // Если нет — рендерим только inline кнопку
   if (alwaysShowSticky) {
     return (
       <>
@@ -54,6 +74,7 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
             target="_blank"
             rel="noopener noreferrer"
             className="sticky-btn"
+            onClick={handleClick}
           >
             {stickyLabel ?? label}
           </a>
@@ -91,6 +112,7 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
         target="_blank"
         rel="noopener noreferrer"
         className="inline-cta-btn"
+        onClick={handleClick}
       >
         {label}
       </a>
