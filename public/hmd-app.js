@@ -26,64 +26,60 @@ function showScreen(name) {
   currentScreen = name;
 }
 
-const LOAD_TIMEOUT = 15000; // 15 секунд таймаут
+// ПРОСТЫЕ РАБОЧИЕ ВЕРСИИ ФУНКЦИЙ ОШИБОК
 
 function showNetworkError() {
-  console.log('showNetworkError вызвана');
-  hide('loading');
+  console.log('🌐 showNetworkError');
   
-  let container = document.getElementById('patients-list');
+  // Скрываем загрузку
+  var loadingEl = document.getElementById('loading');
+  if (loadingEl) loadingEl.style.display = 'none';
+  
+  // Находим контейнер
+  var container = document.getElementById('patients-list');
   if (!container) {
     container = document.createElement('div');
     container.id = 'patients-list';
-    const activeScreen = document.querySelector('.screen.active');
-    if (activeScreen) activeScreen.appendChild(container);
+    document.body.appendChild(container);
   }
   
-  container.innerHTML = `
-    <div class="empty-screen" style="padding: 40px 20px; text-align: center;">
-      <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">🌐</div>
-      <div class="empty-title" style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Не удалось загрузить кабинет</div>
-      <div class="empty-sub" style="font-size: 14px; color: var(--text3); margin-bottom: 20px;">Проверьте подключение к интернету</div>
-      <div style="margin: 20px auto; padding: 16px; background: var(--surface2); border-radius: 12px; text-align: left; max-width: 300px;">
-        <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">🔧 Что делать:</div>
-        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text2); line-height: 1.6;">
-          <li>Обновите страницу (Ctrl+F5)</li>
-          <li>Проверьте интернет-соединение</li>
-          <li><strong>Если используете VPN</strong> — добавьте домен <code style="background: var(--surface); padding: 2px 6px; border-radius: 4px;">helpmedoctor.oxion-ezhkov.workers.dev</code> в исключения</li>
-          <li>Или временно отключите VPN</li>
-        </ul>
-      </div>
-      <button class="btn-primary" style="max-width: 260px; margin: 0 auto;" onclick="location.reload()">🔄 Перезагрузить</button>
-    </div>
-  `;
-  
-  // Убираем вызов tg.showPopup - он не поддерживается!
+  // Показываем ошибку
+  container.innerHTML = '<div style="text-align: center; padding: 50px 20px;">' +
+    '<div style="font-size: 48px; margin-bottom: 20px;">🌐</div>' +
+    '<div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">Не удалось загрузить кабинет</div>' +
+    '<div style="font-size: 14px; color: #666; margin-bottom: 20px;">Проверьте интернет-соединение</div>' +
+    '<div style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin: 20px auto; max-width: 300px; text-align: left;">' +
+      '<div style="font-weight: bold; margin-bottom: 10px;">🔧 Что делать:</div>' +
+      '<ul style="margin: 0; padding-left: 20px;">' +
+        '<li>Обновите страницу (Ctrl+F5)</li>' +
+        '<li>Проверьте интернет</li>' +
+        '<li><strong>Если используете VPN</strong> — отключите его</li>' +
+        '<li>Или добавьте домен <code>helpmedoctor.oxion-ezhkov.workers.dev</code> в исключения VPN</li>' +
+      '</ul>' +
+    '</div>' +
+    '<button onclick="location.reload()" style="background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">🔄 Перезагрузить</button>' +
+    '</div>';
 }
 
 function showTimeoutError() {
-  console.log('showTimeoutError вызвана');
-  hide('loading');
+  console.log('⏱️ showTimeoutError');
   
-  let container = document.getElementById('patients-list');
+  var loadingEl = document.getElementById('loading');
+  if (loadingEl) loadingEl.style.display = 'none';
+  
+  var container = document.getElementById('patients-list');
   if (!container) {
     container = document.createElement('div');
     container.id = 'patients-list';
-    const activeScreen = document.querySelector('.screen.active');
-    if (activeScreen) activeScreen.appendChild(container);
+    document.body.appendChild(container);
   }
   
-  container.innerHTML = `
-    <div class="empty-screen" style="padding: 40px 20px; text-align: center;">
-      <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">⏱️</div>
-      <div class="empty-title" style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Слишком долгая загрузка</div>
-      <div class="empty-sub" style="font-size: 14px; color: var(--text3); margin-bottom: 20px;">Сервер не отвечает, попробуйте позже</div>
-      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-        <button class="btn-primary" onclick="location.reload()">🔄 Повторить</button>
-        <button class="btn-outline" onclick="showScreen('profile')">👤 Перейти в профиль</button>
-      </div>
-    </div>
-  `;
+  container.innerHTML = '<div style="text-align: center; padding: 50px 20px;">' +
+    '<div style="font-size: 48px; margin-bottom: 20px;">⏱️</div>' +
+    '<div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">Слишком долгая загрузка</div>' +
+    '<div style="font-size: 14px; color: #666; margin-bottom: 20px;">Сервер не отвечает</div>' +
+    '<button onclick="location.reload()" style="background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">🔄 Повторить</button>' +
+    '</div>';
 }
 
 function showUnregistered() {
@@ -109,62 +105,52 @@ function showUnregistered() {
 }
 
 async function initApp() {
-  document.getElementById('panel-overlay').addEventListener('click', closePanel);
+  console.log('🚀 initApp started');
+  
+  // Инициализация Telegram
   tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) { tg.ready(); tg.expand(); }
-
+  if (tg) { 
+    tg.ready(); 
+    tg.expand(); 
+  }
+  
+  // Получаем UID
   try {
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
       myUid = String(tg.initDataUnsafe.user.id);
     } else {
       myUid = new URLSearchParams(location.search).get('uid');
     }
-    if (!myUid) { showUnregistered(); return; }
-
-    // ПРОВЕРКА ДОСТУПНОСТИ WORKER'А (без showPopup)
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const workerCheck = await fetch('https://helpmedoctor.oxion-ezhkov.workers.dev/cdn-cgi/trace', {
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!workerCheck.ok) {
-        throw new Error('Worker не отвечает');
-      }
-    } catch (workerError) {
-      console.error('Worker недоступен:', workerError);
-      hide('loading');
-      
-      // Вместо showPopup используем showNetworkError (HTML ошибка)
-      showNetworkError();
-      
-      // Дополнительно показываем alert (работает везде)
-      setTimeout(() => {
-        alert('⚠️ Ошибка соединения\n\nНе удалось подключиться к серверу.\n\nЕсли вы используете VPN, добавьте домен helpmedoctor.oxion-ezhkov.workers.dev в исключения или временно отключите VPN.');
-      }, 100);
-      
+    
+    console.log('📱 UID:', myUid);
+    
+    if (!myUid) {
+      showUnregistered();
       return;
     }
-
-    // ОСНОВНАЯ ЗАГРУЗКА ДАННЫХ с таймаутом
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), LOAD_TIMEOUT);
     
-    let r;
+    // ПРОСТАЯ ЗАГРУЗКА ДАННЫХ (без лишних проверок Worker'a)
+    console.log('📡 Загружаем данные...');
+    
+    // Создаем таймаут
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      console.log('⏱️ Таймаут сработал');
+      controller.abort();
+    }, 15000);
+    
+    let response;
     try {
-      r = await fetch(api('/mini-app/init?uid=' + myUid), {
+      response = await fetch(api('/mini-app/init?uid=' + myUid), {
         signal: controller.signal
       });
       clearTimeout(timeoutId);
-    } catch (fetchError) {
+      console.log('📦 Ответ получен, status:', response.status);
+    } catch (error) {
       clearTimeout(timeoutId);
-      console.error('Ошибка fetch:', fetchError);
-      hide('loading');
-      if (fetchError.name === 'AbortError') {
+      console.error('❌ Ошибка запроса:', error);
+      
+      if (error.name === 'AbortError') {
         showTimeoutError();
       } else {
         showNetworkError();
@@ -172,32 +158,38 @@ async function initApp() {
       return;
     }
     
-    if (!r.ok) {
-      throw new Error(`HTTP ${r.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    const data = await r.json();
+    const data = await response.json();
+    console.log('✅ Данные получены');
     
-    if (data.not_registered) { 
-      showUnregistered(); 
-      return; 
+    if (data.not_registered) {
+      showUnregistered();
+      return;
     }
-
+    
+    // Сохраняем данные
     myProfile = data.profile;
     myPatients = data.patients;
     myTests = data.tests;
-
+    
+    // Рендерим
     renderPatients();
     renderProfile();
     renderTests();
-
+    
+    // Показываем нужный экран
     var screenParam = new URLSearchParams(location.search).get('screen');
     if (screenParam) showScreen(screenParam);
-
+    
+    // Скрываем загрузку
     hide('loading');
-  } catch(e) {
-    console.error(e);
-    hide('loading');
+    console.log('🎉 Готово!');
+    
+  } catch (error) {
+    console.error('❌ Критическая ошибка:', error);
     showNetworkError();
   }
 }
