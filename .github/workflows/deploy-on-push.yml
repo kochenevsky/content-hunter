@@ -49,7 +49,7 @@ jobs:
           sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 root@5.42.104.246 '
             cd /var/www/content-hunter &&
             git pull origin main &&
-            pnpm install --frozen-lockfile &&
+            pnpm install --no-frozen-lockfile &&
             pm2 restart content-hunter &&
             pm2 save
           '
