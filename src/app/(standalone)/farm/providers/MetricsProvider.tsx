@@ -1,4 +1,4 @@
-// app/providers/MetricsProvider.tsx
+// src/app/(standalone)/farm/providers/MetricsProvider.tsx
 'use client';
 
 import { YandexMetricaProvider, standardYMInitParameters } from '@artginzburg/next-ym';
@@ -7,7 +7,6 @@ import ReactPixel from 'react-facebook-pixel';
 
 export function MetricsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Инициализация Meta Pixel
     ReactPixel.init('1196322745200891');
     ReactPixel.pageView();
   }, []);
