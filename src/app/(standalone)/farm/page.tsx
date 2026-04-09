@@ -24,7 +24,6 @@ export default function FarmPage() {
           min-height: 100vh;
           font-family: -apple-system,'SF Pro Display','Inter',system-ui,sans-serif;
           color: #f1f5f9;
-          /* fix 5: запрещаем горизонтальный скролл */
           overflow-x: hidden;
           width: 100%;
         }
@@ -32,7 +31,6 @@ export default function FarmPage() {
         .farm-container {
           max-width: 900px;
           margin: 0 auto;
-          /* fix 3,4,5: padding вместо margin для краёв */
           padding: 0 16px;
           width: 100%;
           box-sizing: border-box;
@@ -79,7 +77,6 @@ export default function FarmPage() {
           display: block;
           object-fit: cover;
           max-height: 420px;
-          /* fix 1: убираем рамку */
           border: none;
           outline: none;
         }
@@ -98,7 +95,6 @@ export default function FarmPage() {
           display: flex;
           flex-direction: column;
           gap: 10px;
-          /* fix 3: не выходим за ширину */
           width: 100%;
           box-sizing: border-box;
         }
@@ -215,6 +211,43 @@ export default function FarmPage() {
           margin-bottom: 28px;
         }
 
+        /* ── DEMO VIDEO SECTION (НОВЫЙ БЛОК) ── */
+        .farm-demo-section {
+          padding: 56px 0;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .farm-demo-title {
+          font-size: clamp(22px, 3.5vw, 36px);
+          font-weight: 900;
+          color: #fff;
+          margin-bottom: 12px;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          text-align: center;
+        }
+
+        .farm-demo-sub {
+          font-size: 14px;
+          color: #64748b;
+          margin-bottom: 32px;
+          text-align: center;
+        }
+
+        .farm-demo-video {
+          border-radius: 20px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+          background: #000;
+        }
+
+        .farm-demo-video iframe {
+          display: block;
+        }
+
         /* ── SLIDES ── */
         .farm-slides-section {
           padding: 56px 0 100px;
@@ -238,7 +271,6 @@ export default function FarmPage() {
           margin-bottom: 20px;
         }
 
-        /* fix 7: явная сетка 3 колонки, равные строки */
         .farm-slides-grid {
           display: grid;
           grid-template-columns: 1fr;
@@ -435,6 +467,31 @@ export default function FarmPage() {
             />
           </section>
 
+          {/* DEMO VIDEO — НОВЫЙ БЛОК ПЕРЕД СЛАЙДАМИ */}
+          <section className="farm-demo-section">
+            <div className="farm-divider" />
+            <h2 className="farm-demo-title">
+              Как работает<br />
+              <span style={{ color: '#4ade80' }}>платформа</span>
+            </h2>
+            <p className="farm-demo-sub">
+              Демонстрация системы масштабирования контента
+            </p>
+
+            <div className="farm-demo-video">
+              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+                <iframe
+                  src="https://player.vimeo.com/video/1181500890?badge=0&autopause=0&player_id=0&app_id=58479"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  title="Как работает платформа Content Hunter"
+                />
+              </div>
+            </div>
+          </section>
+
           {/* SLIDES */}
           <section className="farm-slides-section">
             <div className="farm-divider" />
@@ -466,7 +523,7 @@ export default function FarmPage() {
               <p>
                 Построить такую ферму самостоятельно — ~20 000 000 ₽.<br />
                 Аренда в Content Hunter — от 25 000 ₽ в месяц.<br />
-                Первичные вложения — 0 ₽.
+                Настройка и установка — 0 ₽.
               </p>
               <a
                 href="https://sbsite.pro//eu_site_calc_1"
