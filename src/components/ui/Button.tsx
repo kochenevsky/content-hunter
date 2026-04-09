@@ -10,10 +10,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-primary-500 hover:bg-primary-600 text-white',
-        secondary: 'bg-neutral-900 hover:bg-neutral-800 text-white',
-        outline: 'border border-neutral-300 hover:border-neutral-400 text-neutral-900 bg-transparent',
-        ghost: 'text-neutral-600 hover:text-neutral-900 bg-transparent',
+        // PRIMARY — зелёный градиент как в примере
+        primary: 'bg-gradient-to-r from-[#22c55e] to-[#16a34a] hover:from-[#16a34a] hover:to-[#15803d] text-white shadow-lg shadow-[#22c55e]/30 hover:shadow-xl',
+        // SECONDARY — тёмный с рамкой
+        secondary: 'bg-[#1e293b] hover:bg-[#334155] text-white border border-[#334155] hover:border-[#475569]',
+        // OUTLINE — прозрачный с зелёной рамкой при наведении
+        outline: 'border border-[#334155] hover:border-[#22c55e] text-[#cbd5e1] hover:text-[#4ade80] bg-transparent',
+        // GHOST — только текст с подсветкой
+        ghost: 'text-[#94a3b8] hover:text-[#4ade80] bg-transparent hover:bg-[rgba(34,197,94,0.1)]',
       },
       size: {
         sm: 'px-4 py-2 text-sm',
