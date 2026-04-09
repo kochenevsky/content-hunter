@@ -212,37 +212,37 @@ export default function FarmPage() {
         }
 
         /* ── DEMO VIDEO SECTION (НОВЫЙ БЛОК) ── */
-        .farm-demo-section {
-          padding: 56px 0;
-          border-top: 1px solid rgba(255,255,255,0.06);
-          width: 100%;
-          box-sizing: border-box;
-        }
+.farm-demo-section {
+  padding: 56px 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  width: 100%;
+  box-sizing: border-box;
+}
 
-        .farm-demo-title {
-          font-size: clamp(22px, 3.5vw, 36px);
-          font-weight: 900;
-          color: #fff;
-          margin-bottom: 12px;
-          letter-spacing: -0.02em;
-          line-height: 1.1;
-          text-align: center;
-        }
+.farm-demo-title {
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-align: left;  /* ← было center, стало left */
+}
 
-        .farm-demo-sub {
-          font-size: 14px;
-          color: #64748b;
-          margin-bottom: 32px;
-          text-align: center;
-        }
+.farm-demo-sub {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 32px;
+  text-align: left;  /* ← было center, стало left */
+}
 
-        .farm-demo-video {
-          border-radius: 20px;
-          overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-          background: #000;
-        }
+.farm-demo-video {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+  background: #000;
+}
 
         .farm-demo-video iframe {
           display: block;
@@ -475,7 +475,7 @@ export default function FarmPage() {
               <span style={{ color: '#4ade80' }}>платформа</span>
             </h2>
             <p className="farm-demo-sub">
-              Демонстрация системы масштабирования контента
+              Настройка системы, загрузка роликов и аналитика
             </p>
 
             <div className="farm-demo-video">
