@@ -117,17 +117,17 @@ export default function FarmPage() {
         }
 
         .farm-note {
-          font-size: 14px;
-          color: #475569;
-          line-height: 1.6;
-          margin-bottom: 28px;
-          padding: 14px 16px;
-          background: rgba(255,255,255,0.03);
-          border-radius: 12px;
-          border-left: 3px solid rgba(34,197,94,0.4);
-          box-sizing: border-box;
-          width: 100%;
-        }
+  font-size: 14px;
+  color: #94a3b8;  /* ← было #475569, стало #94a3b8 (светло-серый) */
+  line-height: 1.6;
+  margin-bottom: 28px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  border-left: 3px solid rgba(34,197,94,0.4);
+  box-sizing: border-box;
+  width: 100%;
+}
 
         /* ── SECTIONS ── */
         .farm-section {
