@@ -56,7 +56,66 @@ export default function HMDProfilePage() {
         .page-header { padding: 16px 0 12px; }
         .page-title { font-size: 26px; font-weight: 900; color: var(--text); letter-spacing: -0.02em; }
         .page-sub { font-size: 13px; color: var(--text2); margin-top: 2px; font-weight: 500; }
-        .patient-list { 
+        .faq-item {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.faq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.faq-arrow {
+  font-size: 12px;
+  color: var(--text3);
+  transition: transform 0.2s;
+}
+
+.faq-item.open .faq-arrow {
+  transform: rotate(180deg);
+}
+
+.faq-body {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  background: var(--surface2);
+}
+
+.faq-item.open .faq-body {
+  max-height: 500px;
+  padding: 12px 16px 16px;
+}
+
+.faq-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--pink);
+  color: white;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 10px;
+}
+.patient-list { 
   display: flex; 
   flex-direction: column; 
   gap: 16px; 
@@ -136,7 +195,12 @@ export default function HMDProfilePage() {
         .star.filled { animation: starPop 0.2s ease; }
         @keyframes starPop { 0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); } }
         .rating-num { font-size: 22px; font-weight: 900; color: var(--text); margin-left: 8px; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stats-grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px; 
+  margin-bottom: 20px; 
+}
         .stat-card { background: var(--surface); border-radius: var(--radius-sm); padding: 16px 14px; border: 1px solid var(--border); text-align: center; }
         .stat-val { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; margin-bottom: 4px; }
         .stat-val.pink { color: var(--pink); }
