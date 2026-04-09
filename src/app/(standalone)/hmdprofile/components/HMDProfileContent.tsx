@@ -271,18 +271,16 @@ function patientCard(p, idx, isClosed) {
   } else {
     var hasResults = (p.test_results || []).length > 0;
     var lastCons = p.consultations && p.consultations.length ? 'Консультаций: ' + p.consultations.length : 'Первичный приём';
-    cardBody =
-      '<div class="card-top">' +
-        '<div><div class="card-name">' + esc(p.name) + '</div>' +
-        '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
-        '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
-      '</div>' +
-      '<div class="card-complaint">' + esc(p.chief_complaint) + '</div>' +
-      '<div class="card-meta">' +
-        '<div class="card-meta-item">' + lastCons + '</div>' +
-        (hasResults ? '<div class="card-meta-item has-results">✅ Результаты готовы</div>' : '') +
-      '</div>' +
-      '<button class="card-btn" onclick="event.stopPropagation();startConsultation(event,\'' + pid + '\')">▶️ Начать приём</button>';
+    cardBody +=
+  '<div class="card-top">' +
+    '<div><div class="card-name">' + esc(p.name) + '</div>' +
+    '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
+    '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
+  '</div>' +
+  '<div style="display:flex;gap:8px;margin-top:8px">' +
+    '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')" style="flex:2">▶️ Начать приём</button>' +
+    '<button class="card-btn secondary" onclick="rejectPatient(event, \'' + pid + '\')" style="flex:1">🚫 Отказаться</button>' +
+  '</div>';
   }
 
   return '<div class="patient-card" onclick="openPatient(event, \'' + pid + '\')">' +
@@ -292,6 +290,20 @@ function patientCard(p, idx, isClosed) {
     '</div></div>';
 }
 
+async function rejectPatient(event, patId) {
+  event.stopPropagation();
+  if (!confirm('Удалить пациента без возможности восстановления?')) return;
+  
+  try {
+    await fetch(api('/mini-app/action?uid=' + myUid + '&action=reject_patient&pat_id=' + patId));
+    // Обновляем список
+    location.reload();
+  } catch(e) {
+    console.error('rejectPatient error:', e);
+  }
+}
+window.rejectPatient = rejectPatient;
+    
 async function repeatConsultation(event, patId) {
   if (event) event.stopPropagation();
   try {
@@ -341,6 +353,7 @@ function closePanel() {
   document.getElementById('panel-overlay').classList.remove('visible');
   document.getElementById('patient-panel').classList.remove('open');
 }
+window.closePanel = closePanel;
 
 function renderPanel(pat) {
   var isAlien = pat.is_alien;
@@ -763,6 +776,8 @@ function formatDate(ts) {
     window.saveProfession = saveProfession;
     window.saveCustomProfession = saveCustomProfession;
     window.initApp = initApp;
+      document.getElementById('panel-overlay').addEventListener('click', closePanel);
+
 
     initApp();
   }, []);
