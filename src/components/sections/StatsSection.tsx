@@ -1,41 +1,29 @@
 'use client'
 
 import { FadeInView } from '@/components/animations/fade-in-view'
-import { AnimatedCounter } from '@/components/animations/animated-counter'
-
-const DEFAULT_STATS = [
-  { value: 50, suffix: '+', label: 'Запущенных проектов' },
-  { value: 20, suffix: 'М+', label: 'Просмотров в месяц' },
-  { value: 15, suffix: '+', label: 'Ниш клиентов' },
-  { value: 8, suffix: '', label: 'Стран присутствия' },
-]
 
 export type StatsSectionProps = {
   items?: Array<{ value?: number; suffix?: string; label?: string }> | null
 }
 
 export function StatsSection({ items }: StatsSectionProps = {}) {
-  const stats = items?.length ? items.map(s => ({
-    value: Number(s.value) || 0,
-    suffix: String(s.suffix || ''),
-    label: String(s.label || ''),
-  })) : DEFAULT_STATS
-
   return (
-    <section className="py-16 bg-white border-y border-neutral-200">
-      <div className="container">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-          {stats.map((stat, index) => (
-            <FadeInView key={index} direction="up" delay={index * 0.1}>
-              <div className="text-center">
-                <p className="text-4xl md:text-5xl font-bold text-neutral-900">
-                  <AnimatedCounter target={stat.value} suffix={stat.suffix} duration={2.5} />
-                </p>
-                <p className="text-neutral-600 mt-2">{stat.label}</p>
-              </div>
-            </FadeInView>
-          ))}
-        </div>
+    <section className="py-16 bg-[#0b1220]">
+      <div className="container max-w-[900px] mx-auto px-4">
+        <FadeInView direction="up">
+          <div className="rounded-2xl overflow-hidden border border-[rgba(255,255,255,0.1)] shadow-2xl">
+            <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+              <iframe
+                src="https://player.vimeo.com/video/1181500890?badge=0&autopause=0&player_id=0&app_id=58479"
+                frameBorder="0"
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                title="Как работает платформа Content Hunter"
+              />
+            </div>
+          </div>
+        </FadeInView>
       </div>
     </section>
   )
