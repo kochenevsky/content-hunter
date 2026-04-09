@@ -56,9 +56,22 @@ export default function HMDProfilePage() {
         .page-header { padding: 16px 0 12px; }
         .page-title { font-size: 26px; font-weight: 900; color: var(--text); letter-spacing: -0.02em; }
         .page-sub { font-size: 13px; color: var(--text2); margin-top: 2px; font-weight: 500; }
-        .patient-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-        .patient-card { background: var(--surface); border-radius: var(--radius); box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; animation: slideDown 0.3s forwards; opacity: 0; }
-        .patient-card:active { transform: scale(0.98); box-shadow: 0 1px 6px rgba(0,0,0,0.04); }
+        .patient-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+  margin-bottom: 16px; 
+}
+.patient-card { 
+  background: var(--surface); 
+  border-radius: var(--radius); 
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); 
+  overflow: hidden; 
+  cursor: pointer; 
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-bottom: 0; /* ← убедитесь что нет margin */
+}
+.patient-card:active { transform: scale(0.98); box-shadow: 0 1px 6px rgba(0,0,0,0.04); }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
         .card-inner { display: flex; }
         .card-stripe { width: 5px; flex-shrink: 0; background: var(--pink-light); }
