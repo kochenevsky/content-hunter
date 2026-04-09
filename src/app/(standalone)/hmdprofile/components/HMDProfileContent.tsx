@@ -282,7 +282,7 @@ function patientCard(p, idx, isClosed) {
         '<div class="card-meta-item">' + lastCons + '</div>' +
         (hasResults ? '<div class="card-meta-item has-results">✅ Результаты готовы</div>' : '') +
       '</div>' +
-      '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')">▶️ Начать приём</button>';
+      '<button class="card-btn" onclick="event.stopPropagation();startConsultation(event,\'' + pid + '\')">▶️ Начать приём</button>';
   }
 
   return '<div class="patient-card" onclick="openPatient(event, \'' + pid + '\')">' +
@@ -292,20 +292,26 @@ function patientCard(p, idx, isClosed) {
     '</div></div>';
 }
 
-function repeatConsultation(event, patId) {
-  event.stopPropagation();
-  fetch(api('/mini-app/action?uid=' + myUid + '&action=repeat_consultation&pat_id=' + patId));
+async function repeatConsultation(event, patId) {
+  if (event) event.stopPropagation();
+  try {
+    await fetch(api('/mini-app/action?uid=' + myUid + '&action=repeat_consultation&pat_id=' + patId));
+  } catch(e) { console.error(e); }
   if (tg) tg.close();
 }
 
-function startConsultation(event, patId) {
-  event.stopPropagation();
-  fetch(api('/mini-app/action?uid=' + myUid + '&action=start_consultation&pat_id=' + patId));
+async function startConsultation(event, patId) {
+  if (event) event.stopPropagation();
+  try {
+    await fetch(api('/mini-app/action?uid=' + myUid + '&action=start_consultation&pat_id=' + patId));
+  } catch(e) { console.error(e); }
   if (tg) tg.close();
 }
 
-function newPatient() {
-  fetch(api('/mini-app/action?uid=' + myUid + '&action=new_patient'));
+async function newPatient() {
+  try {
+    await fetch(api('/mini-app/action?uid=' + myUid + '&action=new_patient'));
+  } catch(e) { console.error(e); }
   if (tg) tg.close();
 }
 
@@ -322,9 +328,11 @@ async function openPatient(event, patId) {
   } catch(e) { console.error(e); }
 }
 
-function openPatientTest(event, patId) {
-  event.stopPropagation();
-  fetch(api('/mini-app/action?uid=' + myUid + '&action=start_test&pat_id=' + patId));
+async function openPatientTest(event, patId) {
+  if (event) event.stopPropagation();
+  try {
+    await fetch(api('/mini-app/action?uid=' + myUid + '&action=start_test&pat_id=' + patId));
+  } catch(e) { console.error(e); }
   if (tg) tg.close();
 }
 window.openPatientTest = openPatientTest;
