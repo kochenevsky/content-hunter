@@ -59,9 +59,11 @@ export default function HMDProfilePage() {
         .patient-list { 
   display: flex; 
   flex-direction: column; 
-  gap: 12px; 
-  margin-bottom: 16px; 
+  gap: 16px; 
+  margin-bottom: 24px; 
+  padding: 2px 0; /* предотвращает обрезание теней */
 }
+
 .patient-card { 
   background: var(--surface); 
   border-radius: var(--radius); 
@@ -69,7 +71,8 @@ export default function HMDProfilePage() {
   overflow: hidden; 
   cursor: pointer; 
   transition: transform 0.15s, box-shadow 0.15s;
-  margin-bottom: 0; /* ← убедитесь что нет margin */
+  margin: 0;
+  flex-shrink: 0; /* предотвращает сжатие */
 }
 .patient-card:active { transform: scale(0.98); box-shadow: 0 1px 6px rgba(0,0,0,0.04); }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
