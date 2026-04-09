@@ -251,36 +251,37 @@ function patientCard(p, idx, isClosed) {
 
   var cardBody = '';
   if (isClosed) {
-    var lastCons = p.consultations && p.consultations.length ? p.consultations[p.consultations.length-1] : null;
-    var rating = lastCons ? (lastCons.rating || 0) : 0;
-    var stars = rating ? '⭐'.repeat(Math.min(Math.round(rating),5)) + ' ' + rating.toFixed(1) : '—';
-    var diag = esc(p.true_diagnosis || 'Диагноз не установлен');
+  // ЗАКРЫТЫЙ ПАЦИЕНТ
+  var lastCons = p.consultations && p.consultations.length ? p.consultations[p.consultations.length-1] : null;
+  var rating = lastCons ? (lastCons.rating || 0) : 0;
+  var stars = rating ? '⭐'.repeat(Math.min(Math.round(rating),5)) + ' ' + rating.toFixed(1) : '—';
+  var diag = esc(p.true_diagnosis || 'Диагноз не установлен');
 
-    // В patientCard для активных пациентов
-cardBody +=
-  '<div class="card-top">' +
-    '<div><div class="card-name">' + esc(p.name) + '</div>' +
-    '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
-    '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
-  '</div>' +
-  '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">' +
-    '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')">▶️ Начать приём</button>' +
-    '<button class="card-btn secondary" onclick="rejectPatient(event, \'' + pid + '\')">🚫 Отказать в приёме</button>' +
-  '</div>';
-  } else {
-    var hasResults = (p.test_results || []).length > 0;
-    var lastCons = p.consultations && p.consultations.length ? 'Консультаций: ' + p.consultations.length : 'Первичный приём';
-    cardBody +=
-  '<div class="card-top">' +
-    '<div><div class="card-name">' + esc(p.name) + '</div>' +
-    '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
-    '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
-  '</div>' +
-  '<div style="display:flex;gap:8px;margin-top:8px">' +
-    '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')" style="flex:2">▶️ Начать приём</button>' +
-    '<button class="card-btn secondary" onclick="rejectPatient(event, \'' + pid + '\')" style="flex:1">🚫 Отказаться</button>' +
-  '</div>';
-  }
+  cardBody =
+    '<div class="card-top">' +
+      '<div><div class="card-name">' + esc(p.name) + '</div>' +
+      '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
+      '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
+    '</div>' +
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:4px">🔬 ' + diag + '</div>' +
+    '<div style="font-size:13px;font-weight:700;margin-bottom:10px">' + stars + '</div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button class="card-btn secondary" style="flex:1" onclick="openPatientTest(event,\'' + pid + '\')">📝 Тест</button>' +
+      '<button class="card-btn" style="flex:1" onclick="repeatConsultation(event,\'' + pid + '\')">🔄 Заново</button>' +
+    '</div>';
+} else {
+  // АКТИВНЫЙ ПАЦИЕНТ
+  cardBody =
+    '<div class="card-top">' +
+      '<div><div class="card-name">' + esc(p.name) + '</div>' +
+      '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
+      '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">' +
+      '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')">▶️ Начать приём</button>' +
+      '<button class="card-btn secondary" onclick="rejectPatient(event, \'' + pid + '\')">🚫 Отказать в приёме</button>' +
+    '</div>';
+}
 
   return '<div class="patient-card" onclick="openPatient(event, \'' + pid + '\')">' +
     '<div class="card-inner">' +
@@ -549,7 +550,7 @@ function renderProfile() {
     return '<option value="' + esc(pr) + '"' + (p.profession === pr ? ' selected' : '') + '>' + esc(pr) + '</option>';
   }).join('');
 
-  document.getElementById('profile-content').innerHTML =
+  var html =
     '<div style="background:linear-gradient(135deg,#FFB5C8,#FF8FAB);border-radius:var(--radius);padding:24px 20px;margin-bottom:16px;text-align:center;color:white">' +
       '<div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;margin:0 auto 12px">' + esc(initial) + '</div>' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px">' +
@@ -587,11 +588,45 @@ function renderProfile() {
     renderDailyTask(p) +
     '<div class="stats-grid" style="margin-bottom:16px">' +
       '<div class="stat-card"><div class="stat-val pink">' + (p.stats && p.stats.patients_total || 0) + '</div><div class="stat-label">Пациентов</div></div>' +
-      '<div class="stat-card"><div class="stat-val">' + (p.stats && p.stats.consultations_total || 0) + '</div><div class="stat-label">Консультаций</div></div>' +
       '<div class="stat-card"><div class="stat-val pink">' + (avgRating ? avgRating.toFixed(1) + ' ⭐' : '—') + '</div><div class="stat-label">Ср. рейтинг</div></div>' +
-      '<div class="stat-card"><div class="stat-val ' + ((p.stats && p.stats.critical_outcomes || 0) > 0 ? 'coral' : '') + '">' + (p.stats && p.stats.critical_outcomes || 0) + '</div><div class="stat-label">Тяж. исходов</div></div>' +
+    '</div>' +
+    '<div class="section-label">Помощь</div>' +
+    '<div class="faq-item" onclick="toggleFaq(this)">' +
+      '<div class="faq-header">📘 Как пользоваться сервисом?<span class="faq-arrow">▾</span></div>' +
+      '<div class="faq-body">' +
+        '<b>Приём пациента:</b> Нажмите «Начать приём» в карточке. Задавайте вопросы, назначайте обследования через кнопку «⚕️ Действия», проводите осмотр. Когда готовы — выставьте диагноз.<br><br>' +
+        '<b>Обследования:</b> Результаты приходят через несколько секунд. Все данные сохраняются в карточке пациента.<br><br>' +
+        '<b>Оценка:</b> После завершения приёма вы получаете разбор от эксперта, оценку по трём осям и рекомендации по улучшению.<br><br>' +
+        '<b>Тесты:</b> После каждого приёма генерируется персональный тест по вашим пробелам. Проходите его чтобы закрепить материал.' +
+      '</div>' +
+    '</div>' +
+    '<div class="faq-item" onclick="toggleFaq(this)">' +
+      '<div class="faq-header">⭐ Как улучшить свой рейтинг?<span class="faq-arrow">▾</span></div>' +
+      '<div class="faq-body">' +
+        '<b>1. Собирайте полный анамнез:</b> задавайте не менее 5-6 вопросов о симптомах, длительности, характере боли.<br><br>' +
+        '<b>2. Проводите физический осмотр:</b> хотя бы один осмотр за приём значительно повышает оценку.<br><br>' +
+        '<b>3. Назначайте нужные обследования:</b> не избыточно, но достаточно для постановки диагноза.<br><br>' +
+        '<b>4. Ставьте точный диагноз:</b> это главный фактор. Если сомневаетесь — назначьте доп. обследования.<br><br>' +
+        '<b>5. Проходите тесты:</b> они помогают закрыть пробелы и улучшить будущие оценки.<br><br>' +
+        'Рекомендации по вашим слабым местам смотрите в разделе «Рекомендации» в карточке завершённого пациента.' +
+      '</div>' +
+    '</div>' +
+    '<div class="faq-item" onclick="toggleFaq(this)">' +
+      '<div class="faq-header">🐛 Нашёл ошибку или есть идея?<span class="faq-arrow">▾</span></div>' +
+      '<div class="faq-body">' +
+        'Сервис постоянно улучшается! Если вы заметили ошибку, неточность или у вас есть предложение по улучшению — напишите разработчику.<br><br>' +
+        'Олег отвечает лично и учитывает все пожелания.<br><br>' +
+        '<a href="https://t.me/oleg_ezhkov" target="_blank" class="faq-contact">✈️ Написать Олегу</a>' +
+      '</div>' +
     '</div>';
+
+  document.getElementById('profile-content').innerHTML = html;
 }
+
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
+window.toggleFaq = toggleFaq;
 
 async function saveLevel(level) {
   await fetch(api('/mini-app/profile/edit?uid=' + myUid), {
