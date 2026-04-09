@@ -256,18 +256,17 @@ function patientCard(p, idx, isClosed) {
     var stars = rating ? '⭐'.repeat(Math.min(Math.round(rating),5)) + ' ' + rating.toFixed(1) : '—';
     var diag = esc(p.true_diagnosis || 'Диагноз не установлен');
 
-    cardBody =
-      '<div class="card-top">' +
-        '<div><div class="card-name">' + esc(p.name) + '</div>' +
-        '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
-        '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
-      '</div>' +
-      '<div style="font-size:13px;color:var(--text2);margin-bottom:4px">🔬 ' + diag + '</div>' +
-      '<div style="font-size:13px;font-weight:700;margin-bottom:10px">' + stars + '</div>' +
-      '<div style="display:flex;gap:8px">' +
-        '<button class="card-btn secondary" style="flex:1" onclick="openPatientTest(event,\'' + pid + '\')">📝 Тест</button>' +
-        '<button class="card-btn" style="flex:1" onclick="repeatConsultation(event,\'' + pid + '\')">🔄 Заново</button>' +
-      '</div>';
+    // В patientCard для активных пациентов
+cardBody +=
+  '<div class="card-top">' +
+    '<div><div class="card-name">' + esc(p.name) + '</div>' +
+    '<div class="card-age">' + esc(String(p.age)) + (isAlien?'':' лет') + ' · ' + (p.sex==='female'?'Жен.':p.sex==='male'?'Муж.':'?') + '</div></div>' +
+    '<div class="card-tag ' + tagClass + '">' + esc(tagText) + '</div>' +
+  '</div>' +
+  '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">' +
+    '<button class="card-btn" onclick="startConsultation(event, \'' + pid + '\')">▶️ Начать приём</button>' +
+    '<button class="card-btn secondary" onclick="rejectPatient(event, \'' + pid + '\')">🚫 Отказать в приёме</button>' +
+  '</div>';
   } else {
     var hasResults = (p.test_results || []).length > 0;
     var lastCons = p.consultations && p.consultations.length ? 'Консультаций: ' + p.consultations.length : 'Первичный приём';
