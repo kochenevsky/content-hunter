@@ -4,12 +4,15 @@
 
 @layer base {
   :root {
-    --background: 250 250 250;
-    --foreground: 23 23 23;
+    --background: 11 18 32;  /* #0b1220 как в примере */
+    --foreground: 241 245 249; /* #f1f5f9 */
   }
 
   body {
-    @apply bg-neutral-50 text-neutral-900 antialiased;
+    @apply bg-[#0b1220] text-[#f1f5f9] antialiased;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
 
   /* Performance hints for animated elements */
@@ -20,64 +23,107 @@
 
 @layer components {
   .container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-[900px] mx-auto px-4;
+    /* как в примере — max-width 900px, padding 0 16px */
   }
 
   .section {
-    @apply py-16 md:py-24;
+    @apply py-14 md:py-16;
+    border-top: 1px solid rgba(255,255,255,0.06);
   }
 
   .section-hero {
-    @apply py-24 md:py-32;
+    @apply py-16 md:py-20;
+    position: relative;
   }
 
+  /* НОВЫЕ СТИЛИ КНОПОК — в стиле примера */
   .btn {
     @apply inline-flex items-center justify-center px-6 py-3 font-medium rounded-lg transition-all duration-200;
   }
 
   .btn-primary {
-    @apply bg-primary-500 hover:bg-primary-600 text-white;
+    @apply bg-[#22c55e] hover:bg-[#16a34a] text-white shadow-lg;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    box-shadow: 0 8px 24px rgba(34,197,94,0.3);
   }
 
   .btn-secondary {
-    @apply bg-neutral-900 hover:bg-neutral-800 text-white;
+    @apply bg-[#1e293b] hover:bg-[#334155] text-white border border-[#334155];
   }
 
   .btn-outline {
-    @apply border border-neutral-300 hover:border-neutral-400 text-neutral-900;
+    @apply border border-[#334155] hover:border-[#22c55e] text-[#cbd5e1];
   }
 
   .btn-ghost {
-    @apply text-neutral-600 hover:text-neutral-900;
+    @apply text-[#94a3b8] hover:text-[#4ade80];
   }
 
+  /* НОВЫЕ ЗАГОЛОВКИ */
   .heading-display {
-    @apply text-5xl md:text-7xl font-bold tracking-tight;
+    @apply text-4xl md:text-7xl font-black tracking-tighter;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
   }
 
   .heading-1 {
-    @apply text-4xl md:text-5xl font-bold;
+    @apply text-3xl md:text-5xl font-black tracking-tight;
   }
 
   .heading-2 {
-    @apply text-3xl font-semibold;
+    @apply text-2xl md:text-4xl font-black tracking-tight;
   }
 
   .heading-3 {
-    @apply text-2xl font-semibold;
+    @apply text-xl md:text-2xl font-black;
   }
 
   .heading-4 {
-    @apply text-xl font-semibold;
+    @apply text-lg md:text-xl font-bold;
   }
 
   .text-lead {
-    @apply text-lg md:text-xl text-neutral-600;
+    @apply text-base md:text-lg text-[#94a3b8] leading-relaxed;
+  }
+
+  /* БЭЙДЖИ как в примере */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide rounded-full;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #4ade80;
+  }
+
+  /* КАРТОЧКИ */
+  .card {
+    @apply rounded-2xl p-6 border;
+  }
+
+  .card-default {
+    @apply bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.08)];
+  }
+
+  .card-highlight {
+    @apply bg-[rgba(34,197,94,0.07)] border-[rgba(34,197,94,0.2)];
+  }
+
+  /* РАЗДЕЛИТЕЛЬ */
+  .divider {
+    @apply w-10 h-0.5 bg-[#22c55e] rounded-full mb-7;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* Анимации как в примере */
+  .hover-scale {
+    transition: transform 0.2s ease;
+  }
+  .hover-scale:hover {
+    transform: scale(1.015);
   }
 }
