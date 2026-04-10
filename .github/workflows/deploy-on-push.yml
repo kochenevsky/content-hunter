@@ -1,5 +1,3 @@
-# При push в main: Timeweb — сборка в CI, rsync .next на сервер, pm2 restart
-
 name: Deploy on push
 
 on:
@@ -10,6 +8,20 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        server:
+          - name: primary
+            host: SERVER1_HOST
+            user: SERVER1_USER
+            pass: SERVER1_SSH_PASSWORD
+            path: SERVER1_PATH
+          - name: backup
+            host: SERVER2_HOST
+            user: SERVER2_USER
+            pass: SERVER2_SSH_PASSWORD
+            path: SERVER2_PATH
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,25 +44,29 @@ jobs:
           pnpm install --no-frozen-lockfile
           pnpm build
 
-      - name: Deploy to Timeweb (rsync + pm2)
+      - name: Deploy to ${{ matrix.server.name }} server
         env:
-          SSH_PASS: ${{ secrets.TIMEWEB_SSH_PASSWORD }}
+          SSH_PASS: ${{ secrets[matrix.server.pass] }}
         run: |
           if [ -z "$SSH_PASS" ]; then
-            echo "TIMEWEB_SSH_PASSWORD not set. Add in repo Settings → Secrets → Actions."
+            echo "⚠️ SSH password for ${{ matrix.server.name }} not set. Skipping."
             exit 0
           fi
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync
           export SSHPASS="$SSH_PASS"
-          # rsync .next — короткая сессия, без обрыва SSH
+          
+          # rsync .next
           sshpass -e rsync -avz -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
-            .next/ root@5.42.104.246:/var/www/content-hunter/.next/
-          # git pull + install (на случай новых deps) + restart — быстро
-          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 root@5.42.104.246 '
-            cd /var/www/content-hunter &&
+            .next/ ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }}:${{ secrets[matrix.server.path] }}.next/
+          
+          # git pull + install + restart
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+            ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }} "
+            cd ${{ secrets[matrix.server.path] }} &&
             git pull origin main &&
             pnpm install --no-frozen-lockfile &&
             pm2 restart content-hunter &&
             pm2 save
-          '
-          echo "Timeweb deploy OK"
+          "
+          
+          echo "✅ ${{ matrix.server.name }} deploy OK"
