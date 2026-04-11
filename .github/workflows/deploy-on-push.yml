@@ -9,18 +9,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        server:
-          - name: primary
-            host: SERVER1_HOST
-            user: SERVER1_USER
-            pass: SERVER1_SSH_PASSWORD
-            path: SERVER1_PATH
-          - name: backup
-            host: SERVER2_HOST
-            user: SERVER2_USER
-            pass: SERVER2_SSH_PASSWORD
-            path: SERVER2_PATH
+     matrix:
+  server:
+    - name: primary
+      host: SERVER1_HOST
+      user: SERVER1_USER
+      pass: TIMEWEB_SSH_PASSWORD    # ← Вот здесь
+      path: SERVER1_PATH
+    - name: backup
+      host: SERVER2_HOST
+      user: SERVER2_USER
+      pass: SERVER2_SSH_PASSWORD
+      path: SERVER2_PATH
     
     steps:
       - name: Checkout
