@@ -1,4 +1,4 @@
-name: Deploy on push
+name: Deploy to Backup Server
 
 on:
   push:
@@ -8,19 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    strategy:
-     matrix:
-      server:
-        - name: primary
-          host: SERVER1_HOST
-          user: SERVER1_USER
-          pass: TIMEWEB_SSH_PASSWORD    # ← Вот здесь
-          path: SERVER1_PATH
-        - name: backup
-          host: SERVER2_HOST
-          user: SERVER2_USER
-          pass: SERVER2_SSH_PASSWORD
-          path: SERVER2_PATH
     
     steps:
       - name: Checkout
@@ -44,43 +31,41 @@ jobs:
           pnpm install --no-frozen-lockfile
           pnpm build
 
-      - name: Deploy to ${{ matrix.server.name }} server
+      - name: Deploy to Backup Server
         env:
-          SSH_PASS: ${{ secrets[matrix.server.pass] }}
+          SSH_PASS: ${{ secrets.SERVER2_SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SERVER2_HOST }}
+          SSH_USER: ${{ secrets.SERVER2_USER }}
+          REMOTE_PATH: ${{ secrets.SERVER2_PATH }}
         run: |
           if [ -z "$SSH_PASS" ]; then
-            echo "⚠️ SSH password for ${{ matrix.server.name }} not set. Skipping."
-            exit 0
+            echo "❌ SSH password not set. Add SERVER2_SSH_PASSWORD in repository secrets."
+            exit 1
           fi
+          
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync
           export SSHPASS="$SSH_PASS"
           
-          echo "🔧 Preparing remote directory on ${{ matrix.server.name }}..."
+          echo "🔧 Preparing remote directory..."
           sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-            ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }} "
-            # Создаём папку .next если её нет
-            mkdir -p ${{ secrets[matrix.server.path] }}.next
-            # Удаляем старую сборку ПОЛНОСТЬЮ
-            rm -rf ${{ secrets[matrix.server.path] }}.next/*
-            # Устанавливаем правильные права (на всякий случай)
-            chown -R $(whoami):$(whoami) ${{ secrets[matrix.server.path] }}.next
-            chmod -R 755 ${{ secrets[matrix.server.path] }}.next
+            $SSH_USER@$SSH_HOST "
+            mkdir -p ${REMOTE_PATH}.next
+            rm -rf ${REMOTE_PATH}.next/*
           "
           
-          echo "📦 Uploading new build to ${{ matrix.server.name }}..."
-          # Копируем с удалением лишних файлов на сервере (--delete)
+          echo "📦 Uploading new build..."
           sshpass -e rsync -avz --delete \
             -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
-            .next/ ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }}:${{ secrets[matrix.server.path] }}.next/
+            .next/ $SSH_USER@$SSH_HOST:${REMOTE_PATH}.next/
           
-          echo "🔄 Updating code and restarting PM2 on ${{ matrix.server.name }}..."
+          echo "🔄 Updating code and restarting PM2..."
           sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-            ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }} "
-            cd ${{ secrets[matrix.server.path] }} &&
+            $SSH_USER@$SSH_HOST "
+            cd ${REMOTE_PATH} &&
             git pull origin main &&
             pnpm install --no-frozen-lockfile &&
             pm2 restart content-hunter &&
             pm2 save
           "
           
-          echo "✅ ${{ matrix.server.name }} deploy OK"
+          echo "✅ Deploy completed successfully!"
