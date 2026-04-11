@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 
-export default function HMDProfileContent() {
+export default function HMDProfileContent() { 
   useEffect(() => {
     var tg = null;
     var myUid = null;
