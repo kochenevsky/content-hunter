@@ -55,11 +55,25 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync
           export SSHPASS="$SSH_PASS"
           
-          # rsync .next
-          sshpass -e rsync -avz -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
+          echo "🔧 Preparing remote directory on ${{ matrix.server.name }}..."
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+            ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }} "
+            # Создаём папку .next если её нет
+            mkdir -p ${{ secrets[matrix.server.path] }}.next
+            # Удаляем старую сборку ПОЛНОСТЬЮ
+            rm -rf ${{ secrets[matrix.server.path] }}.next/*
+            # Устанавливаем правильные права (на всякий случай)
+            chown -R $(whoami):$(whoami) ${{ secrets[matrix.server.path] }}.next
+            chmod -R 755 ${{ secrets[matrix.server.path] }}.next
+          "
+          
+          echo "📦 Uploading new build to ${{ matrix.server.name }}..."
+          # Копируем с удалением лишних файлов на сервере (--delete)
+          sshpass -e rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
             .next/ ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }}:${{ secrets[matrix.server.path] }}.next/
           
-          # git pull + install + restart
+          echo "🔄 Updating code and restarting PM2 on ${{ matrix.server.name }}..."
           sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
             ${{ secrets[matrix.server.user] }}@${{ secrets[matrix.server.host] }} "
             cd ${{ secrets[matrix.server.path] }} &&
