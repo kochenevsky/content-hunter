@@ -18,26 +18,22 @@ jobs:
           REMOTE_PATH: ${{ secrets.SERVER2_PATH }}
         run: |
           if [ -z "$SSH_PASS" ]; then
-            echo "❌ SSH password not set. Add SERVER2_SSH_PASSWORD in repository secrets."
+            echo "❌ SSH password not set"
             exit 1
           fi
           
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
           export SSHPASS="$SSH_PASS"
           
-          echo "🔄 Updating code..."
-          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=60 \
+          echo "🔄 Updating code and rebuilding..."
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 \
             $SSH_USER@$SSH_HOST "
             cd ${REMOTE_PATH} &&
             git pull origin main &&
-            pnpm install --no-frozen-lockfile
-          "
+            pnpm install --no-frozen-lockfile &&
+            pnpm build &&
+            pm2 restart content-hunter &&
+            pm2 save
+          " || true
           
-          echo "📦 Building in background..."
-          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-            $SSH_USER@$SSH_HOST "
-            cd ${REMOTE_PATH} &&
-            nohup bash -c 'pnpm build && pm2 restart content-hunter && pm2 save' > /tmp/deploy.log 2>&1 &
-          "
-          
-          echo "✅ Build started in background. Check /tmp/deploy.log on server for progress."
+          echo "✅ Deploy completed!"
