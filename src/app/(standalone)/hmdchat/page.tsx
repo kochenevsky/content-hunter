@@ -2,7 +2,10 @@
 
 import dynamic from 'next/dynamic';
 
-const HMDChatContent = dynamic(() => import('./components/HMDChatContent'), { ssr: false });
+const HMDProfileContent = dynamic(
+  () => import('./components/HMDChatContent'),  // относительный путь
+  { ssr: false }
+);
 
 export default function HMDChatPage() {
   return (
