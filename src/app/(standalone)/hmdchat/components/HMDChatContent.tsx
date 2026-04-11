@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // Константы
 const API_BASE = 'https://helpmedoctor.oxion-ezhkov.workers.dev';
-
+ 
 // Типы
 interface Message {
   role: 'doctor' | 'patient' | 'summary';
