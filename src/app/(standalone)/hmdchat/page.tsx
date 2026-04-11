@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 
-const HMDProfileContent = dynamic(
-  () => import('./components/HMDChatContent'),  // относительный путь
+const HMDChatContent = dynamic(
+  () => import('./components/HMDChatContent'),
   { ssr: false }
 );
 
