@@ -188,20 +188,15 @@ const getBotLinkWithUtm = () => {
             <p className="text-gray-600">
               А пока можете получить экскурсию в нашем Telegram-боте:
             </p>
-            <Button
-              asChild
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg"
-            >
-              <a 
-                href={getBotLinkWithUtm()} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2"
-              >
-                Получить экскурсию
-                <ExternalLink className="w-5 h-5" />
-              </a>
-            </Button>
+            <a 
+  href={getBotLinkWithUtm()} 
+  target="_blank" 
+  rel="noopener noreferrer"
+  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-md font-medium transition-colors"
+>
+  Получить экскурсию
+  <ExternalLink className="w-5 h-5" />
+</a>
             <p className="text-sm text-gray-500">
               Ссылка откроется в Telegram
             </p>
