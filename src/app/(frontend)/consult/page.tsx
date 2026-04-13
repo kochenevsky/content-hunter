@@ -101,60 +101,73 @@ function ConsultForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitError(null);
+  // app/(frontend)/consult/page.tsx (только изменённая часть отправки)
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setSubmitError(null);
+  
+  if (!formData.phone) {
+    setErrors({ phone: 'Номер телефона обязателен' });
+    return;
+  }
+  
+  if (!validatePhone(formData.phone)) {
+    setErrors({ phone: 'Введите корректный номер телефона' });
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // Генерируем platform_id (будет одинаковым для обоих систем)
+    const platform_id = `web_${formData.phone.replace(/\D/g, '')}_${Date.now()}`;
     
-    // Валидация
-    if (!formData.phone) {
-      setErrors({ phone: 'Номер телефона обязателен' });
-      return;
-    }
-    
-    if (!validatePhone(formData.phone)) {
-      setErrors({ phone: 'Введите корректный номер телефона' });
-      return;
-    }
+    const leadData = {
+      phone: formData.phone,
+      telegram: formData.telegram || null,
+      platform_id: platform_id,
+      utm: {
+        ...utmParams,
+        // Добавляем platform_id как дополнительный параметр
+        platform: platform_id
+      },
+      page: window.location.pathname,
+      referrer: document.referrer,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    };
 
-    setIsSubmitting(true);
+    // Отправляем параллельно
+    await Promise.allSettled([
+      sendToGoogleSheets(leadData),
+      sendToAmoCRM(leadData)
+    ]);
 
-    try {
-      const leadData = {
-        phone: formData.phone,
-        telegram: formData.telegram || null,
-        utm: utmParams,
-        page: window.location.pathname,
-        referrer: document.referrer,
-        userAgent: navigator.userAgent,
-        timestamp: new Date().toISOString()
-      };
+    setIsSubmitted(true);
+  } catch (error) {
+    console.error('Submit error:', error);
+    setSubmitError('Произошла ошибка. Пожалуйста, попробуйте позже.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-      // Отправляем параллельно в обе системы
-      await Promise.allSettled([
-        sendToGoogleSheets(leadData),
-        sendToAmoCRM(leadData)
-      ]);
-
-      setIsSubmitted(true);
-    } catch (error) {
-      console.error('Submit error:', error);
-      setSubmitError('Произошла ошибка. Пожалуйста, попробуйте позже.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Формируем ссылку на бота с UTM-метками
-  const getBotLinkWithUtm = () => {
-    const baseUrl = 'https://sbsite.pro/ru_site_ch_1';
-    const url = new URL(baseUrl);
-    
-    Object.entries(utmParams).forEach(([key, value]) => {
-      url.searchParams.append(key, value);
-    });
-    
-    return url.toString();
-  };
+// Обновлённая ссылка на бота (добавляем platform_id в UTM)
+const getBotLinkWithUtm = () => {
+  const baseUrl = 'https://sbsite.pro/ru_site_ch_1';
+  const url = new URL(baseUrl);
+  
+  // Добавляем все UTM-метки
+  Object.entries(utmParams).forEach(([key, value]) => {
+    url.searchParams.append(key, value);
+  });
+  
+  // Добавляем platform_id для отслеживания
+  const platform_id = `web_${formData.phone.replace(/\D/g, '')}_${Date.now()}`;
+  url.searchParams.append('utm_content', platform_id);
+  
+  return url.toString();
+};
 
   if (isSubmitted) {
     return (
