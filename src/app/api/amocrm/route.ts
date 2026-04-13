@@ -1,75 +1,42 @@
 // app/api/amocrm/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-interface AmoCRMTokens {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number;
-}
+// Ваши константы из Salebot
+const AMOCRM_CONFIG = {
+  STATUS_ID: 82428286,        // status_id из вашего кода
+  PIPELINE_ID: 10433002,       // pipeline_id из вашего кода
+  MANAGER_1: 13351410,         // первый менеджер
+  MANAGER_2: 13351414,         // второй менеджер
+  // ID кастомных полей из вашего кода
+  FIELD_FULL_NAME: 1065511,    // поле для полного имени
+  FIELD_TELEGRAM: 1065305,     // поле для Telegram
+  FIELD_PLATFORM_ID: 1065303   // поле для platform_id
+};
 
-let tokenCache: AmoCRMTokens | null = null;
-
-async function getAccessToken(): Promise<string> {
-  if (tokenCache && tokenCache.expires_at > Date.now()) {
-    return tokenCache.access_token;
-  }
-
-  const clientId = process.env.AMOCRM_CLIENT_ID;
-  const clientSecret = process.env.AMOCRM_CLIENT_SECRET;
-  const refreshToken = process.env.AMOCRM_REFRESH_TOKEN;
-  const subdomain = process.env.AMOCRM_SUBDOMAIN;
-
-  if (!clientId || !clientSecret || !refreshToken || !subdomain) {
-    throw new Error('AmoCRM credentials not configured');
-  }
-
-  const response = await fetch(`https://${subdomain}.amocrm.ru/oauth2/access_token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      redirect_uri: process.env.AMOCRM_REDIRECT_URI || 'https://contenthunter.ru'
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`AmoCRM auth error: ${response.status}`);
-  }
-
-  const tokens = await response.json();
-  
-  tokenCache = {
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
-    expires_at: Date.now() + (tokens.expires_in * 1000) - 60000
-  };
-
-  console.log('New refresh token (сохраните в .env):', tokens.refresh_token);
-
-  return tokens.access_token;
-}
-
-// Чередование менеджеров (как в вашем коде)
-let lastManagerId = 13351410;
+// Чередование менеджеров (как в Salebot)
+let lastManagerId = AMOCRM_CONFIG.MANAGER_1;
 function getNextManagerId(): number {
-  lastManagerId = lastManagerId === 13351410 ? 13351414 : 13351410;
+  lastManagerId = lastManagerId === AMOCRM_CONFIG.MANAGER_1 
+    ? AMOCRM_CONFIG.MANAGER_2 
+    : AMOCRM_CONFIG.MANAGER_1;
   return lastManagerId;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
+    
+    // Получаем AmoToken из переменных окружения
+    const amoToken = process.env.AMO_TOKEN;
     const subdomain = process.env.AMOCRM_SUBDOMAIN;
-
-    if (!subdomain) {
+    
+    if (!amoToken || !subdomain) {
       console.warn('AmoCRM not configured');
-      return NextResponse.json({ success: false, error: 'Not configured' }, { status: 500 });
+      return NextResponse.json({ 
+        success: false, 
+        error: 'AmoCRM credentials not configured' 
+      }, { status: 500 });
     }
-
-    const accessToken = await getAccessToken();
     
     // Генерируем platform_id
     const platform_id = `web_${data.phone.replace(/\D/g, '')}_${Date.now()}`;
@@ -81,12 +48,12 @@ export async function POST(request: NextRequest) {
     const contactName = data.telegram 
       ? `@${data.telegram}` 
       : `Клиент ${data.phone}`;
-
-    // Формируем тело запроса как в Salebot
+    
+    // Формируем тело запроса точно как в Salebot
     const leadData = [{
       name: `Новый лид ${platform_id}`,
-      status_id: 82428286,                    // Ваш статус
-      pipeline_id: 10433002,                   // Ваша воронка
+      status_id: AMOCRM_CONFIG.STATUS_ID,
+      pipeline_id: AMOCRM_CONFIG.PIPELINE_ID,
       responsible_user_id: manager_id,
       tags_to_add: [{
         name: "бот"
@@ -125,19 +92,19 @@ export async function POST(request: NextRequest) {
               }]
             },
             {
-              field_id: 1065511,              // Ваше поле для полного имени
+              field_id: AMOCRM_CONFIG.FIELD_FULL_NAME,
               values: [{
                 value: contactName
               }]
             },
             {
-              field_id: 1065305,              // Ваше поле для Telegram
+              field_id: AMOCRM_CONFIG.FIELD_TELEGRAM,
               values: [{
                 value: data.telegram ? `@${data.telegram}` : ''
               }]
             },
             {
-              field_id: 1065303,              // Ваше поле для platform_id
+              field_id: AMOCRM_CONFIG.FIELD_PLATFORM_ID,
               values: [{
                 value: platform_id
               }]
@@ -147,11 +114,13 @@ export async function POST(request: NextRequest) {
       }
     }];
 
-    // Отправляем в AmoCRM
+    console.log('Sending to AmoCRM:', JSON.stringify(leadData, null, 2));
+
+    // Отправляем в AmoCRM с использованием AmoToken
     const response = await fetch(`https://${subdomain}.amocrm.ru/api/v4/leads/complex`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${amoToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(leadData)
@@ -164,15 +133,20 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json();
-    console.log('AmoCRM success:', result);
+    console.log('AmoCRM success:', JSON.stringify(result, null, 2));
 
     return NextResponse.json({ 
       success: true, 
       platform_id,
-      manager_id 
+      manager_id,
+      lead_id: result._embedded?.leads?.[0]?.id 
     });
+    
   } catch (error) {
     console.error('AmoCRM API error:', error);
-    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Internal error' 
+    }, { status: 500 });
   }
 }
