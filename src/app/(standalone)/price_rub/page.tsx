@@ -65,6 +65,369 @@ const tariffData = [
 
 export default function PriceRubPage() {
   return (
+     <>
+    <style>{`
+        /* сброс — убираем любые внешние отступы/рамки */
+        html, body { margin: 0; padding: 0; overflow-x: hidden; }
+
+        .farm-root {
+          background: #0b1220;
+          min-height: 100vh;
+          font-family: -apple-system,'SF Pro Display','Inter',system-ui,sans-serif;
+          color: #f1f5f9;
+          overflow-x: hidden;
+          width: 100%;
+        }
+
+        .farm-container {
+          max-width: 900px;
+          margin: 0 auto;
+          padding: 0 16px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        /* ── HERO ── */
+        .farm-hero {
+          padding: 60px 0 48px;
+          position: relative;
+        }
+        @media (min-width: 768px) {
+          .farm-hero { padding: 80px 0 64px; }
+        }
+
+        .farm-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(34,197,94,0.1);
+          border: 1px solid rgba(34,197,94,0.25);
+          border-radius: 20px;
+          padding: 5px 14px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.07em;
+          color: #4ade80;
+          margin-bottom: 24px;
+          text-transform: uppercase;
+        }
+
+        .farm-hero h1 {
+          font-size: clamp(26px, 5vw, 52px);
+          font-weight: 900;
+          line-height: 1.08;
+          letter-spacing: -0.025em;
+          margin-bottom: 20px;
+          color: #fff;
+        }
+
+        .farm-hero-img {
+          width: 100%;
+          border-radius: 18px;
+          margin: 28px 0;
+          display: block;
+          object-fit: cover;
+          max-height: 420px;
+          border: none;
+          outline: none;
+        }
+
+        .farm-lead {
+          font-size: clamp(15px, 2vw, 18px);
+          color: #94a3b8;
+          line-height: 1.65;
+          margin-bottom: 14px;
+        }
+
+        .farm-list {
+          list-style: none;
+          margin: 0 0 24px;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .farm-list li {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: clamp(14px, 1.8vw, 17px);
+          color: #cbd5e1;
+          line-height: 1.5;
+        }
+
+        .farm-list li::before {
+          content: '—';
+          color: #22c55e;
+          flex-shrink: 0;
+          margin-top: 1px;
+          font-weight: 700;
+        }
+
+        .farm-note {
+  font-size: 14px;
+  color: #94a3b8;  /* ← было #475569, стало #94a3b8 (светло-серый) */
+  line-height: 1.6;
+  margin-bottom: 28px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  border-left: 3px solid rgba(34,197,94,0.4);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+        /* ── SECTIONS ── */
+        .farm-section {
+          padding: 56px 0;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .farm-section h2 {
+          font-size: clamp(22px, 4vw, 40px);
+          font-weight: 900;
+          line-height: 1.1;
+          letter-spacing: -0.02em;
+          color: #fff;
+          margin-bottom: 32px;
+        }
+
+        .farm-cards {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 12px;
+          margin-bottom: 36px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        @media (min-width: 600px) {
+          .farm-cards { grid-template-columns: 1fr 1fr; }
+        }
+
+        .farm-card-before {
+          padding: 24px 20px;
+          border-radius: 18px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          box-sizing: border-box;
+        }
+
+        .farm-card-after {
+          padding: 24px 20px;
+          border-radius: 18px;
+          background: rgba(34,197,94,0.07);
+          border: 1px solid rgba(34,197,94,0.2);
+          box-sizing: border-box;
+        }
+
+        .card-label {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 10px;
+        }
+
+        .card-main {
+          font-size: clamp(14px, 2vw, 18px);
+          font-weight: 700;
+          color: #e2e8f0;
+          margin-bottom: 6px;
+        }
+
+        .card-big {
+          font-size: clamp(22px, 4vw, 34px);
+          font-weight: 900;
+          line-height: 1.15;
+          margin-top: 4px;
+        }
+
+        .farm-section-lead {
+          font-size: clamp(15px, 2vw, 18px);
+          color: #64748b;
+          margin-bottom: 14px;
+          font-weight: 600;
+        }
+
+        .farm-divider {
+          width: 40px;
+          height: 3px;
+          background: #22c55e;
+          border-radius: 2px;
+          margin-bottom: 28px;
+        }
+
+        /* ── DEMO VIDEO SECTION (НОВЫЙ БЛОК) ── */
+.farm-demo-section {
+  padding: 56px 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.farm-demo-title {
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-align: left;  /* ← было center, стало left */
+}
+
+.farm-demo-sub {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 32px;
+  text-align: left;  /* ← было center, стало left */
+}
+
+.farm-demo-video {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+  background: #000;
+}
+
+        .farm-demo-video iframe {
+          display: block;
+        }
+
+        /* ── SLIDES ── */
+        .farm-slides-section {
+          padding: 56px 0 100px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .farm-slides-title {
+          font-size: clamp(22px, 3.5vw, 36px);
+          font-weight: 900;
+          color: #fff;
+          margin-bottom: 6px;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+        }
+
+        .farm-slides-sub {
+          font-size: 12px;
+          color: #334155;
+          margin-bottom: 20px;
+        }
+
+        .farm-slides-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        @media (min-width: 540px) {
+          .farm-slides-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+          }
+        }
+        @media (min-width: 800px) {
+          .farm-slides-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+          }
+        }
+
+        .farm-slide-wrap {
+          position: relative;
+          border-radius: 12px;
+          overflow: hidden;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .farm-slide-wrap img {
+          width: 100%;
+          height: auto;
+          display: block;
+          transition: transform 0.2s ease;
+        }
+        @media (min-width: 768px) {
+          .farm-slide-wrap:hover img { transform: scale(1.015); }
+        }
+
+        .farm-slide-num {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(4px);
+          border-radius: 6px;
+          padding: 3px 7px;
+          font-size: 10px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.55);
+        }
+
+        /* ── FINAL CTA ── */
+        .farm-final {
+          background: linear-gradient(135deg,rgba(34,197,94,0.1),rgba(22,163,74,0.04));
+          border: 1px solid rgba(34,197,94,0.2);
+          border-radius: 20px;
+          padding: 36px 24px;
+          text-align: center;
+          margin-top: 16px;
+          box-sizing: border-box;
+          width: 100%;
+        }
+        @media (min-width: 768px) {
+          .farm-final { padding: 52px 72px; }
+        }
+
+        .farm-final h3 {
+          font-size: clamp(20px, 3vw, 30px);
+          font-weight: 900;
+          color: #fff;
+          margin-bottom: 12px;
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+        }
+
+        .farm-final p {
+          font-size: 14px;
+          color: #64748b;
+          line-height: 1.7;
+          margin-bottom: 22px;
+        }
+
+        .farm-final-btn {
+          display: block;
+          max-width: 360px;
+          margin: 0 auto;
+          padding: 16px;
+          border-radius: 14px;
+          background: linear-gradient(135deg,#22c55e,#16a34a);
+          color: #fff;
+          font-size: 15px;
+          font-weight: 800;
+          text-decoration: none;
+          letter-spacing: -0.01em;
+          box-shadow: 0 8px 24px rgba(34,197,94,0.3);
+          transition: opacity 0.15s;
+          text-align: center;
+        }
+        .farm-final-btn:hover { opacity: 0.9; }
+
+        .farm-final-note {
+          font-size: 11px;
+          color: #334155;
+          margin-top: 10px;
+        }
+      `}</style>
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -368,5 +731,6 @@ function RowItem({
       <span className="text-gray-600 text-sm">{label}</span>
       <span className={cn("font-medium text-gray-900", valueClassName)}>{value}</span>
     </div>
+       </>
   );
 }
