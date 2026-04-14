@@ -68,19 +68,24 @@ function ConsultForm() {
   };
 
   // Отправка в Telegram
-  const sendToGoogleSheets = async (data: any) => {
+  const sendToTelegram = async (phone: string, telegram: string, page: string) => {
     try {
-      fetch('/api/telegram', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ phone, telegram, page })
-})
+      const response = await fetch('/api/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, telegram, page })
+      });
       
       if (!response.ok) {
-        console.error('Telegram error:', await response.text());
+        const errorText = await response.text();
+        console.error('Telegram error:', errorText);
+        throw new Error(errorText);
       }
+      
+      return await response.json();
     } catch (error) {
       console.error('Telegram API error:', error);
+      throw error;
     }
   };
 
