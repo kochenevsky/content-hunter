@@ -67,37 +67,20 @@ function ConsultForm() {
     setFormData(prev => ({ ...prev, telegram: value }));
   };
 
-  // Отправка в Google Sheets
+  // Отправка в Telegram
   const sendToGoogleSheets = async (data: any) => {
     try {
-      const response = await fetch('/api/google-sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+      fetch('/api/telegram', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ phone, telegram, page })
+})
       
       if (!response.ok) {
-        console.error('Google Sheets error:', await response.text());
+        console.error('Telegram error:', await response.text());
       }
     } catch (error) {
-      console.error('Google Sheets API error:', error);
-    }
-  };
-
-  // Отправка в AmoCRM
-  const sendToAmoCRM = async (data: any) => {
-    try {
-      const response = await fetch('/api/amocrm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) {
-        console.error('AmoCRM error:', await response.text());
-      }
-    } catch (error) {
-      console.error('AmoCRM API error:', error);
+      console.error('Telegram API error:', error);
     }
   };
 
