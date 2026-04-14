@@ -59,14 +59,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-// GET для проверки работоспособности
-export async function GET() {
-  return NextResponse.json({
-    status: 'ok',
-    service: 'telegram-bot',
-    configured: isConfigured,
-    chatIdSet: TELEGRAM_CHAT_ID !== 'YOUR_CHAT_ID_HERE',
-    botTokenSet: TELEGRAM_BOT_TOKEN !== ''
-  });
-}
