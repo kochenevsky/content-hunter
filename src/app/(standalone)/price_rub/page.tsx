@@ -2,7 +2,6 @@
 
 import { HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { StickyCta } from './_components/StickyCta';
 
 const tariffData = [
   {
@@ -409,17 +408,11 @@ export default function PriceRubPage() {
               <thead>
                 <tr>
                   <th>Параметр</th>
-                  {tariffData.map((tariff, idx) => (
-                    <th key={idx}>
-                      <div className="tariff-name">{tariff.name}</div>
-                      {tariff.popular && <span className="popular-badge">Популярный</span>}
-                    </th>
-                  ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Телефонов-ферм</td>
+                  <td>Телефонов</td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}>{tariff.phones}</td>
                   ))}
@@ -431,7 +424,7 @@ export default function PriceRubPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td>Аренда фермы в месяц</td>
+                  <td>Создание фермы</td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}>{tariff.rent}</td>
                   ))}
@@ -490,11 +483,10 @@ export default function PriceRubPage() {
                   <h3>{tariff.name}</h3>
                   <div className="tariff-card-price">{tariff.price}</div>
                   <div style={{ fontSize: 12, color: '#64748b' }}>в месяц</div>
-                  {tariff.popular && <span className="popular-badge" style={{ marginTop: 8 }}>Популярный</span>}
                 </div>
                 <div className="tariff-card-body">
                   <div className="tariff-row">
-                    <span className="tariff-row-label">Телефонов-ферм</span>
+                    <span className="tariff-row-label">Телефонов</span>
                     <span className="tariff-row-value">{tariff.phones}</span>
                   </div>
                   <div className="tariff-row">
@@ -502,7 +494,7 @@ export default function PriceRubPage() {
                     <span className="tariff-row-value">{tariff.accounts}</span>
                   </div>
                   <div className="tariff-row">
-                    <span className="tariff-row-label">Аренда фермы</span>
+                    <span className="tariff-row-label">Стоимость фермы</span>
                     <span className="tariff-row-value">{tariff.rent}</span>
                   </div>
                   <div className="tariff-row">
@@ -535,38 +527,8 @@ export default function PriceRubPage() {
               </div>
             ))}
           </div>
-
-          {/* Final CTA */}
-          <div className="farm-final">
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
-            <h3>
-              Готовы запустить<br />
-              <span style={{ color: '#4ade80' }}>свою ферму?</span>
-            </h3>
-            <p>
-              Построить такую ферму самостоятельно — ~20 000 000 ₽.<br />
-              Аренда в Content Hunter — от 25 000 ₽ в месяц.<br />
-              Настройка и установка — 0 ₽.
-            </p>
-            <a
-              href="https://sbsite.pro//eu_site_calc_1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="farm-final-btn"
-            >
-              Рассчитать для моей ниши →
-            </a>
-            <p className="farm-final-note">Бесплатно · Гарантия просмотров в договоре</p>
-          </div>
         </div>
       </div>
-
-      <StickyCta
-        href="https://sbsite.pro//eu_site_calc_1"
-        label="Рассчитать для моей ниши"
-        stickyLabel="Рассчитать для моей ниши"
-        alwaysShowSticky
-      />
     </>
   );
 }
