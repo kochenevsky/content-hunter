@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Telegram бот - вставьте ваши реальные данные
 const TELEGRAM_BOT_TOKEN = '8620593971:AAGzMAqFNC2uHTvwnYjy6VViSdyVi7xXVDE';
-const TELEGRAM_CHAT_ID = '8333494416'; // Вставьте ваш реальный chat ID
+const TELEGRAM_CHAT_ID = '8333494416';
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,4 +58,19 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// GET функция для проверки статуса
+export async function GET() {
+  const isConfigured = TELEGRAM_BOT_TOKEN !== '' && 
+                       TELEGRAM_CHAT_ID !== '' && 
+                       TELEGRAM_CHAT_ID !== 'YOUR_CHAT_ID_HERE';
+  
+  return NextResponse.json({
+    status: 'ok',
+    service: 'telegram-bot',
+    configured: isConfigured,
+    botTokenSet: !!TELEGRAM_BOT_TOKEN,
+    chatIdSet: !!TELEGRAM_CHAT_ID
+  });
 }
