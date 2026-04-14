@@ -2,6 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JWT } from 'google-auth-library';
 
+// Временно добавьте это для диагностики
+console.log('=== ENV DEBUG ===');
+console.log('All env keys:', Object.keys(process.env));
+console.log('GOOGLE_PRIVATE_KEY exists:', !!process.env.GOOGLE_PRIVATE_KEY);
+console.log('GOOGLE_CLIENT_EMAIL exists:', !!process.env.GOOGLE_CLIENT_EMAIL);
+console.log('First 20 chars of key:', process.env.GOOGLE_PRIVATE_KEY?.substring(0, 20));
+
 // Данные сервисного аккаунта из переменных окружения
 const getServiceAccountCredentials = () => {
   let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
