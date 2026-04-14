@@ -33,10 +33,10 @@ jobs:
 
       - name: Deploy to Backup Server
         env:
-          SSH_PASS: ${{ secrets.SERVER2_SSH_PASSWORD }}
-          SSH_HOST: ${{ secrets.SERVER2_HOST }}
-          SSH_USER: ${{ secrets.SERVER2_USER }}
-          REMOTE_PATH: ${{ secrets.SERVER2_PATH }}
+          SSH_PASS: ${{ secrets.SERVER1_SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SERVER1_HOST }}
+          SSH_USER: ${{ secrets.SERVER1_USER }}
+          REMOTE_PATH: ${{ secrets.SERVER1_PATH }}
         run: |
           if [ -z "$SSH_PASS" ]; then
             echo "❌ SSH password not set"
