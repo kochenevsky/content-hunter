@@ -14,13 +14,13 @@ jobs:
           - name: primary
             host: "5.42.104.246"
             user: "root"
-            pass: TIMEWEB_SSH_PASSWORD
+            pass: SERVER1_SSH_PASSWORD
             path: "/var/www/content-hunter/"
           - name: backup
-            host: SERVER2_HOST
-            user: SERVER2_USER
+            host: "83.222.27.72"
+            user: "root"
             pass: SERVER2_SSH_PASSWORD
-            path: SERVER2_PATH
+            path: "/var/www/content-hunter/"
     
     steps:
       - name: Checkout
@@ -59,7 +59,7 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass rsync
           export SSHPASS="$SSH_PASS"
           
-          echo "📦 Uploading build to ${{ matrix.server.name }} server..."
+          echo "📦 Uploading build to ${{ matrix.server.name }} server ($SSH_HOST)..."
           sshpass -e rsync -avz --delete \
             -e "ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
             .next/ $SSH_USER@$SSH_HOST:${REMOTE_PATH}.next/
@@ -69,7 +69,7 @@ jobs:
             $SSH_USER@$SSH_HOST "
             cd ${REMOTE_PATH} &&
             git pull origin main
-          "
+          " || echo "⚠️ Git pull failed, continuing anyway..."
           
           echo "🔄 Restarting PM2 on ${{ matrix.server.name }}..."
           sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
