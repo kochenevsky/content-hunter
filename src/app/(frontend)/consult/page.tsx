@@ -67,7 +67,7 @@ function ConsultForm() {
     setFormData(prev => ({ ...prev, telegram: value }));
   };
 
-  // Отправка в Telegram
+  // Отправка в Telegram (исправленная версия)
   const sendToTelegram = async (phone: string, telegram: string, page: string) => {
     try {
       const response = await fetch('/api/telegram', {
@@ -89,211 +89,139 @@ function ConsultForm() {
     }
   };
 
-  // app/(frontend)/consult/page.tsx (только изменённая часть отправки)
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setSubmitError(null);
-  
-  if (!formData.phone) {
-    setErrors({ phone: 'Номер телефона обязателен' });
-    return;
-  }
-  
-  if (!validatePhone(formData.phone)) {
-    setErrors({ phone: 'Введите корректный номер телефона' });
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    // Генерируем platform_id (будет одинаковым для обоих систем)
-    const platform_id = `web_${formData.phone.replace(/\D/g, '')}_${Date.now()}`;
+  // Отправка формы (исправленная версия)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitError(null);
     
-    const leadData = {
-      phone: formData.phone,
-      telegram: formData.telegram || null,
-      platform_id: platform_id,
-      utm: {
-        ...utmParams,
-        // Добавляем platform_id как дополнительный параметр
-        platform: platform_id
-      },
-      page: window.location.pathname,
-      referrer: document.referrer,
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString()
-    };
+    if (!formData.phone) {
+      setErrors({ phone: 'Номер телефона обязателен' });
+      return;
+    }
+    
+    if (!validatePhone(formData.phone)) {
+      setErrors({ phone: 'Введите корректный номер телефона' });
+      return;
+    }
 
-    // Отправляем параллельно
-    await Promise.allSettled([
-      sendToGoogleSheets(leadData),
-      sendToAmoCRM(leadData)
-    ]);
+    setIsSubmitting(true);
 
-    setIsSubmitted(true);
-  } catch (error) {
-    console.error('Submit error:', error);
-    setSubmitError('Произошла ошибка. Пожалуйста, попробуйте позже.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-// Обновлённая ссылка на бота (добавляем platform_id в UTM)
-const getBotLinkWithUtm = () => {
-  const baseUrl = 'https://sbsite.pro/ru_site_ch_1';
-  const url = new URL(baseUrl);
-  
-  // Добавляем все UTM-метки
-  Object.entries(utmParams).forEach(([key, value]) => {
-    url.searchParams.append(key, value);
-  });
-  
-  // Добавляем platform_id для отслеживания
-  const platform_id = `web_${formData.phone.replace(/\D/g, '')}_${Date.now()}`;
-  url.searchParams.append('utm_content', platform_id);
-  
-  return url.toString();
-};
+    try {
+      // Отправляем данные в Telegram
+      await sendToTelegram(
+        formData.phone,
+        formData.telegram,
+        '/consult'
+      );
+      
+      // Если успешно - показываем сообщение
+      setIsSubmitted(true);
+      
+      // Очищаем форму
+      setFormData({ phone: '', telegram: '' });
+      
+    } catch (error) {
+      console.error('Submit error:', error);
+      setSubmitError('Не удалось отправить заявку. Попробуйте позже.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
-        <Card className="max-w-md w-full shadow-xl">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-10 h-10 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl sm:text-3xl font-bold">
-              Заявка отправлена!
-            </CardTitle>
-            <CardDescription className="text-base sm:text-lg mt-2">
-              Менеджер свяжется с вами в течение часа
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-6">
-            <p className="text-gray-600">
-              А пока можете получить экскурсию в нашем Telegram-боте:
-            </p>
-            <a 
-  href={getBotLinkWithUtm()} 
-  target="_blank" 
-  rel="noopener noreferrer"
-  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-md font-medium transition-colors"
->
-  Получить экскурсию
-  <ExternalLink className="w-5 h-5" />
-</a>
-            <p className="text-sm text-gray-500">
-              Ссылка откроется в Telegram
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="text-center py-12">
+        <CardContent>
+          <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <CardTitle className="text-2xl mb-2">Заявка принята!</CardTitle>
+          <CardDescription>
+            Спасибо за обращение. Мы свяжемся с вами в ближайшее время.
+          </CardDescription>
+          <Button 
+            className="mt-6"
+            onClick={() => setIsSubmitted(false)}
+          >
+            Отправить ещё
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 sm:py-16 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <Card className="shadow-xl border-0">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl sm:text-3xl font-bold">
-              Получить консультацию
-            </CardTitle>
-            <CardDescription className="text-base sm:text-lg">
-              Оставьте заявку, и наш менеджер свяжется с вами в ближайшее время
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Телефон */}
-              <div className="space-y-2">
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  Номер телефона <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+7 (___) ___-__-__"
-                  value={formData.phone}
-                  onChange={handlePhoneChange}
-                  disabled={isSubmitting}
-                  className={cn(
-                    "h-12 text-base",
-                    errors.phone && "border-red-500 focus:border-red-500"
-                  )}
-                  autoFocus
-                />
-                {errors.phone && (
-                  <p className="text-sm text-red-500">{errors.phone}</p>
-                )}
-              </div>
-
-              {/* Telegram */}
-              <div className="space-y-2">
-                <label htmlFor="telegram" className="block text-sm font-medium text-gray-700">
-                  Telegram username
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    @
-                  </span>
-                  <Input
-                    id="telegram"
-                    type="text"
-                    placeholder="username"
-                    value={formData.telegram}
-                    onChange={handleTelegramChange}
-                    disabled={isSubmitting}
-                    className="h-12 text-base pl-8"
-                  />
-                </div>
-                <p className="text-xs text-gray-500">Необязательно</p>
-              </div>
-
-              {submitError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600 text-center">{submitError}</p>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-12 text-base font-medium"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Отправка...
-                  </>
-                ) : (
-                  'Отправить заявку'
-                )}
-              </Button>
-
-              <p className="text-xs text-gray-500 text-center">
-                Нажимая кнопку, вы соглашаетесь с обработкой персональных данных
-              </p>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Получить консультацию</CardTitle>
+        <CardDescription>
+          Оставьте свои контакты, и мы свяжемся с вами
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Input
+              type="tel"
+              placeholder="+7 (___) ___-__-__"
+              value={formData.phone}
+              onChange={handlePhoneChange}
+              className={cn(errors.phone && "border-red-500")}
+              disabled={isSubmitting}
+            />
+            {errors.phone && (
+              <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+            )}
+          </div>
+          
+          <div>
+            <Input
+              type="text"
+              placeholder="Telegram (опционально)"
+              value={formData.telegram}
+              onChange={handleTelegramChange}
+              disabled={isSubmitting}
+            />
+            <p className="text-gray-500 text-xs mt-1">
+              Без @, просто username
+            </p>
+          </div>
+          
+          {submitError && (
+            <p className="text-red-500 text-sm">{submitError}</p>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Отправка...
+              </>
+            ) : (
+              'Отправить'
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 
-// Основной компонент с Suspense обёрткой
+// Основной компонент страницы
 export default function ConsultPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-      </div>
-    }>
-      <ConsultForm />
-    </Suspense>
+    <div className="container max-w-md mx-auto py-16 px-4">
+      <Suspense fallback={
+        <Card>
+          <CardContent className="py-12 text-center">
+            Загрузка...
+          </CardContent>
+        </Card>
+      }>
+        <ConsultForm />
+      </Suspense>
+    </div>
   );
 }
