@@ -62,11 +62,6 @@ export async function POST(request: NextRequest) {
 
 // GET для проверки работоспособности
 export async function GET() {
-  // Проверяем, что токен и chat ID установлены
-  const isConfigured = TELEGRAM_BOT_TOKEN !== '' && 
-                       TELEGRAM_CHAT_ID !== '' && 
-                       TELEGRAM_CHAT_ID !== 'YOUR_CHAT_ID_HERE';
-  
   return NextResponse.json({
     status: 'ok',
     service: 'telegram-bot',
