@@ -15,8 +15,7 @@ const tariffData = [
     views: '60 000',
     forecast: '300 000',
     costPerPost: '₽125',
-    costPerView: '₽0,08',
-    popular: false
+    costPerView: '₽0,08'
   },
   {
     name: 'Мини блог',
@@ -29,8 +28,7 @@ const tariffData = [
     views: '120 000',
     forecast: '600 000',
     costPerPost: '₽115',
-    costPerView: '₽0,08',
-    popular: true
+    costPerView: '₽0,08'
   },
   {
     name: 'Бизнес',
@@ -43,8 +41,7 @@ const tariffData = [
     views: '180 000',
     forecast: '900 000',
     costPerPost: '₽100',
-    costPerView: '₽0,07',
-    popular: false
+    costPerView: '₽0,07'
   },
   {
     name: 'Оптимус прайм',
@@ -57,139 +54,117 @@ const tariffData = [
     views: '300 000',
     forecast: '1 500 000',
     costPerPost: '₽90',
-    costPerView: '₽0,06',
-    popular: false
+    costPerView: '₽0,06'
   }
 ];
-
-function RowItem({ 
-  label, 
-  value, 
-  valueClassName 
-}: { 
-  label: string; 
-  value: string; 
-  valueClassName?: string;
-}) {
-  return (
-    <div className="flex justify-between items-center py-1">
-      <span className="text-gray-600 text-sm">{label}</span>
-      <span className={cn("font-medium text-gray-900", valueClassName)}>{value}</span>
-    </div>
-  );
-}
 
 export default function PriceRubPage() {
   return (
     <>
       <style>{`
-        /* сброс — убираем любые внешние отступы/рамки */
-        html, body { margin: 0; padding: 0; overflow-x: hidden; }
+        html, body { 
+          margin: 0; 
+          padding: 0; 
+          overflow-x: hidden; 
+          background: #0a0e17;
+        }
 
         .farm-root {
-          background: #0b1220;
+          background: linear-gradient(180deg, #0a0e17 0%, #0d121c 100%);
           min-height: 100vh;
-          font-family: -apple-system,'SF Pro Display','Inter',system-ui,sans-serif;
-          color: #f1f5f9;
+          font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+          color: #e2e8f0;
           overflow-x: hidden;
           width: 100%;
         }
 
         .farm-container {
-          max-width: 900px;
+          max-width: 1000px;
           margin: 0 auto;
-          padding: 0 16px;
+          padding: 0 20px;
           width: 100%;
           box-sizing: border-box;
         }
 
-        /* ── HERO ── */
+        /* ── HERO (уменьшенные отступы) ── */
         .farm-hero {
-          padding: 60px 0 48px;
+          padding: 40px 0 32px;
           position: relative;
         }
         @media (min-width: 768px) {
-          .farm-hero { padding: 80px 0 64px; }
+          .farm-hero { 
+            padding: 48px 0 40px; 
+          }
         }
 
         .farm-badge {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          background: rgba(34,197,94,0.1);
-          border: 1px solid rgba(34,197,94,0.25);
-          border-radius: 20px;
-          padding: 5px 14px;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.07em;
-          color: #4ade80;
-          margin-bottom: 24px;
+          gap: 8px;
+          background: rgba(56, 189, 248, 0.08);
+          border: 1px solid rgba(56, 189, 248, 0.15);
+          border-radius: 24px;
+          padding: 6px 16px;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          color: #38bdf8;
+          margin-bottom: 20px;
           text-transform: uppercase;
+          backdrop-filter: blur(10px);
         }
 
         .farm-hero h1 {
-          font-size: clamp(26px, 5vw, 52px);
-          font-weight: 900;
-          line-height: 1.08;
-          letter-spacing: -0.025em;
-          margin-bottom: 20px;
-          color: #fff;
-        }
-
-        /* ── SECTIONS ── */
-        .farm-section {
-          padding: 56px 0;
-          border-top: 1px solid rgba(255,255,255,0.06);
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .farm-section h2 {
-          font-size: clamp(22px, 4vw, 40px);
-          font-weight: 900;
+          font-size: clamp(28px, 5vw, 48px);
+          font-weight: 800;
           line-height: 1.1;
           letter-spacing: -0.02em;
-          color: #fff;
-          margin-bottom: 32px;
-        }
-
-        .farm-divider {
-          width: 40px;
-          height: 3px;
-          background: #22c55e;
-          border-radius: 2px;
-          margin-bottom: 28px;
+          margin-bottom: 16px;
+          color: #ffffff;
+          background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
 
         /* Таблица */
         .tariff-table-wrapper {
           overflow-x: auto;
-          border-radius: 20px;
-          border: 1px solid rgba(255,255,255,0.08);
-          background: rgba(255,255,255,0.03);
+          border-radius: 16px;
+          border: 1px solid rgba(56, 189, 248, 0.08);
+          background: rgba(15, 23, 42, 0.6);
+          backdrop-filter: blur(10px);
           margin: 32px 0;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
         }
 
         .tariff-table {
           width: 100%;
           border-collapse: collapse;
+          min-width: 800px;
         }
 
         .tariff-table th {
-          padding: 20px 16px;
+          padding: 18px 16px;
           text-align: center;
           font-weight: 600;
           color: #94a3b8;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          font-size: 14px;
+          border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
         }
 
         .tariff-table td {
           padding: 16px;
           text-align: center;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid rgba(56, 189, 248, 0.06);
           color: #cbd5e1;
+        }
+
+        /* Разделитель между блоками */
+        .section-divider td {
+          border-bottom: 2px solid rgba(56, 189, 248, 0.2);
         }
 
         .tariff-table tr:last-child td {
@@ -199,39 +174,68 @@ export default function PriceRubPage() {
         .tariff-table th:first-child,
         .tariff-table td:first-child {
           text-align: left;
-          font-weight: 600;
-          color: #f1f5f9;
+          font-weight: 500;
+          color: #94a3b8;
           position: sticky;
           left: 0;
-          background: #0b1220;
+          background: #0f172a;
+          padding-left: 20px;
         }
 
-        .tariff-name {
+        .tariff-table th:first-child {
+          background: #0f172a;
           font-weight: 700;
-          color: #fff;
+          color: #38bdf8;
+        }
+
+        .tariff-name-header {
+          font-size: 16px;
+          font-weight: 700;
+          color: #ffffff;
           margin-bottom: 4px;
         }
 
-        .popular-badge {
-          display: inline-block;
-          background: rgba(34,197,94,0.2);
-          color: #4ade80;
-          font-size: 10px;
-          padding: 2px 8px;
-          border-radius: 20px;
-          font-weight: 600;
+        .tariff-name-header small {
+          display: block;
+          font-size: 11px;
+          font-weight: 400;
+          color: #64748b;
+          margin-top: 4px;
         }
 
         .price-cell {
-          font-size: 20px;
+          font-size: 22px;
           font-weight: 800;
-          color: #4ade80;
+          background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
 
         .views-cell {
-          background: rgba(245,158,11,0.1);
+          background: rgba(245, 158, 11, 0.08);
           color: #fbbf24;
           font-weight: 700;
+          border-radius: 8px;
+        }
+
+        .help-icon-wrapper {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .help-icon {
+          width: 14px;
+          height: 14px;
+          color: #38bdf8;
+          cursor: help;
+          opacity: 0.7;
+          transition: opacity 0.2s;
+        }
+
+        .help-icon:hover {
+          opacity: 1;
         }
 
         /* Mobile cards */
@@ -252,34 +256,34 @@ export default function PriceRubPage() {
         }
 
         .tariff-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 20px;
+          background: rgba(15, 23, 42, 0.8);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(56, 189, 248, 0.1);
+          border-radius: 16px;
           overflow: hidden;
-        }
-
-        .tariff-card.popular {
-          border-color: rgba(34,197,94,0.4);
-          box-shadow: 0 0 0 1px rgba(34,197,94,0.2);
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
         }
 
         .tariff-card-header {
           padding: 20px;
-          background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(22,163,74,0.04));
-          border-bottom: 1px solid rgba(255,255,255,0.08);
+          background: linear-gradient(135deg, rgba(56, 189, 248, 0.05), rgba(129, 140, 248, 0.02));
+          border-bottom: 1px solid rgba(56, 189, 248, 0.1);
         }
 
         .tariff-card-header h3 {
           font-size: 20px;
-          font-weight: 800;
-          color: #fff;
+          font-weight: 700;
+          color: #ffffff;
           margin-bottom: 8px;
         }
 
         .tariff-card-price {
-          font-size: 28px;
-          font-weight: 900;
-          color: #4ade80;
+          font-size: 32px;
+          font-weight: 800;
+          background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
 
         .tariff-card-body {
@@ -290,7 +294,7 @@ export default function PriceRubPage() {
           display: flex;
           justify-content: space-between;
           padding: 10px 0;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid rgba(56, 189, 248, 0.06);
         }
 
         .tariff-row:last-child {
@@ -300,88 +304,48 @@ export default function PriceRubPage() {
         .tariff-row-label {
           color: #94a3b8;
           font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
         }
 
         .tariff-row-value {
-          color: #f1f5f9;
+          color: #e2e8f0;
+          font-weight: 600;
+        }
+
+        .section-break-mobile {
+          margin: 16px 0 8px;
+          padding-top: 16px;
+          border-top: 2px solid rgba(56, 189, 248, 0.15);
+        }
+
+        .section-label-mobile {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #38bdf8;
+          margin-bottom: 12px;
           font-weight: 600;
         }
 
         .tariff-views-highlight {
-          background: rgba(245,158,11,0.1);
+          background: rgba(245, 158, 11, 0.06);
           padding: 12px;
-          border-radius: 12px;
+          border-radius: 10px;
           margin-top: 12px;
+          border: 1px solid rgba(245, 158, 11, 0.1);
         }
 
         .tariff-views-highlight .tariff-row-value {
           color: #fbbf24;
-          font-size: 20px;
-          font-weight: 800;
+          font-size: 18px;
+          font-weight: 700;
         }
 
-        /* Final CTA */
-        .farm-final {
-          background: linear-gradient(135deg,rgba(34,197,94,0.1),rgba(22,163,74,0.04));
-          border: 1px solid rgba(34,197,94,0.2);
-          border-radius: 20px;
-          padding: 36px 24px;
-          text-align: center;
-          margin: 48px 0 64px;
-          box-sizing: border-box;
-          width: 100%;
-        }
-        @media (min-width: 768px) {
-          .farm-final { padding: 52px 72px; }
-        }
-
-        .farm-final h3 {
-          font-size: clamp(20px, 3vw, 30px);
-          font-weight: 900;
-          color: #fff;
-          margin-bottom: 12px;
-          letter-spacing: -0.02em;
-          line-height: 1.2;
-        }
-
-        .farm-final p {
-          font-size: 14px;
-          color: #64748b;
-          line-height: 1.7;
-          margin-bottom: 22px;
-        }
-
-        .farm-final-btn {
-          display: block;
-          max-width: 360px;
-          margin: 0 auto;
-          padding: 16px;
-          border-radius: 14px;
-          background: linear-gradient(135deg,#22c55e,#16a34a);
-          color: #fff;
-          font-size: 15px;
-          font-weight: 800;
-          text-decoration: none;
-          letter-spacing: -0.01em;
-          box-shadow: 0 8px 24px rgba(34,197,94,0.3);
-          transition: opacity 0.15s;
-          text-align: center;
-        }
-        .farm-final-btn:hover { opacity: 0.9; }
-
-        .farm-final-note {
-          font-size: 11px;
-          color: #334155;
-          margin-top: 10px;
-        }
-
-        .help-icon {
-          display: inline-block;
-          width: 14px;
-          height: 14px;
-          margin-left: 6px;
-          color: #475569;
-          cursor: help;
+        /* Акценты */
+        .accent-text {
+          color: #38bdf8;
         }
       `}</style>
 
@@ -390,13 +354,25 @@ export default function PriceRubPage() {
           {/* Hero Section */}
           <section className="farm-hero">
             <div className="farm-badge">
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
+              <span style={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                background: 'linear-gradient(135deg, #38bdf8, #818cf8)', 
+                display: 'inline-block',
+                boxShadow: '0 0 12px rgba(56, 189, 248, 0.5)'
+              }} />
               Тарифы контент-фермы
             </div>
 
             <h1>
               Выберите подходящий{' '}
-              <span style={{ color: '#4ade80' }}>
+              <span style={{ 
+                background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
                 тариф
               </span>
             </h1>
@@ -407,10 +383,19 @@ export default function PriceRubPage() {
             <table className="tariff-table">
               <thead>
                 <tr>
-                  <th>Параметр</th>
+                  <th></th>
+                  {tariffData.map((tariff, idx) => (
+                    <th key={idx}>
+                      <div className="tariff-name-header">
+                        {tariff.name}
+                        <small>тариф</small>
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
+                {/* Блок 2: Подготовка фермы */}
                 <tr>
                   <td>Телефонов</td>
                   {tariffData.map((tariff, idx) => (
@@ -424,19 +409,31 @@ export default function PriceRubPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td>Создание фермы</td>
+                  <td>
+                    <span className="help-icon-wrapper">
+                      Создание фермы
+                      <HelpCircle className="help-icon" />
+                    </span>
+                  </td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}>{tariff.rent}</td>
                   ))}
                 </tr>
-                <tr>
+                <tr className="section-divider">
                   <td>Дней на подготовку</td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}>{tariff.days}</td>
                   ))}
                 </tr>
+
+                {/* Блок 3: Ежемесячные публикации */}
                 <tr>
-                  <td>Пакет публикаций</td>
+                  <td>
+                    <span className="help-icon-wrapper">
+                      Пакет публикаций
+                      <HelpCircle className="help-icon" />
+                    </span>
+                  </td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}><strong>{tariff.posts}</strong></td>
                   ))}
@@ -478,13 +475,15 @@ export default function PriceRubPage() {
           {/* Mobile Cards */}
           <div className="mobile-cards">
             {tariffData.map((tariff, idx) => (
-              <div key={idx} className={`tariff-card ${tariff.popular ? 'popular' : ''}`}>
+              <div key={idx} className="tariff-card">
                 <div className="tariff-card-header">
                   <h3>{tariff.name}</h3>
                   <div className="tariff-card-price">{tariff.price}</div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>в месяц</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>в месяц</div>
                 </div>
                 <div className="tariff-card-body">
+                  {/* Блок 2: Подготовка фермы */}
+                  <div className="section-label-mobile">Подготовка фермы</div>
                   <div className="tariff-row">
                     <span className="tariff-row-label">Телефонов</span>
                     <span className="tariff-row-value">{tariff.phones}</span>
@@ -494,16 +493,42 @@ export default function PriceRubPage() {
                     <span className="tariff-row-value">{tariff.accounts}</span>
                   </div>
                   <div className="tariff-row">
-                    <span className="tariff-row-label">Стоимость фермы</span>
+                    <span className="tariff-row-label">
+                      <span className="help-icon-wrapper">
+                        Создание фермы
+                        <HelpCircle className="help-icon" />
+                      </span>
+                    </span>
                     <span className="tariff-row-value">{tariff.rent}</span>
                   </div>
                   <div className="tariff-row">
                     <span className="tariff-row-label">Дней на подготовку</span>
                     <span className="tariff-row-value">{tariff.days}</span>
                   </div>
+
+                  {/* Блок 3: Ежемесячные публикации */}
+                  <div className="section-break-mobile">
+                    <div className="section-label-mobile">Ежемесячные публикации</div>
+                  </div>
                   <div className="tariff-row">
-                    <span className="tariff-row-label">Пакет публикаций</span>
+                    <span className="tariff-row-label">
+                      <span className="help-icon-wrapper">
+                        Пакет публикаций
+                        <HelpCircle className="help-icon" />
+                      </span>
+                    </span>
                     <span className="tariff-row-value"><strong>{tariff.posts}</strong></span>
+                  </div>
+                  <div className="tariff-row">
+                    <span className="tariff-row-label">Стоимость пакета</span>
+                    <span className="tariff-row-value" style={{ 
+                      background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      fontWeight: 800,
+                      fontSize: 18
+                    }}>{tariff.price}</span>
                   </div>
                   <div className="tariff-views-highlight">
                     <div className="tariff-row">
