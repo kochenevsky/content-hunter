@@ -9,6 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false  # ← ВОТ ЭТО ДОБАВИТЬ
       matrix:
         server:
           - name: primary
@@ -50,6 +51,7 @@ jobs:
           SSH_HOST: ${{ matrix.server.host }}
           SSH_USER: ${{ matrix.server.user }}
           REMOTE_PATH: ${{ matrix.server.path }}
+        continue-on-error: true  # ← ТОЖЕ ПОЛЕЗНО ДОБАВИТЬ
         run: |
           if [ -z "$SSH_PASS" ]; then
             echo "⚠️ SSH password for ${{ matrix.server.name }} not set. Skipping."
