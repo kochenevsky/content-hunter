@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Telegram бот - ключ прямо в коде
-const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; // Замените на ваш токен
-const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID_HERE'; // Замените на ваш chat ID
+const TELEGRAM_BOT_TOKEN = '8620593971:AAGzMAqFNC2uHTvwnYjy6VViSdyVi7xXVDE'; // Замените на ваш токен
+const TELEGRAM_CHAT_ID = '8333494416'; // Замените на ваш chat ID
 
 export async function POST(request: NextRequest) {
   try {
