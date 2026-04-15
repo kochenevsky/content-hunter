@@ -591,21 +591,7 @@ export default function PriceRubPage() {
                   ))}
                 </tr>
                 <tr>
-                  <td>
-  <span className="help-icon-wrapper">
-    Создание фермы
-    <Tooltip text={`Создание инфраструктуры под ваш проект:
-— регистрация и настройка сети аккаунтов
-— прогрев под вашу нишу, гео и аудиторию
-— настройка устройств и софта
-— подготовка системы к массовой публикации
-
-Выполняется один раз перед запуском.
-Занимает до 10 дней.`}>
-      <HelpCircle className="help-icon" />
-    </Tooltip>
-  </span>
-</td>
+                  <td>Создание фермы</td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}>{tariff.rent}</td>
                   ))}
@@ -624,22 +610,7 @@ export default function PriceRubPage() {
 
                 {/* Блок 3: Ежемесячные публикации */}
                 <tr>
-                  <td>
-  <span className="help-icon-wrapper">
-    Пакет публикаций
-    <Tooltip text={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
-
-Включает:
-— автоматическое размещение
-— масштабирование роликов
-— распределение по аккаунтам
-— выполнение гарантии просмотров
-
-Если объём не достигается — добираем за свой счёт.`}>
-      <HelpCircle className="help-icon" />
-    </Tooltip>
-  </span>
-</td>
+                  <td>Пакет публикаций</td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}><strong>{tariff.posts}</strong></td>
                   ))}
@@ -697,20 +668,7 @@ export default function PriceRubPage() {
                     <span className="tariff-row-value">{tariff.accounts}</span>
                   </div>
                   <div className="tariff-row">
-                    <span className="tariff-row-label">
-  <span className="help-icon-wrapper">
-    Создание фермы
-    <Tooltip text={`Создание инфраструктуры под ваш проект:
-— регистрация и настройка сети аккаунтов
-— прогрев под вашу нишу, гео и аудиторию
-— настройка устройств и софта
-— подготовка системы к массовой публикации
-
-Выполняется один раз перед запуском.
-Занимает до 10 дней.`}>
-      <HelpCircle className="help-icon" />
-    </Tooltip>
-  </span>
+                    <span className="tariff-row-label">Создание фермы</span>
                     </span>
                     <span className="tariff-row-value">{tariff.rent}</span>
                   </div>
@@ -724,21 +682,7 @@ export default function PriceRubPage() {
                   <div className="section-label-mobile">Ежемесячные публикации</div>
                   
                   <div className="tariff-row">
-                    <span className="tariff-row-label">
-  <span className="help-icon-wrapper">
-    Пакет публикаций
-    <Tooltip text={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
-
-Включает:
-— автоматическое размещение
-— масштабирование роликов
-— распределение по аккаунтам
-— выполнение гарантии просмотров
-
-Если объём не достигается — добираем за свой счёт.`}>
-      <HelpCircle className="help-icon" />
-    </Tooltip>
-  </span>
+                    <span className="tariff-row-label">Пакет публикаций</span>
                     </span>
                     <span className="tariff-row-value"><strong>{tariff.posts}</strong></span>
                   </div>
