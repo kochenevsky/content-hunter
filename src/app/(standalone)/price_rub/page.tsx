@@ -682,7 +682,6 @@ export default function PriceRubPage() {
                   
                   <div className="tariff-row">
                     <span className="tariff-row-label">Пакет публикаций</span>
-                    </span>
                     <span className="tariff-row-value"><strong>{tariff.posts}</strong></span>
                   </div>
                   <div className="tariff-row">
