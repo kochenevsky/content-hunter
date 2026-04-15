@@ -3,6 +3,7 @@
 import { HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useState } from 'react';
 
 const tariffData = [
   {
@@ -111,6 +112,28 @@ const faqData = [
   }
 ];
 
+function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <span className="tooltip-wrapper">
+      <span 
+        onClick={() => setShow(!show)} 
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        style={{ cursor: 'help', display: 'inline-flex' }}
+      >
+        {children}
+      </span>
+      {show && (
+        <span className="tooltip-content" onClick={() => setShow(false)}>
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default function PriceRubPage() {
   return (
     <>
@@ -121,7 +144,60 @@ export default function PriceRubPage() {
           overflow-x: hidden; 
           background: #0a0e17;
         }
+        /* Тултип */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+}
 
+.tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-line;
+  min-width: 280px;
+  max-width: 350px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  pointer-events: auto;
+  margin-bottom: 8px;
+}
+
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: #1e293b;
+}
+
+@media (max-width: 768px) {
+  .tooltip-content {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    top: auto;
+    transform: none;
+    min-width: auto;
+    max-width: none;
+    z-index: 9999;
+  }
+  
+  .tooltip-content::after {
+    display: none;
+  }
+}
         .farm-root {
           background: linear-gradient(180deg, #0a0e17 0%, #0d121c 100%);
           min-height: 100vh;
@@ -216,14 +292,15 @@ export default function PriceRubPage() {
         }
 
         /* Разрыв между секциями */
-        .section-break td {
-          padding: 4px 0 0 0;
-          border-bottom: none;
-        }
+        /* Разрыв между секциями */
+.section-break td {
+  padding: 20px 0 0 0;  /* было 4px 0 0 0 */
+  border-bottom: none;
+}
 
-        .section-break + tr td {
-          padding-top: 14px;
-        }
+.section-break + tr td {
+  padding-top: 20px;  /* было 14px */
+}
 
         .tariff-table tr:last-child td {
           border-bottom: none;
@@ -517,7 +594,7 @@ export default function PriceRubPage() {
                   <td>
   <span className="help-icon-wrapper">
     Создание фермы
-    <span title={`Создание инфраструктуры под ваш проект:
+    <Tooltip text={`Создание инфраструктуры под ваш проект:
 — регистрация и настройка сети аккаунтов
 — прогрев под вашу нишу, гео и аудиторию
 — настройка устройств и софта
@@ -526,7 +603,7 @@ export default function PriceRubPage() {
 Выполняется один раз перед запуском.
 Занимает до 10 дней.`}>
       <HelpCircle className="help-icon" />
-    </span>
+    </Tooltip>
   </span>
 </td>
                   {tariffData.map((tariff, idx) => (
@@ -550,7 +627,7 @@ export default function PriceRubPage() {
                   <td>
   <span className="help-icon-wrapper">
     Пакет публикаций
-    <span title={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
+    <Tooltip text={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
 
 Включает:
 — автоматическое размещение
@@ -560,7 +637,7 @@ export default function PriceRubPage() {
 
 Если объём не достигается — добираем за свой счёт.`}>
       <HelpCircle className="help-icon" />
-    </span>
+    </Tooltip>
   </span>
 </td>
                   {tariffData.map((tariff, idx) => (
@@ -623,7 +700,7 @@ export default function PriceRubPage() {
                     <span className="tariff-row-label">
   <span className="help-icon-wrapper">
     Создание фермы
-    <span title={`Создание инфраструктуры под ваш проект:
+    <Tooltip text={`Создание инфраструктуры под ваш проект:
 — регистрация и настройка сети аккаунтов
 — прогрев под вашу нишу, гео и аудиторию
 — настройка устройств и софта
@@ -632,7 +709,7 @@ export default function PriceRubPage() {
 Выполняется один раз перед запуском.
 Занимает до 10 дней.`}>
       <HelpCircle className="help-icon" />
-    </span>
+    </Tooltip>
   </span>
                     </span>
                     <span className="tariff-row-value">{tariff.rent}</span>
@@ -650,7 +727,7 @@ export default function PriceRubPage() {
                     <span className="tariff-row-label">
   <span className="help-icon-wrapper">
     Пакет публикаций
-    <span title={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
+    <Tooltip text={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
 
 Включает:
 — автоматическое размещение
@@ -660,7 +737,7 @@ export default function PriceRubPage() {
 
 Если объём не достигается — добираем за свой счёт.`}>
       <HelpCircle className="help-icon" />
-    </span>
+    </Tooltip>
   </span>
                     </span>
                     <span className="tariff-row-value"><strong>{tariff.posts}</strong></span>
