@@ -1,7 +1,7 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { StickyCta } from './_components/StickyCta';
 
-const MetricsProvider = dynamic(
+const MetricsProvider = nextDynamic(
   () => import('./providers/MetricsProvider').then(mod => mod.MetricsProvider),
   { ssr: false }
 );
