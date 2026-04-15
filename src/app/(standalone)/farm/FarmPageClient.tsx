@@ -13,7 +13,7 @@ export default function FarmPageClient({ slideUrls }: { slideUrls: string[] }) {
   }, []);
 
   const getBotLink = () => {
-  return 'https://tglink.online/?cnt_hunter_bot';
+  return 'https://contenthunter.ru/consult${utmParams}';
 };
   
 return (
