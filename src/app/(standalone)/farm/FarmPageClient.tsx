@@ -502,10 +502,10 @@ return (
               Экскурсия на<br />
               <span style={{ color: '#4ade80' }}>контент-ферму</span>
             </h2>
-            <p className="farm-slides-sub">{SLIDE_URLS.length} слайдов</p>
+            <p className="farm-slides-sub">{slideUrls.length} слайдов</p>
 
             <div className="farm-slides-grid">
-              {SLIDE_URLS.map((url, i) => (
+              {slideUrls.map((url, i) => (
                 <div key={i} className="farm-slide-wrap">
                   <img
                     src={url}
