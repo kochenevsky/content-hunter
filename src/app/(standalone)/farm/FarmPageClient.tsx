@@ -13,7 +13,9 @@ export default function FarmPageClient({ slideUrls }: { slideUrls: string[] }) {
   }, []);
 
   const getBotLink = () => {
-  return 'https://contenthunter.ru/consult${utmParams}';
+  // Убираем первый & и заменяем на ?
+  const cleanUtm = utmParams.startsWith('&') ? '?' + utmParams.slice(1) : '';
+  return `https://contenthunter.ru/consult${cleanUtm}`;
 };
   
 return (
