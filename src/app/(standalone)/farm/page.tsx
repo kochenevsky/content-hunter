@@ -1,4 +1,7 @@
+'use client';
+
 import { StickyCta } from './_components/StickyCta';
+import { useState, useEffect } from 'react';  // ← ДОБАВИТЬ ЭТУ СТРОКУ
 import { ClientMetricsWrapper } from './_components/ClientMetricsWrapper';
 
 export const dynamic = 'force-dynamic';
