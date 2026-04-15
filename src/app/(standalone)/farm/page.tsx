@@ -422,7 +422,7 @@ export default function FarmPage() {
             </div>
 
             <StickyCta
-              href="https://sbsite.pro//eu_site_calc_1"
+              href="https://tglink.online/?cnt_hunter_bot"
               label="Рассчитать для моей ниши"
               stickyLabel="Рассчитать для моей ниши"
             />
@@ -461,7 +461,7 @@ export default function FarmPage() {
             </ul>
 
             <StickyCta
-              href="https://sbsite.pro//eu_site_calc_1"
+              href="https://tglink.online/?cnt_hunter_bot"
               label="Сделать расчёты"
               stickyLabel="Сделать расчёты"
             />
@@ -526,7 +526,7 @@ export default function FarmPage() {
                 Настройка и установка — 0 ₽.
               </p>
               <a
-                href="https://sbsite.pro//eu_site_calc_1"
+                href="https://tglink.online/?cnt_hunter_bot"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="farm-final-btn"
@@ -542,7 +542,7 @@ export default function FarmPage() {
 
       {/* sticky — вне farm-container чтобы не обрезался */}
       <StickyCta
-        href="https://sbsite.pro//eu_site_calc_1"
+        href="https://tglink.online/?cnt_hunter_bot"
         label="Рассчитать для моей ниши"
         stickyLabel="Рассчитать для моей ниши"
         alwaysShowSticky
