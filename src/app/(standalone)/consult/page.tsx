@@ -62,15 +62,19 @@ function ConsultForm() {
 
   // Форматирование телефона при вводе
   const formatPhone = (value: string): string => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length === 0) return '';
-    
-    if (cleaned.length <= 1) return `+${cleaned}`;
-    if (cleaned.length <= 4) return `+${cleaned.slice(0, 1)} (${cleaned.slice(1)}`;
-    if (cleaned.length <= 7) return `+${cleaned.slice(0, 1)} (${cleaned.slice(1, 4)}) ${cleaned.slice(4)}`;
-    if (cleaned.length <= 9) return `+${cleaned.slice(0, 1)} (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
-    return `+${cleaned.slice(0, 1)} (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9, 11)}`;
-  };
+  // Сохраняем плюс если он есть в начале
+  const hasPlus = value.startsWith('+');
+  const cleaned = value.replace(/\D/g, '');
+  
+  if (cleaned.length === 0) return hasPlus ? '+' : '';
+  
+  // Всегда показываем + в начале
+  if (cleaned.length <= 1) return `+${cleaned}`;
+  if (cleaned.length <= 4) return `+${cleaned.slice(0, 1)} (${cleaned.slice(1)}`;
+  if (cleaned.length <= 7) return `+${cleaned.slice(0, 1)} (${cleaned.slice(1, 4)}) ${cleaned.slice(4)}`;
+  if (cleaned.length <= 9) return `+${cleaned.slice(0, 1)} (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+  return `+${cleaned.slice(0, 1)} (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9, 11)}`;
+};
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(e.target.value);
@@ -126,45 +130,51 @@ function ConsultForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitError(null);
+  e.preventDefault();
+  setSubmitError(null);
+  
+  // Очищаем телефон от форматирования для валидации
+  const cleanPhone = formData.phone.replace(/\D/g, '');
+  
+  if (!cleanPhone) {
+    setErrors({ phone: 'Номер телефона обязателен' });
+    return;
+  }
+  
+  if (cleanPhone.length < 10 || cleanPhone.length > 12) {
+    setErrors({ phone: 'Введите корректный номер телефона' });
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // Форматируем телефон для отправки: +79313102888
+    const formattedForApi = `+${cleanPhone}`;
     
-    if (!formData.phone) {
-      setErrors({ phone: 'Номер телефона обязателен' });
-      return;
-    }
-    
-    if (!validatePhone(formData.phone)) {
-      setErrors({ phone: 'Введите корректный номер телефона' });
-      return;
-    }
+    const leadData = {
+      phone: formattedForApi,  // ← чистый формат для API
+      telegram: formData.telegram || null,
+      utm: utmParams,
+      page: '/consult',
+      timestamp: new Date().toISOString()
+    };
 
-    setIsSubmitting(true);
+    // Отправляем во все системы
+    await Promise.allSettled([
+      sendToTelegram(formattedForApi, formData.telegram, '/consult'),
+      sendToGoogleSheets({ ...leadData, phone: formattedForApi }),
+      sendToAmoCRM({ ...leadData, phone: formattedForApi })
+    ]);
 
-    try {
-      const leadData = {
-        phone: formData.phone,
-        telegram: formData.telegram || null,
-        utm: utmParams,
-        page: '/consult',
-        timestamp: new Date().toISOString()
-      };
-
-      // Отправляем во все системы
-      await Promise.allSettled([
-        sendToTelegram(formData.phone, formData.telegram, '/consult'),
-        sendToGoogleSheets(leadData),
-        sendToAmoCRM(leadData)
-      ]);
-
-      setIsSubmitted(true);
-    } catch (error) {
-      console.error('Submit error:', error);
-      setSubmitError('Произошла ошибка. Пожалуйста, попробуйте позже.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setIsSubmitted(true);
+  } catch (error) {
+    console.error('Submit error:', error);
+    setSubmitError('Произошла ошибка. Пожалуйста, попробуйте позже.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Формируем ссылку на бота с UTM-метками
   const getBotLinkWithUtm = () => {
