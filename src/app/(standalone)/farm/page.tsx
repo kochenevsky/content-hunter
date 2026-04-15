@@ -13,6 +13,20 @@ const SLIDE_URLS = Array.from({ length: 27 }, (_, i) =>
 );
 
 function FarmPageContent() {
+  const [utmParams, setUtmParams] = useState('');
+  
+  useEffect(() => {
+    // Получаем текущие UTM-метки из URL
+    const params = new URLSearchParams(window.location.search);
+    const utmString = params.toString();
+    setUtmParams(utmString ? `&${utmString}` : '');
+  }, []);
+
+  // Формируем ссылку с UTM-метками
+  const getBotLink = () => {
+    return `https://tglink.online/?cnt_hunter_bot${utmParams}`;
+  };
+  
   return (
     <>
       <style>{`
@@ -422,7 +436,7 @@ function FarmPageContent() {
             </div>
 
             <StickyCta
-              href="https://tglink.online/?cnt_hunter_bot"
+              href={getBotLink()}
               label="Рассчитать для моей ниши"
               stickyLabel="Рассчитать для моей ниши"
             />
@@ -461,7 +475,7 @@ function FarmPageContent() {
             </ul>
 
             <StickyCta
-              href="https://tglink.online/?cnt_hunter_bot"
+              href={getBotLink()}
               label="Сделать расчёты"
               stickyLabel="Сделать расчёты"
             />
@@ -526,7 +540,7 @@ function FarmPageContent() {
                 Настройка и установка — 0 ₽.
               </p>
               <a
-                href="https://tglink.online/?cnt_hunter_bot"
+                href={getBotLink()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="farm-final-btn"
@@ -542,7 +556,7 @@ function FarmPageContent() {
 
       {/* sticky — вне farm-container чтобы не обрезался */}
       <StickyCta
-        href="https://tglink.online/?cnt_hunter_bot"
+        href={getBotLink()}
         label="Рассчитать для моей ниши"
         stickyLabel="Рассчитать для моей ниши"
         alwaysShowSticky
