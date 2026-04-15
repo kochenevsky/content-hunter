@@ -5,47 +5,21 @@ import { NextRequest, NextResponse } from 'next/server';
 const TELEGRAM_BOT_TOKEN = '8620593971:AAGzMAqFNC2uHTvwnYjy6VViSdyVi7xXVDE';
 const TELEGRAM_CHAT_ID = '8333494416';
 
-// Функция экранирования спецсимволов для Markdown
-function escapeMarkdown(text: string): string {
-  return text
-    .replace(/_/g, '\\_')
-    .replace(/\*/g, '\\*')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)')
-    .replace(/~/g, '\\~')
-    .replace(/`/g, '\\`')
-    .replace(/>/g, '\\>')
-    .replace(/#/g, '\\#')
-    .replace(/\+/g, '\\+')
-    .replace(/-/g, '\\-')
-    .replace(/=/g, '\\=')
-    .replace(/\|/g, '\\|')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}')
-    .replace(/\./g, '\\.')
-    .replace(/!/g, '\\!')      // ← экранирование восклицательного знака
-    .replace(/\?/g, '\\?');    // ← на всякий случай и вопросительный
-}
-
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     const { phone, telegram, page, utm, timestamp } = data;
     
     // Формируем красивое сообщение
-    let message = `🆕 *Новая заявка с сайта!*\n\n`;
-    message += `📞 *Телефон:* ${escapeMarkdown(phone)}\n`;
-    message += `💬 *Telegram:* ${telegram ? escapeMarkdown('@' + telegram) : 'не указан'}\n`;
-    message += `📄 *Страница:* ${escapeMarkdown(page || '/consult')}\n`;
-    message += `⏰ *Время:* ${escapeMarkdown(new Date(timestamp || Date.now()).toLocaleString('ru-RU'))}\n`;
+    let message = `Телефон: ${phone}\n`;
+    message += `Telegram: ${telegram ? '@' + telegram : 'не указан'}\n`;
+    message += `Страница: ${page || '/consult'}\n`;
+    message += `Время: ${(new Date(timestamp || Date.now()).toLocaleString('ru-RU'))}\n`;
     
     if (utm && Object.keys(utm).length > 0) {
-      message += `\n📊 *UTM-метки:*\n`;
-      if (utm.utm_source) message += `• source: ${escapeMarkdown(utm.utm_source)}\n`;
-      if (utm.utm_medium) message += `• medium: ${escapeMarkdown(utm.utm_medium)}\n`;
-      if (utm.utm_campaign) message += `• campaign: ${escapeMarkdown(utm.utm_campaign)}\n`;
+      if (utm.utm_source) message += `• source: ${utm.utm_source}\n`;
+      if (utm.utm_medium) message += `• medium: ${utm.utm_medium}\n`;
+      if (utm.utm_campaign) message += `• campaign: ${utm.utm_campaign}\n`;
     }
     
     // Отправляем в Telegram
@@ -57,7 +31,6 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           chat_id: TELEGRAM_CHAT_ID,
           text: message,
-          parse_mode: 'MarkdownV2', // MarkdownV2 требует экранирования
         }),
       }
     );
