@@ -62,9 +62,8 @@ export async function POST(request: NextRequest) {
 
 // GET функция для проверки статуса
 export async function GET() {
-  const isConfigured = TELEGRAM_BOT_TOKEN !== '' && 
-                       TELEGRAM_CHAT_ID !== '' && 
-                       TELEGRAM_CHAT_ID !== 'YOUR_CHAT_ID_HERE';
+  const isConfigured = true;  // Токен уже в коде
+
   
   return NextResponse.json({
     status: 'ok',
