@@ -515,21 +515,20 @@ export default function PriceRubPage() {
                 </tr>
                 <tr>
                   <td>
-                    <span className="help-icon-wrapper">
-Создание фермы
-  <HelpCircle 
-    className="help-icon"
-    title={`Создание инфраструктуры под ваш проект:
+  <span className="help-icon-wrapper">
+    Создание фермы
+    <span title={`Создание инфраструктуры под ваш проект:
 — регистрация и настройка сети аккаунтов
 — прогрев под вашу нишу, гео и аудиторию
 — настройка устройств и софта
 — подготовка системы к массовой публикации
 
 Выполняется один раз перед запуском.
-Занимает до 10 дней.`}
-  />
-</span>
-                  </td>
+Занимает до 10 дней.`}>
+      <HelpCircle className="help-icon" />
+    </span>
+  </span>
+</td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}>{tariff.rent}</td>
                   ))}
@@ -549,11 +548,9 @@ export default function PriceRubPage() {
                 {/* Блок 3: Ежемесячные публикации */}
                 <tr>
                   <td>
-                    <span className="help-icon-wrapper">
-  Пакет публикаций
-  <HelpCircle 
-    className="help-icon"
-    title={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
+  <span className="help-icon-wrapper">
+    Пакет публикаций
+    <span title={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
 
 Включает:
 — автоматическое размещение
@@ -561,10 +558,11 @@ export default function PriceRubPage() {
 — распределение по аккаунтам
 — выполнение гарантии просмотров
 
-Если объём не достигается — добираем за свой счёт.`}
-  />
-</span>
-                  </td>
+Если объём не достигается — добираем за свой счёт.`}>
+      <HelpCircle className="help-icon" />
+    </span>
+  </span>
+</td>
                   {tariffData.map((tariff, idx) => (
                     <td key={idx}><strong>{tariff.posts}</strong></td>
                   ))}
@@ -623,20 +621,19 @@ export default function PriceRubPage() {
                   </div>
                   <div className="tariff-row">
                     <span className="tariff-row-label">
-                      <span className="help-icon-wrapper">
-Создание фермы
-  <HelpCircle 
-    className="help-icon"
-    title={`Создание инфраструктуры под ваш проект:
+  <span className="help-icon-wrapper">
+    Создание фермы
+    <span title={`Создание инфраструктуры под ваш проект:
 — регистрация и настройка сети аккаунтов
 — прогрев под вашу нишу, гео и аудиторию
 — настройка устройств и софта
 — подготовка системы к массовой публикации
 
 Выполняется один раз перед запуском.
-Занимает до 10 дней.`}
-  />
-</span>
+Занимает до 10 дней.`}>
+      <HelpCircle className="help-icon" />
+    </span>
+  </span>
                     </span>
                     <span className="tariff-row-value">{tariff.rent}</span>
                   </div>
@@ -651,11 +648,9 @@ export default function PriceRubPage() {
                   
                   <div className="tariff-row">
                     <span className="tariff-row-label">
-                      <span className="help-icon-wrapper">
-  Пакет публикаций
-  <HelpCircle 
-    className="help-icon"
-    title={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
+  <span className="help-icon-wrapper">
+    Пакет публикаций
+    <span title={`Количество публикаций ваших роликов в месяц через сеть аккаунтов.
 
 Включает:
 — автоматическое размещение
@@ -663,9 +658,10 @@ export default function PriceRubPage() {
 — распределение по аккаунтам
 — выполнение гарантии просмотров
 
-Если объём не достигается — добираем за свой счёт.`}
-  />
-</span>
+Если объём не достигается — добираем за свой счёт.`}>
+      <HelpCircle className="help-icon" />
+    </span>
+  </span>
                     </span>
                     <span className="tariff-row-value"><strong>{tariff.posts}</strong></span>
                   </div>
