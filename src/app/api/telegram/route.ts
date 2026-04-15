@@ -25,7 +25,8 @@ function escapeMarkdown(text: string): string {
     .replace(/\{/g, '\\{')
     .replace(/\}/g, '\\}')
     .replace(/\./g, '\\.')
-    .replace(/!/g, '\\!');
+    .replace(/!/g, '\\!')      // ← экранирование восклицательного знака
+    .replace(/\?/g, '\\?');    // ← на всякий случай и вопросительный
 }
 
 export async function POST(request: NextRequest) {
