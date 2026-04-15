@@ -16,7 +16,7 @@ export default function FarmPageClient({ slideUrls }: { slideUrls: string[] }) {
     return `https://tglink.online/?cnt_hunter_bot${utmParams}`;
   };
   
-  return return (
+return (
     <>
       <style>{`
         /* сброс — убираем любые внешние отступы/рамки */
