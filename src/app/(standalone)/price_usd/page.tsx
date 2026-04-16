@@ -721,7 +721,7 @@ export default function PriceRubPage() {
             <Link href="/offer" className="farm-link">
               Гарантия по договору-оферте
             </Link>
-            <Link href="/price_usd" className="farm-link">
+            <Link href="/price_rub" className="farm-link">
               Тарифы в ₽ рублях
             </Link>
           </div>
