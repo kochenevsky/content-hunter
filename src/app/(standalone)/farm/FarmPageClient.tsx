@@ -540,9 +540,8 @@ return (
               </p>
               <a
                 onClick={handleCtaClick}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="farm-final-btn"
+  className="farm-final-btn"
+  style={{ cursor: 'pointer' }}
               >
                 Рассчитать для моей ниши →
               </a>
