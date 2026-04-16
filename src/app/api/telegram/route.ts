@@ -17,9 +17,10 @@ export async function POST(request: NextRequest) {
     message += `Время: ${(new Date(timestamp || Date.now()).toLocaleString('ru-RU'))}\n`;
     
     if (utm && Object.keys(utm).length > 0) {
-      if (utm.utm_source) message += `• source: ${utm.utm_source}\n`;
-      if (utm.utm_medium) message += `• medium: ${utm.utm_medium}\n`;
-      if (utm.utm_campaign) message += `• campaign: ${utm.utm_campaign}\n`;
+      message += `\n📊 UTM метки:\n`;
+      Object.entries(utm).forEach(([key, value]) => {
+        message += `  ${key}: ${value}\n`;
+      });
     }
     
     // Отправляем в Telegram
