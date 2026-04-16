@@ -539,6 +539,28 @@ return (
       </div>
     </section>
 
+    <section className="farm-slides-section">
+  <div className="farm-divider" />
+  <h2 className="farm-slides-title">
+    Экскурсия на<br />
+    <span style={{ color: '#4ade80' }}>контент-ферму</span>
+  </h2>
+  <p className="farm-slides-sub">{slideUrls.length} слайдов</p>
+
+  <div className="farm-slides-grid">
+    {slideUrls.map((url, i) => (
+      <div key={i} className="farm-slide-wrap">
+        <img
+          src={url}
+          alt={`Слайд ${i + 1}`}
+          loading={i < 6 ? 'eager' : 'lazy'}
+        />
+        <div className="farm-slide-num">{i + 1}</div>
+      </div>
+    ))}
+  </div>
+</section>
+
     {/* FINAL */}
     <section className="farm-slides-section">
       <div className="farm-divider" />
