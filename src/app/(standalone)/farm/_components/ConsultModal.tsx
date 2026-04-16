@@ -128,7 +128,7 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
   };
 
   const getBotLink = () => {
-    const url = new URL('https://tglink.online/');
+    const url = new URL('https://sbsite.pro/ru_site_ch_1');
     url.searchParams.set('cnt_hunter_bot', '1');
     Object.entries(utmParams).forEach(([k, v]) => url.searchParams.set(k, v));
     return url.toString();
@@ -232,17 +232,23 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
           padding: 16px;
         }
         .modal-content {
-          background: #0b1220;
-          border: 1px solid rgba(34, 197, 94, 0.2);
-          border-radius: 24px;
-          padding: 32px 24px;
-          max-width: 480px;
-          width: 100%;
-          max-height: 90vh;
-          overflow-y: auto;
-          position: relative;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+  background: #0b1220;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 24px;
+  padding: 32px 24px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif; /* ← ДОБАВИТЬ */
+}
+
+/* Также добавить для всех текстовых элементов */
+.modal-content * {
+  font-family: inherit;
+}
         .modal-close {
           position: absolute;
           top: 16px; right: 16px;
@@ -297,31 +303,44 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
           margin-bottom: 8px;
         }
         .modal-required { color: #ef4444; }
-        .modal-field input {
-          width: 100%;
-          padding: 14px 16px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 14px;
-          font-size: 16px;
-          color: #fff;
-          outline: none;
-          box-sizing: border-box;
-        }
         .modal-field input:focus { border-color: #22c55e; }
         .modal-field input.error { border-color: #ef4444; }
         .modal-error { color: #ef4444; font-size: 13px; margin-top: 6px; }
         .modal-input-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-        .modal-prefix {
-          position: absolute;
-          left: 16px;
-          color: #64748b;
-        }
-        .modal-input-prefix { padding-left: 36px; }
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%; /* ← ДОБАВИТЬ */
+}
+
+.modal-prefix {
+  position: absolute;
+  left: 16px;
+  color: #64748b;
+  font-size: 16px;
+  pointer-events: none; /* ← ДОБАВИТЬ, чтобы не мешал вводу */
+  z-index: 1; /* ← ДОБАВИТЬ */
+}
+
+.modal-input-prefix {
+  padding-left: 36px !important; /* ← ДОБАВИТЬ !important */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Для самого input */
+.modal-field input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  font-size: 16px;
+  color: #fff;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit; /* ← ДОБАВИТЬ */
+}
         .modal-hint { color: #64748b; font-size: 12px; margin-top: 6px; }
         .modal-error-box {
           background: rgba(239, 68, 68, 0.1);
