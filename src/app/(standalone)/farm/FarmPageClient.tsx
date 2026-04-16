@@ -1,9 +1,11 @@
 'use client';
 
 import { StickyCta } from './_components/StickyCta';
+import { ConsultModal } from './_components/ConsultModal';
 import { useState, useEffect } from 'react';
 
 export default function FarmPageClient({ slideUrls }: { slideUrls: string[] }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [utmParams, setUtmParams] = useState('');
   
   useEffect(() => {
@@ -11,6 +13,11 @@ export default function FarmPageClient({ slideUrls }: { slideUrls: string[] }) {
     const utmString = params.toString();
     setUtmParams(utmString ? `&${utmString}` : '');
   }, []);
+
+  const handleCtaClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsModalOpen(true);
+  };
 
   const getBotLink = () => {
   // Убираем первый & и заменяем на ?
@@ -20,6 +27,7 @@ export default function FarmPageClient({ slideUrls }: { slideUrls: string[] }) {
   
 return (
     <>
+      <ConsultModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       <style>{`
         /* сброс — убираем любые внешние отступы/рамки */
         html, body { margin: 0; padding: 0; overflow-x: hidden; }
@@ -427,7 +435,7 @@ return (
             </div>
 
             <StickyCta
-              href={getBotLink()}
+              onClick={handleCtaClick}
               label="Рассчитать для моей ниши"
               stickyLabel="Рассчитать для моей ниши"
             />
@@ -466,7 +474,7 @@ return (
             </ul>
 
             <StickyCta
-              href={getBotLink()}
+              onClick={handleCtaClick}
               label="Сделать расчёты"
               stickyLabel="Сделать расчёты"
             />
@@ -531,7 +539,7 @@ return (
                 Настройка и установка — 0 ₽.
               </p>
               <a
-                href={getBotLink()}
+                onClick={handleCtaClick}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="farm-final-btn"
@@ -547,7 +555,7 @@ return (
 
       {/* sticky — вне farm-container чтобы не обрезался */}
       <StickyCta
-        href={getBotLink()}
+        onClick={handleCtaClick}
         label="Рассчитать для моей ниши"
         stickyLabel="Рассчитать для моей ниши"
         alwaysShowSticky
