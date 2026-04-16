@@ -51,14 +51,19 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
 
   // Сбор UTM
   useEffect(() => {
-    const utm: Record<string, string> = {};
-    const urlParams = new URLSearchParams(window.location.search);
-    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(param => {
-      const value = urlParams.get(param);
-      if (value) utm[param] = value;
-    });
-    setUtmParams(utm);
-  }, []);
+  const urlParams = new URLSearchParams(window.location.search);
+  const utm: Record<string, string> = {};
+  
+  // Собираем ВСЕ параметры, которые начинаются с utm_
+  urlParams.forEach((value, key) => {
+    if (key.startsWith('utm_')) {
+      utm[key] = value;
+    }
+  });
+  
+  console.log('📊 Collected UTM:', utm); // ← для отладки
+  setUtmParams(utm);
+}, []);
 
   const validatePhone = (phone: string): boolean => {
     const cleaned = phone.replace(/\D/g, '');
@@ -101,11 +106,18 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
         timestamp: new Date().toISOString()
       };
 
+      console.log('📤 Sending lead data:', leadData);
+
       await Promise.allSettled([
         fetch('/api/telegram', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: formattedForApi, telegram: formData.telegram, page: '/farm' })
+          body: JSON.stringify({ 
+      phone: formattedForApi, 
+      telegram: formData.telegram, 
+      page: '/farm',
+      utm: utmParams  // ← ДОБАВИТЬ UTM В TELEGRAM
+    })
         }),
         fetch('/api/google-sheets', {
           method: 'POST',
