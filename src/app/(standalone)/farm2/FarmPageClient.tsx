@@ -391,174 +391,199 @@ return (
         }
       `}</style>
 
-      <div className="farm-root">
-        <div className="farm-container">
+      <div className="farm-root"> 
+  <div className="farm-container">
 
-          {/* HERO */}
-          <section className="farm-hero">
-            <div className="farm-badge">
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
-              Content Hunter
-            </div>
-
-            <h1>
-              Вы недополучаете ×10–30 охвата<br />
-              <span style={{ color: '#4ade80' }}>с каждого ролика</span>
-            </h1>
-
-            <img
-              src="/farm-hero.jpg"
-              alt="Контент-ферма Content Hunter"
-              className="farm-hero-img"
-            />
-
-            <p className="farm-lead">
-              Пока вы публикуете ролик в 1 аккаунт, его можно масштабировать в десятки аккаунтов и получать в разы больше просмотров с тем же контентом.
-            </p>
-            <p className="farm-lead">
-              Проверьте, какой охват может давать ваша ниша:
-            </p>
-
-            <ul className="farm-list">
-              {[
-                'Сколько аккаунтов нужно',
-                'Сколько публикаций можно масштабировать',
-                'Какой охват может давать система',
-                'Сколько стоит запуск',
-              ].map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-
-            <div className="farm-note">
-              Иногда расчёт показывает, что масштабирование не даст эффекта. И это лучше узнать до запуска.
-            </div>
-
-            <StickyCta
-              onClick={handleCtaClick}
-              label="Рассчитать для моей ниши"
-              stickyLabel="Рассчитать для моей ниши"
-            />
-          </section>
-
-          {/* CEILING */}
-          <section className="farm-section">
-            <div className="farm-divider" />
-            <h2>
-              Один аккаунт — потолок.<br />
-              <span style={{ color: '#4ade80' }}>Система аккаунтов — рост.</span>
-            </h2>
-
-            <div className="farm-cards">
-              <div className="farm-card-before">
-                <p className="card-label" style={{ color: '#475569' }}>Сейчас у вас</p>
-                <p className="card-main">30 роликов в месяц</p>
-                <p className="card-big" style={{ color: '#475569' }}>= 30 000<br />просмотров</p>
-              </div>
-              <div className="farm-card-after">
-                <p className="card-label" style={{ color: '#4ade80' }}>С нашей платформой</p>
-                <p className="card-main" style={{ color: '#94a3b8' }}>30 роликов × 30 копий × 30 аккаунтов</p>
-                <p className="card-big" style={{ color: '#fff' }}>= от 1 000 000<br />просмотров</p>
-              </div>
-            </div>
-
-            <p className="farm-section-lead">Почему вы сейчас упираетесь в потолок</p>
-            <ul className="farm-list" style={{ marginBottom: 28 }}>
-              {[
-                '1 аккаунт ограничивает охват',
-                'Алгоритмы не масштабируют один источник',
-                'Даже хороший ролик быстро умирает',
-              ].map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-
-            <StickyCta
-              onClick={handleCtaClick}
-              label="Сделать расчёты"
-              stickyLabel="Сделать расчёты"
-            />
-          </section>
-
-          {/* DEMO VIDEO — НОВЫЙ БЛОК ПЕРЕД СЛАЙДАМИ */}
-          <section className="farm-demo-section">
-            <div className="farm-divider" />
-            <h2 className="farm-demo-title">
-              Как работает<br />
-              <span style={{ color: '#4ade80' }}>платформа</span>
-            </h2>
-            <p className="farm-demo-sub">
-              Настройка системы, загрузка роликов и аналитика
-            </p>
-
-            <div className="farm-demo-video">
-              <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
-                <iframe
-                  src="https://player.vimeo.com/video/1181500890?badge=0&autopause=0&player_id=0&app_id=58479"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                  title="Как работает платформа Content Hunter"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* SLIDES */}
-          <section className="farm-slides-section">
-            <div className="farm-divider" />
-            <h2 className="farm-slides-title">
-              Экскурсия на<br />
-              <span style={{ color: '#4ade80' }}>контент-ферму</span>
-            </h2>
-            <p className="farm-slides-sub">{slideUrls.length} слайдов</p>
-
-            <div className="farm-slides-grid">
-              {slideUrls.map((url, i) => (
-                <div key={i} className="farm-slide-wrap">
-                  <img
-                    src={url}
-                    alt={`Слайд ${i + 1}`}
-                    loading={i < 6 ? 'eager' : 'lazy'}
-                  />
-                  <div className="farm-slide-num">{i + 1}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="farm-final">
-              <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
-              <h3>
-                Готовы запустить<br />
-                <span style={{ color: '#4ade80' }}>свою ферму?</span>
-              </h3>
-              <p>
-                Построить такую ферму самостоятельно — ~20 000 000 ₽.<br />
-                Аренда в Content Hunter — от 25 000 ₽ в месяц.<br />
-                Настройка и установка — 0 ₽.
-              </p>
-              <a
-                onClick={handleCtaClick}
-  className="farm-final-btn"
-  style={{ cursor: 'pointer' }}
-              >
-                Рассчитать для моей ниши →
-              </a>
-              <p className="farm-final-note">Бесплатно · Гарантия просмотров в договоре</p>
-            </div>
-          </section>
-
-        </div>
+    {/* HERO */}
+    <section className="farm-hero">
+      <div className="farm-badge">
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
+        Content Hunter
       </div>
 
-      {/* sticky — вне farm-container чтобы не обрезался */}
+      <h1>
+        Создавать контент сложно и дорого.<br />
+        <span style={{ color: '#4ade80' }}>А у тебя он работает 30 раз хуже чем у конкурентов</span>
+      </h1>
+
+      <img
+        src="/farm-hero.jpg"
+        alt="Контент-ферма Content Hunter"
+        className="farm-hero-img"
+      />
+
+      <p className="farm-lead">
+        Если ты эксперт, у тебя онлайн-школа или SaaS — ты уже тратишь деньги на контент.
+        Но публикуешь его в 1 аккаунт и теряешь большую часть охвата.
+      </p>
+
+      <p className="farm-lead">
+        А можно каждый твой ролик прогнать через контент-ферму из 100 аккаунтов.
+      </p>
+
+      <ul className="farm-list">
+        {[
+          'Сколько аккаунтов нужно под вашу нишу',
+          'Как масштабировать текущие ролики',
+          'Какой охват реально можно получать',
+          'Сколько это будет стоить',
+        ].map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+
+      <div className="farm-note">
+        Посмотрите в калькуляторе, что ждать от контент-фермы. На примере реальных кейсов.
+      </div>
+
       <StickyCta
         onClick={handleCtaClick}
         label="Рассчитать для моей ниши"
-        stickyLabel="Рассчитать для моей ниши"
-        alwaysShowSticky
+        stickyLabel="Калькулятор фермы"
       />
+    </section>
+
+    {/* CEILING */}
+    <section className="farm-section">
+      <div className="farm-divider" />
+
+      <h2>
+        В дорогих гео трудности ощущаются сильнее.<br />
+        <span style={{ color: '#4ade80' }}>Масштаб решает</span>
+      </h2>
+
+      <div className="farm-cards">
+        <div className="farm-card-before">
+          <p className="card-label" style={{ color: '#475569' }}>Сейчас</p>
+          <p className="card-main">30 роликов / месяц</p>
+          <p className="card-big" style={{ color: '#475569' }}>
+            = 30 000<br />просмотров
+          </p>
+        </div>
+
+        <div className="farm-card-after">
+          <p className="card-label" style={{ color: '#4ade80' }}>С системой</p>
+          <p className="card-main" style={{ color: '#94a3b8' }}>
+            30 роликов × копии × сеть аккаунтов
+          </p>
+          <p className="card-big" style={{ color: '#fff' }}>
+            = от 1 000 000<br />просмотров
+          </p>
+        </div>
+      </div>
+
+      <p className="farm-section-lead">Почему сейчас все стоит на месте</p>
+
+      <ul className="farm-list" style={{ marginBottom: 28 }}>
+        {[
+          'Один аккаунт невозможно масштабировать',
+          'Алгоритмы режут охваты',
+          'Контент быстро умирает',
+          'Стоимость лида растет',
+        ].map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+
+      <StickyCta
+        onClick={handleCtaClick}
+        label="Посчитать потенциал"
+        stickyLabel="Посчитать потенциал"
+      />
+    </section>
+
+    {/* FOR WHO */}
+    <section className="farm-section">
+      <div className="farm-divider" />
+
+      <h2>
+        Кому подходит<br />
+        <span style={{ color: '#4ade80' }}>контент-ферма</span>
+      </h2>
+
+      <ul className="farm-list">
+        {[
+          'Эксперты с регулярным контентом',
+          'Онлайн-школы с воронками через соцсети',
+          'SaaS-продукты с контент-маркетингом',
+          'Бизнесы Дубая, Пхукета, Бали',
+        ].map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </section>
+
+    {/* DEMO */}
+    <section className="farm-demo-section">
+      <div className="farm-divider" />
+
+      <h2 className="farm-demo-title">
+        Как это работает<br />
+        <span style={{ color: '#4ade80' }}>на практике</span>
+      </h2>
+
+      <p className="farm-demo-sub">
+        Настройка, загрузка роликов и масштабирование
+      </p>
+
+      <div className="farm-demo-video">
+        <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+          <iframe
+            src="https://player.vimeo.com/video/1181500890"
+            frameBorder="0"
+            allow="autoplay; fullscreen"
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            title="Как работает Content Hunter"
+          />
+        </div>
+      </div>
+    </section>
+
+    {/* FINAL */}
+    <section className="farm-slides-section">
+      <div className="farm-divider" />
+
+      <div className="farm-final">
+        <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
+
+        <h3>
+          Контент уже есть.<br />
+          <span style={{ color: '#4ade80' }}>Масштаба — нет</span>
+        </h3>
+
+        <p>
+          В Дубае и Таиланде внимание стоит дорого.<br />
+          Вы либо масштабируете контент — либо переплачиваете за лиды.
+        </p>
+
+        <p>
+          Запуск системы — от $325.<br />
+          Настройка — бесплатно.
+        </p>
+
+        <a
+          onClick={handleCtaClick}
+          className="farm-final-btn"
+          style={{ cursor: 'pointer' }}
+        >
+          Запустить для моей ниши →
+        </a>
+
+        <p className="farm-final-note">
+          Бесплатно · С гарантией просмотров
+        </p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<StickyCta
+  onClick={handleCtaClick}
+  label="Рассчитать для моей ниши"
+  stickyLabel="Рассчитать сейчас"
+  alwaysShowSticky
+/>
     </>
   );
 }
