@@ -1,16 +1,27 @@
 "use client";
 
 type StickyCtaProps = {
-  href: string;
+  onClick?: (e: React.MouseEvent) => void;
+  href?: string;  // ← добавить для обратной совместимости
   label: string;
   stickyLabel?: string;
-  /** если true — sticky кнопка показывается всегда, без условия по скроллу */
   alwaysShowSticky?: boolean;
 };
 
-export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: StickyCtaProps) {
-  // Если alwaysShowSticky — рендерим только sticky панель (без inline кнопки)
-  // Если нет — рендерим только inline кнопку
+export function StickyCta({ onClick, href, label, stickyLabel, alwaysShowSticky }: StickyCtaProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(e);
+    }
+    // Если нет onClick и есть href — будет обычная ссылка
+  };
+
+  // Определяем атрибуты для тега <a>
+  const linkProps = onClick 
+    ? { onClick: handleClick, style: { cursor: 'pointer' } }
+    : { href: href || '#', target: '_blank', rel: 'noopener noreferrer' };
+
   if (alwaysShowSticky) {
     return (
       <>
@@ -20,13 +31,11 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
             bottom: 0;
             left: 0;
             right: 0;
-            /* fix 6: нейтральный фон без градиента на десктопе */
             background: #0b1220;
             border-top: 1px solid rgba(255,255,255,0.07);
             padding: 12px 16px 20px;
             z-index: 200;
           }
-          /* fix 4: кнопка не шире экрана */
           .sticky-btn {
             display: block;
             width: 100%;
@@ -49,12 +58,7 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
           .sticky-btn:hover { opacity: 0.9; }
         `}</style>
         <div className="sticky-panel">
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sticky-btn"
-          >
+          <a {...linkProps} className="sticky-btn">
             {stickyLabel ?? label}
           </a>
         </div>
@@ -62,7 +66,7 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
     );
   }
 
-  // Inline кнопка (внутри секций)
+  // Inline кнопка
   return (
     <>
       <style>{`
@@ -86,12 +90,7 @@ export function StickyCta({ href, label, stickyLabel, alwaysShowSticky }: Sticky
         }
         .inline-cta-btn:hover { opacity: 0.9; }
       `}</style>
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-cta-btn"
-      >
+      <a {...linkProps} className="inline-cta-btn">
         {label}
       </a>
     </>
