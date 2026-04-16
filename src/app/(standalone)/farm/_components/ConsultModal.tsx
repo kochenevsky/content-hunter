@@ -140,11 +140,13 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
   };
 
   const getBotLink = () => {
-    const url = new URL('https://sbsite.pro/ru_site_ch_1');
-    url.searchParams.set('cnt_hunter_bot', '1');
-    Object.entries(utmParams).forEach(([k, v]) => url.searchParams.set(k, v));
-    return url.toString();
-  };
+  const url = new URL('https://sbsite.pro/ru_site_ch_1');
+  // Добавляем только UTM-метки
+  Object.entries(utmParams).forEach(([k, v]) => {
+    url.searchParams.set(k, v);
+  });
+  return url.toString();
+};
 
   if (!isOpen) return null;
 
@@ -233,17 +235,22 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
 
       <style>{`
         .modal-overlay {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0, 0, 0, 0.8);
-          backdrop-filter: blur(8px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 9999;
-          padding: 16px;
-        }
-        .modal-content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.modal-content {
   background: #0b1220;
   border: 1px solid rgba(34, 197, 94, 0.2);
   border-radius: 24px;
@@ -254,26 +261,60 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
   overflow-y: auto;
   position: relative;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif; /* ← ДОБАВИТЬ */
+  font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  
+  /* Скрыть скроллбар */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Также добавить для всех текстовых элементов */
-.modal-content * {
-  font-family: inherit;
+.modal-content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  background: transparent;
 }
-        .modal-close {
-          position: absolute;
-          top: 16px; right: 16px;
-          background: none; border: none;
-          color: #64748b; cursor: pointer;
-          padding: 4px;
-          border-radius: 8px;
-          transition: all 0.15s;
-        }
-        .modal-close:hover {
-          background: rgba(255,255,255,0.1);
-          color: #fff;
-        }
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 12px;
+    padding-top: 16px;
+  }
+  
+  .modal-content {
+    max-height: calc(100vh - 32px);
+    padding: 24px 16px;
+    margin: 0;
+  }
+  
+  .modal-close {
+    top: 12px;
+    right: 12px;
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
         .modal-badge {
           display: inline-flex;
           align-items: center;
