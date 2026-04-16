@@ -9,54 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false  # ← ВОТ ЭТО ДОБАВИТЬ
-      matrix:
-        server:
-          - name: primary
-            host: "5.42.104.246"
-            user: "root"
-            pass: SERVER1_SSH_PASSWORD
-            path: "/var/www/content-hunter/"
-          - name: backup
-            host: "83.222.27.72"
-            user: "root"
-            pass: SERVER2_SSH_PASSWORD
-            path: "/var/www/content-hunter/"
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install deps and build
-        env:
-          NEXT_PUBLIC_SERVER_URL: "https://contenthunter.ru"
-          NEXT_PUBLIC_SUPABASE_URL: "https://feytgokjblyqzymadfym.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZleXRnb2tqYmx5cXp5bWFkZnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDg3MzksImV4cCI6MjA4NTI4NDczOX0.IjRLp_2URxV43OmkGdHUY2v-Jmb4XynxCgXjRIMqQ-8"
-        run: |
-          pnpm install --no-frozen-lockfile
-          pnpm build
-
-      name: Deploy to Both Servers
-
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false  # ← ВОТ ЭТО ДОБАВИТЬ
+      fail-fast: false
       matrix:
         server:
           - name: primary
