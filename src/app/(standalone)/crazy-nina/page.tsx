@@ -145,6 +145,7 @@ const BUDGET_CATS = [
 ];
 
 const API_BASE = "https://crazy-nina.oxion-ezhkov.workers.dev";
+const API_ACTION = `${API_BASE}/api/action`; // 👈 ДОБАВИТЬ
 
 // ============================================================================
 // Default Data
@@ -168,6 +169,64 @@ const createEmptyTrip = (): Trip => ({
   ideas: [],
   docs: [],
 });
+
+// 👇 ДОБАВИТЬ СЮДА - функцию загрузки с Worker
+const loadTripsFromWorker = async (username: string): Promise<Trip[] | null> => {
+  try {
+    const res = await fetch(`${API_BASE}/api/trips/${username}`);
+    if (!res.ok) return null;
+    const trips = await res.json();
+    
+    // 👇 Проверка что это массив и не пустой
+    if (!Array.isArray(trips) || trips.length === 0) return null;
+    
+    // 👇 Проверка что есть хотя бы один трип с данными
+    const hasData = trips.some(t => t.name || t.days?.length > 0);
+    
+    return hasData ? trips : null;
+  } catch (e) {
+    console.error("Failed to load from worker:", e);
+    return null;
+  }
+};
+
+// 👇 ДОБАВИТЬ СЮДА - функцию сохранения в Worker
+const saveTripsToWorker = async (username: string, trips: Trip[]): Promise<boolean> => {
+  try {
+    const res = await fetch(`${API_BASE}/api/trips/${username}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(trips),
+    });
+    return res.ok;
+  } catch (e) {
+    console.error("Failed to save to worker:", e);
+    return false;
+  }
+};
+
+// 👇 ДОБАВИТЬ СЮДА
+const applyActionOnWorker = async (
+  username: string, 
+  tripId: number, 
+  action: any
+): Promise<Trip | null> => {
+  try {
+    const res = await fetch(API_ACTION, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, tripId, action }),
+    });
+    
+    if (!res.ok) return null;
+    
+    const data = await res.json();
+    return data.trip || null;
+  } catch (e) {
+    console.error("Failed to apply action:", e);
+    return null;
+  }
+};
 
 // ============================================================================
 // Hooks & Utilities
@@ -249,18 +308,32 @@ export default function CrazyNinaPage() {
   const sym = CURRENCIES.find((c) => c.code === trip.currency)?.sym || "₽";
   const fmt = (v: number) => (v ? `${sym} ${v.toLocaleString("ru")}` : "");
 
+    // 👇 ДОБАВИТЬ СЮДА - ref для отслеживания первого рендера
+  const isFirstRender = useRef(true);
+  
+  // 👇 ДОБАВИТЬ СЮДА - ref для отслеживания изменений trips
+  const prevTripsRef = useRef(appState.trips);
   // ==========================================================================
   // Theme & Color Application
   // ==========================================================================
 
-  useEffect(() => {
-    if (appState.trips.length === 0) {
-    setAppState({
-      ...appState,
-      trips: [createEmptyTrip()],
-      currentTrip: 0,
-    });
+// В начале компонента, после объявления стейтов
+useEffect(() => {
+  // Если нет username, но есть данные в trips (кроме пустого)
+  if (!appState.username && appState.trips.length > 0) {
+    const hasRealData = appState.trips.some(t => t.name !== "" || t.days.length > 0);
+    if (hasRealData) {
+      // Очищаем, чтобы не показывать чужие данные
+      setAppState(prev => ({
+        ...prev,
+        trips: [createEmptyTrip()],
+        currentTrip: 0,
+      }));
+    }
   }
+}, []);
+    
+  useEffect(() => {
     const root = document.documentElement;
     const t = trip;
 
@@ -312,20 +385,87 @@ root.style.setProperty("--border", c.border);
 root.style.setProperty("--sun", c.sun);
 root.style.setProperty("--sun2", c.sun2);
   }, [trip]);
+// 👇 ДОБАВИТЬ СЮДА - загрузка данных при входе
+useEffect(() => {
+  const loadData = async () => {
+    if (appState.username && isFirstRender.current) {
+      isFirstRender.current = false;
+      
+      const workerTrips = await loadTripsFromWorker(appState.username);
+      
+      if (workerTrips) {
+        // Данные есть в Worker - используем их
+        setAppState(prev => ({
+          ...prev,
+          trips: workerTrips,
+          currentTrip: 0,
+        }));
+        showToast(`Синхронизировано с облаком 🦜`);
+      } else if (appState.trips.length === 1 && appState.trips[0].name === "") {
+        // Пустой трип - отправляем в Worker
+        await saveTripsToWorker(appState.username, appState.trips);
+      }
+    }
+  };
+  
+  loadData();
+}, [appState.username]);
 
+// 👇 ДОБАВИТЬ СЮДА - синхронизация при изменении trips
+useEffect(() => {
+  const syncData = async () => {
+    // Пропускаем первый рендер (уже обработан выше)
+    if (isFirstRender.current) return;
+    
+    // Проверяем, что trips реально изменились
+    if (JSON.stringify(prevTripsRef.current) === JSON.stringify(appState.trips)) return;
+    
+    prevTripsRef.current = appState.trips;
+    
+    if (appState.username) {
+      const success = await saveTripsToWorker(appState.username, appState.trips);
+      if (success) {
+        console.log("🦜 Synced to worker");
+      }
+    }
+  };
+  
+  syncData();
+}, [appState.trips, appState.username]);
+    
   // ==========================================================================
   // Username
   // ==========================================================================
 
-  const handleSetUsername = () => {
+  const handleSetUsername = async () => {
   const trimmed = tempUsername.trim();
-  // Разрешить буквы, цифры, дефис, подчёркивание
   if (/^[a-zA-Z0-9_-]{3,30}$/.test(trimmed)) {
-    setAppState({ ...appState, username: trimmed });
     setShowUsernamePrompt(false);
-    showToast(`Привет, @${trimmed}! 🦜`);
-  } else {
-    showToast("Только буквы, цифры, - и _, от 3 до 30 символов");
+    
+    // 👇 Сначала ставим пустой трип из LocalStorage (мгновенно)
+    const emptyTrip = createEmptyTrip();
+    setAppState({
+      ...appState,
+      username: trimmed,
+      trips: [emptyTrip],
+      currentTrip: 0,
+    });
+    
+    // 👇 Потом в фоне пробуем загрузить из Worker
+    const workerTrips = await loadTripsFromWorker(trimmed);
+    
+    if (workerTrips) {
+      // Обновляем UI данными из облака
+      setAppState(prev => ({
+        ...prev,
+        trips: workerTrips,
+      }));
+      showToast(`С возвращением, @${trimmed}! 🦜`);
+    } else {
+      // Сохраняем пустой трип в Worker
+      await saveTripsToWorker(trimmed, [emptyTrip]);
+      showToast(`Привет, @${trimmed}! 🦜`);
+    }
   }
 };
 
@@ -388,6 +528,9 @@ root.style.setProperty("--sun2", c.sun2);
 
     closeAllModals();
     showToast(modalTrip.isNew ? "Путешествие создано!" : "Сохранено");
+    if (appState.username) {
+  saveTripsToWorker(appState.username, newTrips);
+}
   };
 
   const deleteTrip = (id: number) => {
@@ -402,6 +545,10 @@ root.style.setProperty("--sun2", c.sun2);
       currentTrip: Math.min(appState.currentTrip, newTrips.length - 1),
     });
     showToast("Путешествие удалено");
+    // 👇 ДОБАВИТЬ
+if (appState.username) {
+  saveTripsToWorker(appState.username, newTrips);
+}
   };
 
   // ==========================================================================
@@ -546,57 +693,86 @@ root.style.setProperty("--sun2", c.sun2);
   // ==========================================================================
 
   const sendAIMessage = async (message: string) => {
-    if (!message.trim()) return;
+  if (!message.trim()) return;
 
-    setAiMessages((prev) => [...prev, { role: "user", content: message }]);
-    setAiInput("");
-    setIsLoadingAI(true);
+  setAiMessages((prev) => [...prev, { role: "user", content: message }]);
+  setAiInput("");
+  setIsLoadingAI(true);
 
-    const thinkingId = Date.now();
-    setAiMessages((prev) => [...prev, { role: "bot", content: "..." }]);
+  const thinkingId = Date.now();
+  setAiMessages((prev) => [...prev, { role: "bot", content: "..." }]);
 
-    try {
-      const context = {
-        name: trip.name,
-        country: trip.country,
-        route: trip.route,
-        start: trip.start,
-        end: trip.end,
-        people: trip.people,
-        currency: trip.currency,
-        budget: trip.budget,
-        days: trip.days.map((d) => ({ name: d.name, date: d.date })),
-        events: trip.events.map((e) => ({ name: e.name, cat: e.cat, price: e.price })),
-        ideas: trip.ideas.map((i) => i.title),
-        username: appState.username,
-      };
+  try {
+    const context = {
+      name: trip.name,
+      country: trip.country,
+      route: trip.route,
+      start: trip.start,
+      end: trip.end,
+      people: trip.people,
+      currency: trip.currency,
+      budget: trip.budget,
+      days: trip.days.map((d) => ({ id: d.id, name: d.name, date: d.date })),
+      events: trip.events.map((e) => ({ id: e.id, dayId: e.dayId, name: e.name, cat: e.cat, price: e.price })),
+      ideas: trip.ideas.map((i) => i.title),
+      username: appState.username,
+    };
 
-      const res = await fetch(`${API_BASE}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, context }),
+    const res = await fetch(`${API_BASE}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, context }),
+    });
+
+    const data = await res.json();
+    const reply = data.reply || "Попугай задумался...";
+    const action = data.action; // 👈 Получаем действие от ИИ
+
+    setAiMessages((prev) =>
+      prev.map((m, i) => (i === prev.length - 1 ? { role: "bot", content: reply } : m))
+    );
+
+    // 👇 Если есть действие — показываем подтверждение
+    if (action) {
+      setPendingConfirmation(() => async () => {
+        // Применяем действие через Worker
+        const updatedTrip = await applyActionOnWorker(
+          appState.username!,
+          trip.id,
+          action
+        );
+        
+        if (updatedTrip) {
+          // Обновляем локальный стейт
+          const newTrips = appState.trips.map(t => 
+            t.id === trip.id ? updatedTrip : t
+          );
+          setAppState({ ...appState, trips: newTrips });
+          showToast("✅ Изменения применены!");
+          
+          setAiMessages((prev) => [
+            ...prev,
+            { role: "bot", content: "Готово! Я добавил это в твой план 🦜" },
+          ]);
+        } else {
+          showToast("❌ Не удалось применить изменения");
+          setAiMessages((prev) => [
+            ...prev,
+            { role: "bot", content: "Ой, не получилось добавить 😢 Попробуй вручную." },
+          ]);
+        }
+        
+        setPendingConfirmation(null);
       });
-
-      const data = await res.json();
-
-      setAiMessages((prev) =>
-        prev.map((m, i) => (i === prev.length - 1 ? { role: "bot", content: data.reply || "..." } : m))
-      );
-
-      if (data.reply?.toLowerCase().includes("применить") || data.reply?.toLowerCase().includes("добавить")) {
-        setPendingConfirmation(() => () => {
-          showToast("Изменения применены!");
-          setPendingConfirmation(null);
-        });
-      }
-    } catch {
-      setAiMessages((prev) =>
-        prev.map((m, i) => (i === prev.length - 1 ? { role: "bot", content: "Ошибка соединения 🦜💥" } : m))
-      );
-    } finally {
-      setIsLoadingAI(false);
     }
-  };
+  } catch (error) {
+    setAiMessages((prev) =>
+      prev.map((m, i) => (i === prev.length - 1 ? { role: "bot", content: "Ошибка соединения 🦜💥" } : m))
+    );
+  } finally {
+    setIsLoadingAI(false);
+  }
+};
 
   const sendAIChip = (text: string) => {
     setAiInput(text);
@@ -1278,10 +1454,31 @@ body.light-theme .form-select option {
           ))}
         </div>
         <div style={{ marginTop: "auto", padding: "16px 22px", borderTop: "1px solid rgba(255,255,255,.07)" }}>
-          <div style={{ fontSize: ".75rem", color: "var(--text3)", marginBottom: 8 }}>ПУТЕШЕСТВЕННИК</div>
-          <div style={{ fontWeight: 700 }}>{appState.username || "Гость"}</div>
-          <button className="event-btn" style={{ marginTop: 8 }} onClick={() => { setAppState({ ...appState, username: null }); setShowUsernamePrompt(true); }}>Сменить имя</button>
-        </div>
+  <div style={{ fontSize: ".75rem", color: "var(--text3)", marginBottom: 8 }}>ПУТЕШЕСТВЕННИК</div>
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <span style={{ fontWeight: 700 }}>{appState.username || "Гость"}</span>
+    {appState.username && (
+      <span style={{ fontSize: ".7rem", color: "var(--leaf)" }} title="Синхронизировано с облаком">☁️</span>
+    )}
+  </div>
+  <button 
+  className="event-btn" 
+  style={{ marginTop: 8 }} 
+  onClick={() => { 
+    // 👇 Очищаем всё перед сменой пользователя
+    setAppState({ 
+      ...appState, 
+      username: null, 
+      trips: [createEmptyTrip()],
+      currentTrip: 0,
+      currentSection: "days",
+    }); 
+    setShowUsernamePrompt(true); 
+  }}
+>
+  Сменить имя
+</button>
+</div>
       </div>
 
       {/* Nav Toggle */}
@@ -1363,14 +1560,29 @@ body.light-theme .form-select option {
                 <div key={i} className={`ai-msg ${msg.role}`}>{msg.content}</div>
               ))}
               {pendingConfirmation && (
-                <div className="ai-confirm">
-                  <div>Применить изменения?</div>
-                  <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                    <button className="ai-confirm-yes" onClick={confirmAIAction}>✅ Да</button>
-                    <button className="ai-confirm-no" onClick={rejectAIAction}>✕ Нет</button>
-                  </div>
-                </div>
-              )}
+  <div className="ai-confirm">
+    <div>Применить изменения?</div>
+    <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+      <button 
+        className="ai-confirm-yes" 
+        onClick={() => {
+          pendingConfirmation(); // 👈 Выполняет действие
+        }}
+      >
+        ✅ Да
+      </button>
+      <button 
+        className="ai-confirm-no" 
+        onClick={() => {
+          setPendingConfirmation(null);
+          setAiMessages((prev) => [...prev, { role: "bot", content: "Хорошо, ничего не меняю 👍" }]);
+        }}
+      >
+        ✕ Нет
+      </button>
+    </div>
+  </div>
+)}
               <div ref={aiMessagesEndRef} />
             </div>
             <div id="ai-chips-wrap" style={{ padding: "6px 10px", borderTop: "1px solid rgba(255,255,255,.06)", display: "flex", gap: 5, flexWrap: "wrap" }}>
