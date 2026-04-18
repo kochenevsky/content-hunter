@@ -3,6 +3,10 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 // ============================================================================
 // Types
@@ -218,9 +222,13 @@ const applyActionOnWorker = async (
       body: JSON.stringify({ username, tripId, action }),
     });
     
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error("Action failed:", res.status);
+      return null;
+    }
     
     const data = await res.json();
+    console.log("Action response:", data); // ← ДОБАВИТЬ ЛОГ
     return data.trip || null;
   } catch (e) {
     console.error("Failed to apply action:", e);
@@ -296,7 +304,7 @@ export default function CrazyNinaPage() {
   // Form state
   const [eventForm, setEventForm] = useState({ cat: "activity", icon: "🎢", name: "", desc: "", price: "", duration: "", links: "", dayId: "" });
   const [dayForm, setDayForm] = useState({ name: "", date: "" });
-  const [tripForm, setTripForm] = useState({ name: "", icon: "🌴", country: "", route: "", start: "", end: "", people: 2, budget: "", currency: "RUB", theme: "dark" as "dark" | "light", mainColor: "green" as Trip["mainColor"] });
+  const [tripForm, setTripForm] = useState({ name: "", icon: "🌴", country: "", route: "", start: "", end: "", people: 2, budget: "", currency: "RUB"});
   const [ideaForm, setIdeaForm] = useState({ icon: "💡", title: "", desc: "" });
 
   // Refs
@@ -505,8 +513,8 @@ useEffect(() => {
       people: tripForm.people,
       budget: parseFloat(tripForm.budget) || 0,
       currency: tripForm.currency,
-      theme: tripForm.theme,
-      mainColor: tripForm.mainColor,
+  theme: "dark",      // фиксированно
+  mainColor: "green", // фиксированно
       days: modalTrip.isNew ? [] : trip.days,
       events: modalTrip.isNew ? [] : trip.events,
       ideas: modalTrip.isNew ? [] : trip.ideas,
@@ -732,35 +740,33 @@ if (appState.username) {
     // 👇 Если есть действие — показываем подтверждение
     if (action) {
       setPendingConfirmation(() => async () => {
-        // Применяем действие через Worker
-        const updatedTrip = await applyActionOnWorker(
-          appState.username!,
-          trip.id,
-          action
-        );
-        
-        if (updatedTrip) {
-          // Обновляем локальный стейт
-          const newTrips = appState.trips.map(t => 
-            t.id === trip.id ? updatedTrip : t
-          );
-          setAppState({ ...appState, trips: newTrips });
-          showToast("✅ Изменения применены!");
-          
-          setAiMessages((prev) => [
-            ...prev,
-            { role: "bot", content: "Готово! Я добавил это в твой план 🦜" },
-          ]);
-        } else {
-          showToast("❌ Не удалось применить изменения");
-          setAiMessages((prev) => [
-            ...prev,
-            { role: "bot", content: "Ой, не получилось добавить 😢 Попробуй вручную." },
-          ]);
-        }
-        
-        setPendingConfirmation(null);
-      });
+  const updatedTrip = await applyActionOnWorker(
+    appState.username!,
+    trip.id,
+    action
+  );
+  
+  console.log("Updated trip from worker:", updatedTrip); // ← ДОБАВИТЬ ЛОГ
+  
+  if (updatedTrip) {
+  // Обновляем локальный стейт
+  const newTrips = appState.trips.map(t => 
+    t.id === trip.id ? updatedTrip : t
+  );
+  setAppState({
+    ...appState,
+    trips: newTrips,
+  });
+  showToast("✅ Изменения применены!");
+  
+  setAiMessages((prev) => [
+    ...prev,
+    { role: "bot", content: "Готово! Я добавил это в твой план 🦜" },
+  ]);
+}
+  
+  setPendingConfirmation(null);
+});
     }
   } catch (error) {
     setAiMessages((prev) =>
@@ -849,7 +855,38 @@ if (appState.username) {
               </div>
             </div>
             <div className="day-body">
-              {dayEvents.map(renderEvent)}
+              <DragDropContext onDragEnd={(result) => {
+  if (!result.destination) return;
+  const items = Array.from(dayEvents);
+  const [reordered] = items.splice(result.source.index, 1);
+  items.splice(result.destination.index, 0, reordered);
+  
+  // Обновить порядок в стейте
+  const newEvents = trip.events.filter(e => e.dayId !== day.id).concat(items);
+  setAppState({
+    ...appState,
+    trips: appState.trips.map(t => 
+      t.id === trip.id ? { ...t, events: newEvents } : t
+    ),
+  });
+}}>
+  <Droppable droppableId={`day-${day.id}`}>
+    {(provided) => (
+      <div {...provided.droppableProps} ref={provided.innerRef}>
+        {dayEvents.map((ev, index) => (
+          <Draggable key={ev.id} draggableId={String(ev.id)} index={index}>
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                {renderEvent(ev)}
+              </div>
+            )}
+          </Draggable>
+        ))}
+        {provided.placeholder}
+      </div>
+    )}
+  </Droppable>
+</DragDropContext>
               <button className="btn-add-evt" onClick={() => { setModalEvent({ open: true, editId: null, sectionOverride: null }); setEventForm({ cat: "activity", icon: "🎢", name: "", desc: "", price: "", duration: "", links: "", dayId: String(day.id) }); }}>+ Добавить событие</button>
             </div>
           </div>
@@ -1006,6 +1043,41 @@ body.light-theme .event-btn {
   background: rgba(0, 0, 0, 0.05);
   color: var(--text2);
 }
+/* Крестики закрытия модалок */
+.modal-close {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text2) !important;
+  transition: all 0.2s;
+}
+.modal-close:hover {
+  background: var(--j-mid) !important;
+  border-color: var(--leaf) !important;
+  color: var(--text) !important;
+}
+
+/* Кнопки листания (дней/событий) */
+.day-chevron {
+  color: var(--leaf) !important;
+  font-size: 1rem;
+  transition: transform 0.3s;
+}
+
+/* Скроллбары в нашем стиле */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--leaf);
+}
 body.light-theme .event-btn:hover {
   background: rgba(0, 0, 0, 0.1);
   color: var(--text);
@@ -1054,7 +1126,94 @@ body.light-theme .form-textarea {
     max-width: 1200px;
   }
 }
+/* Кастомный календарь */
+.react-datepicker {
+  font-family: 'Nunito', sans-serif !important;
+  background: var(--j-dark) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden;
+}
 
+.react-datepicker__header {
+  background: var(--j-mid) !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 12px 0 !important;
+}
+
+.react-datepicker__current-month {
+  color: var(--text) !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  margin-bottom: 8px !important;
+}
+
+.react-datepicker__day-name {
+  color: var(--leaf) !important;
+  font-weight: 600 !important;
+  width: 2rem !important;
+  line-height: 2rem !important;
+  margin: 0 !important;
+}
+
+.react-datepicker__day {
+  color: var(--text) !important;
+  width: 2rem !important;
+  line-height: 2rem !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  transition: all 0.15s !important;
+}
+
+.react-datepicker__day:hover {
+  background: var(--j-bright) !important;
+  color: white !important;
+}
+
+.react-datepicker__day--selected {
+  background: var(--leaf) !important;
+  color: var(--j-deep) !important;
+  font-weight: 700 !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background: var(--j-bright) !important;
+}
+
+.react-datepicker__day--disabled {
+  color: var(--text3) !important;
+  opacity: 0.5;
+}
+
+.react-datepicker__day--disabled:hover {
+  background: transparent !important;
+}
+
+.react-datepicker__navigation {
+  top: 12px !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: var(--text2) !important;
+}
+
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: var(--leaf) !important;
+}
+
+.react-datepicker__triangle {
+  display: none !important;
+}
+
+/* Для светлой темы (если вернёшь) */
+body.light-theme .react-datepicker {
+  background: #f0f8f0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+}
+body.light-theme .react-datepicker__header {
+  background: #d0e8d0 !important;
+}
 @media (max-width: 768px) {
   #main {
     padding-left: 12px;
@@ -1365,6 +1524,100 @@ body.light-theme .form-select option {
           #ai-panel { width: calc(100% - 20px); right: 10px; }
           .form-row { grid-template-columns: 1fr; }
         }
+        @media (max-width: 640px) {
+  .day-header {
+    flex-wrap: wrap;
+  }
+  .day-num {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  .day-pills {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .event {
+    flex-wrap: wrap;
+  }
+  .event-price {
+    margin-left: 43px;
+    width: 100%;
+    text-align: left;
+  }
+  .event-actions {
+    top: 4px;
+    right: 4px;
+  }
+  .simple-card-header {
+    flex-wrap: wrap;
+  }
+  .simple-price {
+    margin-left: 0;
+    width: 100%;
+    text-align: left;
+    margin-top: 4px;
+  }
+  #ai-panel {
+    width: calc(100vw - 20px) !important;
+    max-width: 400px;
+    left: 10px;
+    right: 10px;
+  }
+  .modal {
+    padding: 20px 16px;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+/* Селекты и календари */
+.form-select,
+.form-input[type="date"] {
+  color: var(--text) !important;
+  color-scheme: dark;
+}
+.form-select option {
+  background: var(--j-dark);
+  color: var(--text);
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.7;
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+a, .event-link, .doc-link {
+  color: var(--leaf) !important;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover, .event-link:hover, .doc-link:hover {
+  color: var(--sun) !important;
+  text-decoration: underline;
+}
+.event {
+  padding-right: 70px; /* место под кнопки */
+}
+.event-actions {
+  right: 8px;
+  top: 8px;
+}
+.event-price {
+  margin-right: 60px;
+}
+
+@media (max-width: 640px) {
+  .event {
+    padding-right: 14px;
+  }
+  .event-price {
+    margin-right: 0;
+  }
+}
       `}</style>
 
       {/* Background */}
@@ -1554,7 +1807,7 @@ body.light-theme .form-select option {
             <div id="ai-msgs">
               {aiMessages.length === 0 && <div className="ai-msg bot">Привет! Спроси меня о путешествии 🦜</div>}
               {aiMessages.map((msg, i) => (
-                <div key={i} className={`ai-msg ${msg.role}`}>{msg.content}</div>
+                <div key={i} className={`ai-msg ${msg.role}`}>{typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)}</div>
               ))}
               {pendingConfirmation && (
   <div className="ai-confirm">
@@ -1636,15 +1889,21 @@ body.light-theme .form-select option {
                 <div className="form-group"><div className="form-label">Длительность</div><input className="form-input" value={eventForm.duration} onChange={(e) => setEventForm({ ...eventForm, duration: e.target.value })} placeholder="2 ч" /></div>
               </div>
               <div className="form-group"><div className="form-label">Ссылки</div><textarea className="form-textarea" value={eventForm.links} onChange={(e) => setEventForm({ ...eventForm, links: e.target.value })} placeholder="https://..." /></div>
-              {!modalEvent.sectionOverride && (
-                <div className="form-group">
-                  <div className="form-label">День</div>
-                  <select className="form-select" value={eventForm.dayId} onChange={(e) => setEventForm({ ...eventForm, dayId: e.target.value })}>
-                    <option value="">Без привязки</option>
-                    {trip.days.map((d, i) => <option key={d.id} value={d.id}>День {i + 1}: {d.name}</option>)}
-                  </select>
-                </div>
-              )}
+              {/* Всегда показывать выбор дня для транспорта/отеля/документа */}
+{(modalEvent.sectionOverride === "transport" || 
+  modalEvent.sectionOverride === "hotel" || 
+  modalEvent.sectionOverride === "document" ||
+  !modalEvent.sectionOverride) && (
+  <div className="form-group">
+    <div className="form-label">День путешествия</div>
+    <select className="form-select" value={eventForm.dayId} onChange={(e) => setEventForm({ ...eventForm, dayId: e.target.value })}>
+      <option value="">Без привязки к дню</option>
+      {trip.days.map((d, i) => (
+        <option key={d.id} value={d.id}>День {i + 1}: {d.name} {d.date ? `(${d.date})` : ''}</option>
+      ))}
+    </select>
+  </div>
+)}
               <button className="btn-primary" onClick={saveEvent}>💾 Сохранить</button>
               <button className="btn-secondary" onClick={closeAllModals}>Отмена</button>
             </motion.div>
@@ -1656,7 +1915,13 @@ body.light-theme .form-select option {
             <motion.div className="modal" initial={{ y: 30 }} animate={{ y: 0 }} exit={{ y: 30 }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-title"><span>{modalDay.editId ? "Редактировать день" : "Новый день"}</span><button className="modal-close" onClick={closeAllModals}>✕</button></div>
               <div className="form-group"><div className="form-label">Название</div><input className="form-input" value={dayForm.name} onChange={(e) => setDayForm({ ...dayForm, name: e.target.value })} placeholder="Прилёт в Бангкок..." /></div>
-              <div className="form-group"><div className="form-label">Дата</div><input className="form-input" type="date" value={dayForm.date} onChange={(e) => setDayForm({ ...dayForm, date: e.target.value })} /></div>
+              <div className="form-group"><div className="form-label">Дата</div><DatePicker
+  selected={dayForm.date ? new Date(dayForm.date) : null}
+  onChange={(date) => setDayForm({ ...dayForm, date: date ? date.toISOString().split('T')[0] : '' })}
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Выбери дату"
+  className="form-input"
+/></div>
               <button className="btn-primary" onClick={saveDay}>💾 Сохранить</button>
               <button className="btn-secondary" onClick={closeAllModals}>Отмена</button>
             </motion.div>
@@ -1671,8 +1936,22 @@ body.light-theme .form-select option {
               <div className="form-group"><div className="form-label">Страна</div><input className="form-input" value={tripForm.country} onChange={(e) => setTripForm({ ...tripForm, country: e.target.value })} placeholder="Таиланд" /></div>
               <div className="form-group"><div className="form-label">Маршрут</div><input className="form-input" value={tripForm.route} onChange={(e) => setTripForm({ ...tripForm, route: e.target.value })} placeholder="Бангкок → Краби" /></div>
               <div className="form-row">
-                <div className="form-group"><div className="form-label">Начало</div><input className="form-input" type="date" value={tripForm.start} onChange={(e) => setTripForm({ ...tripForm, start: e.target.value })} /></div>
-                <div className="form-group"><div className="form-label">Конец</div><input className="form-input" type="date" value={tripForm.end} onChange={(e) => setTripForm({ ...tripForm, end: e.target.value })} /></div>
+                <div className="form-group"><div className="form-label">Начало</div><DatePicker
+  selected={tripForm.start ? new Date(tripForm.start) : null}
+  onChange={(date) => setTripForm({ ...tripForm, start: date ? date.toISOString().split('T')[0] : '' })}
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Выбери дату"
+  className="form-input"
+  calendarClassName="crazy-calendar"
+/></div>
+                <div className="form-group"><div className="form-label">Конец</div><DatePicker
+  selected={tripForm.end ? new Date(tripForm.end) : null}
+  onChange={(date) => setTripForm({ ...tripForm, end: date ? date.toISOString().split('T')[0] : '' })}
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Выбери дату"
+  className="form-input"
+  minDate={tripForm.start ? new Date(tripForm.start) : undefined}
+/></div>
               </div>
               <div className="form-group"><div className="form-label">Путешественников</div><input className="form-input" type="number" min={1} value={tripForm.people} onChange={(e) => setTripForm({ ...tripForm, people: parseInt(e.target.value) || 1 })} /></div>
               <div className="form-group"><div className="form-label">Иконка</div>
@@ -1690,22 +1969,9 @@ body.light-theme .form-select option {
                 </div>
               </div>
               <div className="form-group"><div className="form-label">Бюджет</div><input className="form-input" type="number" value={tripForm.budget} onChange={(e) => setTripForm({ ...tripForm, budget: e.target.value })} placeholder="250000" /></div>
-              <div className="form-row">
-                <div className="form-group"><div className="form-label">Тема</div>
-                  <select className="form-select" value={tripForm.theme} onChange={(e) => setTripForm({ ...tripForm, theme: e.target.value as "dark" | "light" })}>
-                    <option value="dark">🌙 Тёмная</option>
-                    <option value="light">☀️ Светлая</option>
-                  </select>
-                </div>
-                <div className="form-group"><div className="form-label">Цвет</div>
-                  <select className="form-select" value={tripForm.mainColor} onChange={(e) => setTripForm({ ...tripForm, mainColor: e.target.value as Trip["mainColor"] })}>
-                    <option value="green">🌿 Зелёный</option>
-                    <option value="blue">💧 Синий</option>
-                    <option value="orange">🍊 Оранжевый</option>
-                    <option value="purple">🍇 Фиолетовый</option>
-                  </select>
-                </div>
-              </div>
+              {/* Тема и цвет зафиксированы */}
+<input type="hidden" value="dark" />
+<input type="hidden" value="green" />
               <button className="btn-primary" onClick={saveTrip}>💾 Сохранить</button>
               <button className="btn-secondary" onClick={closeAllModals}>Отмена</button>
             </motion.div>
