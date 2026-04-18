@@ -150,46 +150,23 @@ const API_BASE = "https://crazy-nina.oxion-ezhkov.workers.dev";
 // Default Data
 // ============================================================================
 
-const createDefaultTrip = (): Trip => ({
+const createEmptyTrip = (): Trip => ({
   id: 0,
-  name: "Тропический рай",
+  name: "Новое путешествие",
   icon: "🌴",
-  country: "Таиланд",
-  route: "Бангкок → Чиангмай → острова Краби",
-  start: "2025-07-12",
-  end: "2025-07-24",
-  people: 2,
-  budget: 248000,
+  country: "",
+  route: "",
+  start: "",
+  end: "",
+  people: 1,
+  budget: 0,
   currency: "RUB",
   theme: "dark",
   mainColor: "green",
-  days: [
-    { id: 1, name: "Вылет из Москвы", date: "2025-07-12" },
-    { id: 2, name: "Бангкок — первый день", date: "2025-07-13" },
-    { id: 3, name: "Чиангмай — слоны", date: "2025-07-15" },
-    { id: 4, name: "Острова Краби", date: "2025-07-20" },
-  ],
-  events: [
-    { id: 1, dayId: 1, cat: "transport", icon: "🚖", name: "Такси до Шереметьево", desc: "Выезд 06:30 · ~50 мин", price: 2500, duration: "", links: [] },
-    { id: 2, dayId: 1, cat: "transport", icon: "✈️", name: "Рейс SU270 Москва → Бангкок", desc: "Вылет 10:05 · Thai Airways", price: 35800, duration: "10 ч", links: [] },
-    { id: 3, dayId: 2, cat: "hotel", icon: "🏨", name: "Avani Riverside Bangkok", desc: "Check-in 14:00 · 4 ночи", price: 14000, duration: "4 ночи", links: ["https://avanihotels.com"] },
-    { id: 4, dayId: 2, cat: "activity", icon: "🛕", name: "Ват Пхра Кэо + Большой Дворец", desc: "09:00–12:00 · Дресс-код!", price: 1400, duration: "3 ч", links: [] },
-    { id: 5, dayId: 2, cat: "food", icon: "🍜", name: "Рынок Ор Тор Кор", desc: "pad thai, манго, кокос", price: 500, duration: "", links: [] },
-    { id: 6, dayId: 3, cat: "transport", icon: "✈️", name: "Рейс BKK → CNX", desc: "07:30 · Билет не куплен!", price: 2800, duration: "1.5 ч", links: [] },
-    { id: 7, dayId: 3, cat: "activity", icon: "🐘", name: "Elephant Nature Park", desc: "Этичный парк, купание", price: 3200, duration: "8 ч", links: ["https://elephantnaturepark.org"] },
-    { id: 8, dayId: 4, cat: "note", icon: "💡", name: "Активности Краби", desc: "Спросить попугая", price: 0, duration: "", links: [] },
-  ],
-  ideas: [
-    { id: 1, icon: "🧘", title: "Медитация в горах", desc: "Найти ретрит в Чиангмае" },
-    { id: 2, icon: "🌊", title: "Каяк на островах", desc: "Ко Хонг или Четыре острова" },
-    { id: 3, icon: "🤿", title: "Дайвинг PADI", desc: "Пройти Open Water" },
-    { id: 4, icon: "🌃", title: "Night Market BKK", desc: "Asiatique или Chatuchak" },
-  ],
-  docs: [
-    { id: 1, icon: "📄", name: "Паспорт", desc: "Срок действия: 2029", links: [] },
-    { id: 2, icon: "💊", name: "Страховка", desc: "ERV · до 24 июля", links: ["https://erv.ru"] },
-    { id: 3, icon: "🎫", name: "Билет SU270", desc: "2 пассажира", links: [] },
-  ],
+  days: [],
+  events: [],
+  ideas: [],
+  docs: [],
 });
 
 // ============================================================================
@@ -236,7 +213,7 @@ export default function CrazyNinaPage() {
   // State
   const [appState, setAppState] = useLocalStorage<AppState>("crazy-nina-state", {
     currentTrip: 0,
-    trips: [createDefaultTrip()],
+  trips: [createEmptyTrip()],
     currentSection: "days",
     aiOpen: false,
     navOpen: false,
@@ -286,17 +263,47 @@ export default function CrazyNinaPage() {
 
     // Main color
     const colorMap = {
-      green: { leaf: "#8BC34A", mid: "#2d5a3d", bright: "#3d7a50", border: "rgba(139,195,74,0.2)" },
-      blue: { leaf: "#42A5F5", mid: "#1565C0", bright: "#1E88E5", border: "rgba(66,165,245,0.3)" },
-      orange: { leaf: "#FFA726", mid: "#E65100", bright: "#FB8C00", border: "rgba(255,167,38,0.3)" },
-      purple: { leaf: "#AB47BC", mid: "#6A1B9A", bright: "#8E24AA", border: "rgba(171,71,188,0.3)" },
-    };
+  green: { 
+    leaf: "#8BC34A", 
+    mid: "#2d5a3d", 
+    bright: "#3d7a50", 
+    border: "rgba(139,195,74,0.2)",
+    sun: "#FFD700",
+    sun2: "#FF8C00",
+  },
+  blue: { 
+    leaf: "#42A5F5", 
+    mid: "#1565C0", 
+    bright: "#1E88E5", 
+    border: "rgba(66,165,245,0.3)",
+    sun: "#FFD700",
+    sun2: "#FF8C00",
+  },
+  orange: { 
+    leaf: "#FFA726", 
+    mid: "#E65100", 
+    bright: "#FB8C00", 
+    border: "rgba(255,167,38,0.3)",
+    sun: "#FFD700",
+    sun2: "#FF8C00",
+  },
+  purple: { 
+    leaf: "#AB47BC", 
+    mid: "#6A1B9A", 
+    bright: "#8E24AA", 
+    border: "rgba(171,71,188,0.3)",
+    sun: "#FFD700",
+    sun2: "#FF8C00",
+  },
+};
 
-    const c = colorMap[t.mainColor];
-    root.style.setProperty("--leaf", c.leaf);
-    root.style.setProperty("--j-mid", c.mid);
-    root.style.setProperty("--j-bright", c.bright);
-    root.style.setProperty("--border", c.border);
+const c = colorMap[t.mainColor];
+root.style.setProperty("--leaf", c.leaf);
+root.style.setProperty("--j-mid", c.mid);
+root.style.setProperty("--j-bright", c.bright);
+root.style.setProperty("--border", c.border);
+root.style.setProperty("--sun", c.sun);
+root.style.setProperty("--sun2", c.sun2);
   }, [trip]);
 
   // ==========================================================================
@@ -304,12 +311,16 @@ export default function CrazyNinaPage() {
   // ==========================================================================
 
   const handleSetUsername = () => {
-    if (tempUsername.trim().length >= 2) {
-      setAppState({ ...appState, username: tempUsername.trim() });
-      setShowUsernamePrompt(false);
-      showToast(`Привет, ${tempUsername.trim()}! 🦜`);
-    }
-  };
+  const trimmed = tempUsername.trim();
+  // Разрешить буквы, цифры, дефис, подчёркивание
+  if (/^[a-zA-Z0-9_-]{3,30}$/.test(trimmed)) {
+    setAppState({ ...appState, username: trimmed });
+    setShowUsernamePrompt(false);
+    showToast(`Привет, @${trimmed}! 🦜`);
+  } else {
+    showToast("Только буквы, цифры, - и _, от 3 до 30 символов");
+  }
+};
 
   // ==========================================================================
   // Helpers
@@ -795,11 +806,41 @@ export default function CrazyNinaPage() {
           --radius: 18px; --radius-sm: 12px; --nav-w: 280px;
         }
         body.light-theme {
-          --j-deep: #f4f9f4; --j-dark: #e0eee0; --j-mid: #c8e0c8; --j-bright: #a8d0a8;
-          --leaf: #4CAF50; --sun: #FFB300; --sun2: #F57C00;
-          --text: #1a2e1a; --text2: rgba(26,46,26,0.7); --text3: rgba(26,46,26,0.4);
-          --card: rgba(0,0,0,0.03); --border: rgba(76,175,80,0.3);
-        }
+  --j-deep: #f8faf8;
+  --j-dark: #e8f0e8;
+  --j-mid: #d0e0d0;
+  --j-bright: #b0d0b0;
+  --leaf: #4CAF50;
+  --sun: #F5A623;
+  --sun2: #E8912D;
+  --text: #1a2e1a;
+  --text2: rgba(26, 46, 26, 0.7);
+  --text3: rgba(26, 46, 26, 0.4);
+  --card: rgba(0, 0, 0, 0.03);
+  --border: rgba(76, 175, 80, 0.25);
+}
+body.light-theme .btn-primary {
+  color: #1a2e0a;
+}
+body.light-theme .event-btn {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text2);
+}
+body.light-theme .event-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text);
+}
+body.light-theme .modal {
+  background: #f0f8f0;
+  border-color: var(--border);
+}
+body.light-theme .form-input,
+body.light-theme .form-select,
+body.light-theme .form-textarea {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--text);
+}
         body {
           font-family: 'Nunito', sans-serif;
           background: var(--j-deep);
@@ -819,17 +860,21 @@ export default function CrazyNinaPage() {
           justify-content: center;
         }
         #main {
-          flex: 1;
-          max-width: 1200px;
-          margin: 0 auto;
-          overflow-y: auto;
-          overflow-x: hidden;
-          padding: 0 20px 80px;
-          width: 100%;
-        }
-        @media (min-width: 1024px) {
-          #main { padding-left: 40px; padding-right: 40px; }
-        }
+  flex: 1;
+  max-width: 1000px;
+  margin: 0 0 0 auto;  /* прижимает вправо */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 20px 80px;
+  width: 100%;
+}
+        @media (max-width: 768px) {
+  #main {
+    margin: 0 auto;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
         #main::-webkit-scrollbar { width: 4px; }
         #main::-webkit-scrollbar-thumb { background: rgba(139,195,74,.3); border-radius: 2px; }
 
@@ -1015,6 +1060,16 @@ export default function CrazyNinaPage() {
           border-radius: 24px 24px 0 0; width: 100%; max-width: 600px; max-height: 90vh;
           overflow-y: auto; padding: 28px 24px 36px;
         }
+        .modal::-webkit-scrollbar {
+  width: 4px;
+}
+.modal::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+.modal::-webkit-scrollbar-track {
+  background: transparent;
+}
         body.light-theme .modal { background: #e8f0e8; }
         .modal-title { font-family: 'Baloo 2', cursive; font-size: 1.3rem; font-weight: 800; color: var(--sun); margin-bottom: 20px; display: flex; justify-content: space-between; }
 
@@ -1024,6 +1079,14 @@ export default function CrazyNinaPage() {
           width: 100%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
           border-radius: 12px; padding: 10px 14px; font-size: .9rem; color: var(--text); outline: none;
         }
+        .form-select option {
+  background: var(--j-dark);
+  color: var(--text);
+}
+body.light-theme .form-select option {
+  background: var(--j-deep);
+  color: var(--text);
+}
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .btn-primary {
@@ -1034,7 +1097,42 @@ export default function CrazyNinaPage() {
           width: 100%; padding: 12px; background: transparent; border: 1.5px solid rgba(255,255,255,.15);
           border-radius: 14px; font-size: .88rem; font-weight: 700; color: var(--text2); cursor: pointer; margin-top: 8px;
         }
-
+        #bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  background: linear-gradient(160deg, var(--j-deep) 0%, var(--j-dark) 40%, var(--j-mid) 100%);
+  pointer-events: none;
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  40% { transform: rotate(2.5deg); }
+  70% { transform: rotate(-1.5deg); }
+}
+.leaf-bg {
+  animation: sway 7s ease-in-out infinite;
+}
+.ff {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #FFD700;
+  box-shadow: 0 0 8px 4px rgba(255, 215, 0, 0.5);
+  animation: ffloat 9s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes ffloat {
+  0%, 100% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  50% { opacity: 0.7; transform: translate(25px, -35px); }
+  80% { opacity: 0.2; }
+}
         /* AI Panel */
         #ai-panel {
           position: fixed; bottom: 90px; right: 18px; width: 340px;
@@ -1064,6 +1162,10 @@ export default function CrazyNinaPage() {
           border: none; display: flex; align-items: center; justify-content: center;
           font-size: 1.6rem; cursor: pointer;
         }
+        #parrot-btn:hover {
+  animation: none;
+  transform: scale(1.12);
+}
 
         #toast {
           position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
@@ -1080,8 +1182,27 @@ export default function CrazyNinaPage() {
       `}</style>
 
       {/* Background */}
-      <div id="bg" style={{ position: "fixed", inset: 0, zIndex: 0, background: "linear-gradient(160deg,var(--j-deep) 0%,var(--j-dark) 40%,var(--j-mid) 100%)", pointerEvents: "none" }} />
-
+      <div id="bg">
+  <svg className="leaf-bg" style={{ left: "-3%", top: "3%", width: 240, position: "absolute", opacity: 0.13 }} viewBox="0 0 240 300">
+    <path d="M20 290 Q80 170 220 10 Q235 65 195 145 Q155 225 20 290Z" fill="#4CAF50" />
+  </svg>
+  <svg className="leaf-bg" style={{ right: "-2%", top: "0%", width: 220, transform: "scaleX(-1)", position: "absolute", opacity: 0.13 }} viewBox="0 0 240 300">
+    <path d="M20 290 Q80 170 220 10 Q235 65 195 145 Q155 225 20 290Z" fill="#66BB6A" />
+  </svg>
+  <svg className="leaf-bg" style={{ left: "-4%", bottom: "8%", width: 200, position: "absolute", opacity: 0.13 }} viewBox="0 0 200 260">
+    <path d="M10 10 Q90 80 190 250 Q145 255 100 205 Q55 155 10 10Z" fill="#388E3C" />
+  </svg>
+  <svg className="leaf-bg" style={{ right: "-3%", bottom: "4%", width: 210, transform: "scaleX(-1)", position: "absolute", opacity: 0.13 }} viewBox="0 0 200 260">
+    <path d="M10 10 Q90 80 190 250 Q145 255 100 205 Q55 155 10 10Z" fill="#43A047" />
+  </svg>
+  {/* Огоньки */}
+  <div className="ff" style={{ left: "12%", top: "35%" }} />
+  <div className="ff" style={{ left: "78%", top: "55%", animationDelay: "-3s", animationDuration: "11s" }} />
+  <div className="ff" style={{ left: "45%", top: "18%", animationDelay: "-6s", animationDuration: "8s" }} />
+  <div className="ff" style={{ left: "25%", bottom: "25%", animationDelay: "-1.5s", animationDuration: "10s" }} />
+  <div className="ff" style={{ left: "65%", top: "70%", animationDelay: "-4.5s", animationDuration: "7s" }} />
+</div>
+      
       {/* Username Prompt */}
       <AnimatePresence>
         {showUsernamePrompt && (
@@ -1096,13 +1217,13 @@ export default function CrazyNinaPage() {
               <div className="form-group">
                 <div className="form-label">Как тебя зовут?</div>
                 <input
-                  className="form-input"
-                  value={tempUsername}
-                  onChange={(e) => setTempUsername(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSetUsername()}
-                  placeholder="Твоё имя"
-                  autoFocus
-                />
+  className="form-input"
+  value={tempUsername}
+  onChange={(e) => setTempUsername(e.target.value)}
+  onKeyDown={(e) => e.key === "Enter" && handleSetUsername()}
+  placeholder="oleg-ezhkov"
+  autoFocus
+/>
               </div>
               <button className="btn-primary" onClick={handleSetUsername}>Продолжить 🦜</button>
             </motion.div>
