@@ -396,7 +396,7 @@ useEffect(() => {
           ...prev,
           trips: workerTrips,
           currentTrip: 0,
-        }));
+        });
         showToast(`Синхронизировано с облаком 🦜`);
       } else if (appState.trips.length === 1 && appState.trips[0].name === "") {
         // Пустой трип - отправляем в Worker
@@ -456,7 +456,7 @@ useEffect(() => {
       setAppState({
         ...prev,
         trips: workerTrips,
-      }));
+      });
       showToast(`С возвращением, @${trimmed}! 🦜`);
     } else {
       // Сохраняем пустой трип в Worker
