@@ -513,8 +513,8 @@ useEffect(() => {
       people: tripForm.people,
       budget: parseFloat(tripForm.budget) || 0,
       currency: tripForm.currency,
-  theme: "dark",      // фиксированно
-  mainColor: "green", // фиксированно
+      theme: "dark",
+      mainColor: "green",
       days: modalTrip.isNew ? [] : trip.days,
       events: modalTrip.isNew ? [] : trip.events,
       ideas: modalTrip.isNew ? [] : trip.ideas,
@@ -1691,7 +1691,7 @@ a:hover, .event-link:hover, .doc-link:hover {
         <div style={{ marginTop: 24, padding: "0 12px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
             <span style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--text3)" }}>Мои путешествия</span>
-            <button className="event-btn" onClick={() => { setModalTrip({ open: true, isNew: true }); setTripForm({ name: "", icon: "🌴", country: "", route: "", start: "", end: "", people: 2, budget: "", currency: "RUB", theme: "dark", mainColor: "green" }); }}>+</button>
+            <button className="event-btn" onClick={() => { setModalTrip({ open: true, isNew: true }); setTripForm({ name: "", icon: "🌴", country: "", route: "", start: "", end: "", people: 2, budget: "", currency: "RUB" }); }}>+</button>
           </div>
           {appState.trips.map((t, i) => (
             <div key={t.id} className={`nav-trip-item ${i === appState.currentTrip ? "active-trip" : ""}`} onClick={() => setAppState({ ...appState, currentTrip: i })} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, cursor: "pointer", color: "var(--text2)" }}>
@@ -1747,8 +1747,8 @@ a:hover, .event-link:hover, .doc-link:hover {
 
           {/* Trip Hero */}
           {appState.currentSection === "days" && (
-            <div id="trip-hero" onClick={() => { setModalTrip({ open: true, isNew: false }); setTripForm({ name: trip.name, icon: trip.icon, country: trip.country, route: trip.route, start: trip.start, end: trip.end, people: trip.people, budget: String(trip.budget), currency: trip.currency, theme: trip.theme, mainColor: trip.mainColor }); }}>
-              <div className="hero-edit" onClick={(e) => { e.stopPropagation(); setModalTrip({ open: true, isNew: false }); setTripForm({ name: trip.name, icon: trip.icon, country: trip.country, route: trip.route, start: trip.start, end: trip.end, people: trip.people, budget: String(trip.budget), currency: trip.currency, theme: trip.theme, mainColor: trip.mainColor }); }}>✏️ Изменить</div>
+            <div id="trip-hero" onClick={() => { setModalTrip({ open: true, isNew: false }); setTripForm({ name: trip.name, icon: trip.icon, country: trip.country, route: trip.route, start: trip.start, end: trip.end, people: trip.people, budget: String(trip.budget), currency: trip.currency }); }}>
+              <div className="hero-edit" onClick={(e) => { e.stopPropagation(); setModalTrip({ open: true, isNew: false }); setTripForm({ name: trip.name, icon: trip.icon, country: trip.country, route: trip.route, start: trip.start, end: trip.end, people: trip.people, budget: String(trip.budget), currency: trip.currency }); }}>✏️ Изменить</div>
               <div className="hero-meta">
                 <div className="hero-badge">🗓️ {ds}</div>
                 <div className="hero-badge">👥 {trip.people} чел.</div>
