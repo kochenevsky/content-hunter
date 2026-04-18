@@ -322,7 +322,7 @@ useEffect(() => {
     const hasRealData = appState.trips.some(t => t.name !== "" || t.days.length > 0);
     if (hasRealData) {
       setAppState({
-        ...prev,
+        ...appState,
         trips: [createEmptyTrip()],
         currentTrip: 0,
       });
@@ -393,7 +393,7 @@ useEffect(() => {
       if (workerTrips) {
         // Данные есть в Worker - используем их
         setAppState({
-          ...prev,
+          ...appState,
           trips: workerTrips,
           currentTrip: 0,
         });
@@ -454,7 +454,7 @@ useEffect(() => {
     if (workerTrips) {
       // Обновляем UI данными из облака
       setAppState({
-        ...prev,
+        ...appState,
         trips: workerTrips,
       });
       showToast(`С возвращением, @${trimmed}! 🦜`);
