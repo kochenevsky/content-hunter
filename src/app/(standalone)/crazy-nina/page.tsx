@@ -317,14 +317,11 @@ export default function CrazyNinaPage() {
   // Theme & Color Application
   // ==========================================================================
 
-// В начале компонента, после объявления стейтов
 useEffect(() => {
-  // Если нет username, но есть данные в trips (кроме пустого)
   if (!appState.username && appState.trips.length > 0) {
     const hasRealData = appState.trips.some(t => t.name !== "" || t.days.length > 0);
     if (hasRealData) {
-      // Очищаем, чтобы не показывать чужие данные
-      setAppState(prev => ({
+      setAppState((prev: AppState) => ({
         ...prev,
         trips: [createEmptyTrip()],
         currentTrip: 0,
@@ -395,7 +392,7 @@ useEffect(() => {
       
       if (workerTrips) {
         // Данные есть в Worker - используем их
-        setAppState(prev => ({
+        setAppState((prev: AppState) => ({
           ...prev,
           trips: workerTrips,
           currentTrip: 0,
@@ -456,7 +453,7 @@ useEffect(() => {
     
     if (workerTrips) {
       // Обновляем UI данными из облака
-      setAppState(prev => ({
+      setAppState((prev: AppState) => ({
         ...prev,
         trips: workerTrips,
       }));
