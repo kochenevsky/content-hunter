@@ -254,6 +254,13 @@ export default function CrazyNinaPage() {
   // ==========================================================================
 
   useEffect(() => {
+    if (appState.trips.length === 0) {
+    setAppState({
+      ...appState,
+      trips: [createEmptyTrip()],
+      currentTrip: 0,
+    });
+  }
     const root = document.documentElement;
     const t = trip;
 
@@ -852,25 +859,31 @@ body.light-theme .form-textarea {
           margin: 0;
         }
         #app {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          height: 100vh;
-          overflow: hidden;
-          justify-content: center;
-        }
-        #main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#main {
   flex: 1;
   max-width: 1000px;
-  margin: 0 0 0 auto;  /* прижимает вправо */
+  margin: 0 auto;  /* ← центрирование, а не прижатие вправо */
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0 20px 80px;
   width: 100%;
 }
-        @media (max-width: 768px) {
+
+@media (min-width: 1400px) {
   #main {
-    margin: 0 auto;
+    max-width: 1200px;
+  }
+}
+
+@media (max-width: 768px) {
+  #main {
     padding-left: 12px;
     padding-right: 12px;
   }
