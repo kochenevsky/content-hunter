@@ -325,7 +325,7 @@ useEffect(() => {
         ...prev,
         trips: [createEmptyTrip()],
         currentTrip: 0,
-      }));
+      });
     }
   }
 }, []);
