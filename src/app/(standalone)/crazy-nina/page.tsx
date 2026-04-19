@@ -643,6 +643,13 @@ const deleteEvent = (id: number) => {
     }
   );
 };
+    // При изменении aiInput автоматически скрывать шаблоны
+const handleAiInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setAiInput(e.target.value);
+  if (showTemplates) {
+    setShowTemplates(false);
+  }
+};
   // ==========================================================================
   // Event CRUD
   // ==========================================================================
@@ -1061,26 +1068,94 @@ const deleteEvent = (id: number) => {
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-          --j-deep: #0d2118; --j-dark: #1a3a2a; --j-mid: #2d5a3d; --j-bright: #3d7a50;
-          --leaf: #8BC34A; --sun: #FFD700; --sun2: #FF8C00;
-          --blue: #1E88E5; --pink: #F06292;
-          --text: #f0f7f0; --text2: rgba(240,247,240,0.6); --text3: rgba(240,247,240,0.35);
-          --card: rgba(255,255,255,0.06); --border: rgba(139,195,74,0.2);
-          --radius: 18px; --radius-sm: 12px; --nav-w: 280px;
-        }
-        body.light-theme {
-  --j-deep: #f8faf8;
-  --j-dark: #e8f0e8;
-  --j-mid: #d0e0d0;
-  --j-bright: #b0d0b0;
+  --j-deep: #0d2118;
+  --j-dark: #1a3a2a;
+  --j-mid: #2d5a3d;
+  --j-bright: #3d7a50;
+  --leaf: #8BC34A;
+  --sun: #FFD700;
+  --sun2: #FF8C00;
+  --blue: #1E88E5;
+  --pink: #F06292;
+  --text: #f0f7f0;
+  --text2: rgba(240, 247, 240, 0.7);
+  --text3: rgba(240, 247, 240, 0.4);
+  --card: rgba(255, 255, 255, 0.06);
+  --border: rgba(139, 195, 74, 0.2);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --nav-w: 280px;
+}
+
+body.light-theme {
+  --j-deep: #f4f9f4;
+  --j-dark: #e0eee0;
+  --j-mid: #c8e0c8;
+  --j-bright: #a8d0a8;
   --leaf: #4CAF50;
-  --sun: #F5A623;
-  --sun2: #E8912D;
+  --sun: #FFB300;
+  --sun2: #F57C00;
   --text: #1a2e1a;
   --text2: rgba(26, 46, 26, 0.7);
   --text3: rgba(26, 46, 26, 0.4);
   --card: rgba(0, 0, 0, 0.03);
   --border: rgba(76, 175, 80, 0.25);
+}
+/* Все текстовые элементы */
+.event-title, .event-detail, .day-name, .day-date, .nav-trip-name, .nav-trip-sub,
+.nav-logo-sub, .ai-msg, #ai-title, .hero-name, .hero-sub, .modal-title,
+.form-label, .idea-title, .idea-text, .doc-name, .doc-detail, .simple-title,
+.simple-sub, .budget-lbl, .budget-amt, .budget-total-lbl, .budget-total-val,
+.topbar-trip-name, .topbar-trip-sub, #nav-trip-name, #nav-trip-dates {
+  color: var(--text) !important;
+}
+
+#ai-send {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--leaf), var(--j-bright));
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: white;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+#ai-send:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3);
+}
+
+#ai-input {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+#ai-input:focus {
+  border-color: var(--leaf);
+}
+#ai-input::placeholder {
+  color: var(--text3);
+}
+/* Второстепенный текст */
+.event-detail, .day-date, .nav-trip-sub, .nav-logo-sub, .topbar-trip-sub,
+#nav-trip-dates, .simple-sub, .doc-detail, .idea-text {
+  color: var(--text2) !important;
+}
+
+/* Третичный текст */
+.nav-badge, .stat-lbl, .form-hint {
+  color: var(--text3) !important;
 }
 body.light-theme .btn-primary {
   color: #1a2e0a;
@@ -1153,13 +1228,26 @@ body.light-theme .form-textarea {
           font-family: 'Nunito', sans-serif;
             -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, 'Nunito', 'Segoe UI', Roboto, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 /* Но запрещаем на кнопках и интерактивных элементах */
 button, .nav-item, .day-header, .hero-edit, .idea-card, .ai-chip, .cat-pill, .icon-opt, .curr-btn {
   user-select: none;
   cursor: pointer;
 }
-
+h1, h2, h3, .hero-name, .nav-logo-title, .modal-title, .sec-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Baloo 2', cursive, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.nav-logo-sub {
+  color: var(--leaf) !important;
+  font-weight: 600;
+  opacity: 0.9;
+}
 /* Разрешаем выделение в текстовых полях и контенте */
 input, textarea, .event-content, .day-info, .idea-text, .ai-msg, .modal, .doc-info, .hero-name, .hero-sub {
   user-select: text;
@@ -1388,6 +1476,29 @@ body.light-theme .react-datepicker__header {
         }
 
         /* Day Cards */
+        .day-header .event-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.day-header .event-btn:hover {
+  background: var(--j-mid);
+  border-color: var(--leaf);
+  color: var(--text);
+}
+.day-header .event-btn.del:hover {
+  background: rgba(229, 57, 53, 0.15);
+  border-color: rgba(229, 57, 53, 0.3);
+  color: #EF9A9A;
+}
         .day-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
         .day-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; }
         .day-num { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 800; }
@@ -1415,51 +1526,56 @@ body.light-theme .react-datepicker__header {
   margin-bottom: 9px;
   position: relative;
   overflow: hidden;
-  transition: padding-right 0.2s;
+  transition: all 0.2s;
 }
 .event:hover {
-  padding-right: 70px;
+  padding-right: 80px;
+  background: rgba(255, 255, 255, 0.08);
 }
+
 .event-actions {
   position: absolute;
   top: 0;
-  right: -70px;
+  right: -80px;
   bottom: 0;
-  width: 70px;
+  width: 80px;
   display: flex;
-  flex-direction: column;
   opacity: 0;
-  transition: right 0.2s, opacity 0.2s;
+  transition: right 0.25s cubic-bezier(0.2, 0.9, 0.4, 1), opacity 0.2s;
 }
 .event:hover .event-actions {
   right: 0;
   opacity: 1;
 }
+
 .event-btn {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: var(--text2);
-  transition: background 0.15s;
+  transition: all 0.15s;
+  backdrop-filter: blur(4px);
 }
 .event-btn:first-child {
-  background: rgba(30, 136, 229, 0.15);
-  color: var(--blue);
+  background: rgba(30, 136, 229, 0.12);
+  color: #64B5F6;
 }
 .event-btn:first-child:hover {
-  background: rgba(30, 136, 229, 0.3);
+  background: rgba(30, 136, 229, 0.25);
+  color: #90CAF9;
 }
 .event-btn.del {
-  background: rgba(229, 57, 53, 0.15);
+  background: rgba(229, 57, 53, 0.12);
   color: #EF9A9A;
 }
 .event-btn.del:hover {
-  background: rgba(229, 57, 53, 0.3);
+  background: rgba(229, 57, 53, 0.25);
+  color: #FFCDD2;
 }
         .event.transport { border-color: var(--blue); }
         .event.hotel { border-color: var(--leaf); }
@@ -1608,9 +1724,31 @@ body.light-theme .react-datepicker__header {
           z-index: 299; display: flex; flex-direction: column; max-height: 70vh;
         }
         #ai-msgs { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 280px; }
-        .ai-msg { padding: 9px 13px; border-radius: 14px; font-size: .82rem; max-width: 90%; }
-        .ai-msg.bot { background: rgba(255,255,255,.07); align-self: flex-start; }
-        .ai-msg.user { background: linear-gradient(135deg,#a31c4a,var(--pink)); color: #fff; align-self: flex-end; }
+        .ai-msg {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-width: 90%;
+  word-break: break-word;
+}
+.ai-msg.bot {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text) !important;
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+.ai-msg.user {
+  background: linear-gradient(135deg, var(--j-mid), var(--j-bright));
+  color: white !important;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+#ai-title {
+  color: var(--text) !important;
+}
         .ai-confirm {
   background: var(--card);
   border: 1px solid var(--border);
@@ -1643,10 +1781,6 @@ body.light-theme .react-datepicker__header {
           font-size: .72rem; font-weight: 600; cursor: pointer;
         }
         #ai-input-wrap { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.07); display: flex; gap: 8px; }
-        #ai-input {
-          flex: 1; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-          border-radius: 12px; padding: 8px 12px; font-size: .85rem; color: var(--text); outline: none;
-        }
 
         #parrot-btn {
           position: fixed; bottom: 24px; right: 18px; z-index: 300;
@@ -1686,8 +1820,8 @@ body.light-theme .react-datepicker__header {
     width: 100%;
     margin-top: 8px;
   }
-    .event {
-    padding-right: 70px !important;
+  .event {
+    padding-right: 80px !important;
   }
   .event-actions {
     right: 0 !important;
@@ -1837,10 +1971,29 @@ a:hover, .event-link:hover, .doc-link:hover {
           </div>
         ))}
         <div style={{ marginTop: 24, padding: "0 12px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--text3)" }}>Мои путешествия</span>
-            <button className="event-btn" onClick={() => { setModalTrip({ open: true, isNew: true }); setTripForm({ name: "", icon: "🌴", country: "", route: "", start: "", end: "", people: 2, budget: "", currency: "RUB" }); }}>+</button>
-          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+  <span style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: ".5px" }}>
+    Мои путешествия
+  </span>
+  <button 
+    className="event-btn" 
+    style={{ 
+      width: 28, 
+      height: 28, 
+      borderRadius: "50%", 
+      background: "var(--card)", 
+      border: "1px solid var(--border)",
+      fontSize: "1rem",
+      fontWeight: 600,
+    }}
+    onClick={() => { 
+      setModalTrip({ open: true, isNew: true }); 
+      setTripForm({ name: "", icon: "🌴", country: "", route: "", start: "", end: "", people: 2, budget: "", currency: "RUB" }); 
+    }}
+  >
+    +
+  </button>
+</div>
           {appState.trips.map((t, i) => (
             <div key={t.id} className={`nav-trip-item ${i === appState.currentTrip ? "active-trip" : ""}`} onClick={() => setAppState({ ...appState, currentTrip: i })} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, cursor: "pointer", color: "var(--text2)" }}>
               <span style={{ fontSize: "1.3rem" }}>{t.icon}</span>
@@ -2016,13 +2169,13 @@ a:hover, .event-link:hover, .doc-link:hover {
             </div>
             <div id="ai-input-wrap">
   <input
-    id="ai-input"
-    value={aiInput}
-    onChange={(e) => setAiInput(e.target.value)}
-    onKeyDown={(e) => e.key === "Enter" && sendAIMessage(aiInput)}
-    placeholder={aiInput ? "Напиши сообщение..." : "Выбери шаблон или напиши..."}
-    disabled={isLoadingAI}
-  />
+  id="ai-input"
+  value={aiInput}
+  onChange={handleAiInputChange}
+  onKeyDown={(e) => e.key === "Enter" && sendAIMessage(aiInput)}
+  placeholder="Спроси попугая..."
+  disabled={isLoadingAI}
+/>
   {aiInput ? (
     <button id="ai-send" onClick={() => sendAIMessage(aiInput)} disabled={isLoadingAI}>
       ➤
