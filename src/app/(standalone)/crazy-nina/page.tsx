@@ -678,42 +678,6 @@ const deleteEvent = (id: number) => {
     showToast("Событие сохранено");
   };
 
-  const deleteDay = (id: number) => {
-  showConfirm(
-    "Удалить день?",
-    "Все события этого дня тоже будут удалены.",
-    () => {
-      const newDays = trip.days.filter((d) => d.id !== id);
-      const newEvents = trip.events.filter((e) => e.dayId !== id);
-      setAppState({
-        ...appState,
-        trips: appState.trips.map((t) =>
-          t.id === trip.id ? { ...t, days: newDays, events: newEvents } : t
-        ),
-      });
-      showToast("День удалён");
-    }
-  );
-};
-
-const deleteEvent = (id: number) => {
-  const ev = trip.events.find(e => e.id === id);
-  showConfirm(
-    "Удалить событие?",
-    `"${ev?.name || 'Событие'}" будет удалено.`,
-    () => {
-      const newEvents = trip.events.filter((e) => e.id !== id);
-      setAppState({
-        ...appState,
-        trips: appState.trips.map((t) =>
-          t.id === trip.id ? { ...t, events: newEvents } : t
-        ),
-      });
-      showToast("Событие удалено");
-    }
-  );
-};
-
   // ==========================================================================
   // Idea CRUD
   // ==========================================================================
@@ -771,75 +735,38 @@ const deleteEvent = (id: number) => {
   // ==========================================================================
 
   const sendAIMessage = async (message: string) => {
-  if (!message.trim()) return;
+  if (!message.trim() || !appState.username) return;
 
   setAiMessages((prev) => [...prev, { role: "user", content: message }]);
   setAiInput("");
   setIsLoadingAI(true);
 
-  const thinkingId = Date.now();
   setAiMessages((prev) => [...prev, { role: "bot", content: "..." }]);
 
   try {
-    const context = {
-      name: trip.name,
-      country: trip.country,
-      route: trip.route,
-      start: trip.start,
-      end: trip.end,
-      people: trip.people,
-      currency: trip.currency,
-      budget: trip.budget,
-      days: trip.days.map((d) => ({ id: d.id, name: d.name, date: d.date })),
-      events: trip.events.map((e) => ({ id: e.id, dayId: e.dayId, name: e.name, cat: e.cat, price: e.price })),
-      ideas: trip.ideas.map((i) => i.title),
-      username: appState.username,
-    };
-
     const res = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, context }),
+      body: JSON.stringify({
+        message,
+        username: appState.username,
+        tripId: trip.id,
+      }),
     });
 
     const data = await res.json();
     const reply = data.reply || "Попугай задумался...";
-    const action = data.action; // 👈 Получаем действие от ИИ
+    const hasSuggestion = data.hasSuggestion || false;
 
     setAiMessages((prev) =>
       prev.map((m, i) => (i === prev.length - 1 ? { role: "bot", content: reply } : m))
     );
 
-    // 👇 Если есть действие — показываем подтверждение
-    if (action) {
+    // Если есть предложение — показываем кнопку "Применить идею"
+    if (hasSuggestion) {
       setPendingConfirmation(() => async () => {
-  const updatedTrip = await applyActionOnWorker(
-    appState.username!,
-    trip.id,
-    action
-  );
-  
-  console.log("Updated trip from worker:", updatedTrip); // ← ДОБАВИТЬ ЛОГ
-  
-  if (updatedTrip) {
-  // Обновляем локальный стейт
-  const newTrips = appState.trips.map(t => 
-    t.id === trip.id ? updatedTrip : t
-  );
-  setAppState({
-    ...appState,
-    trips: newTrips,
-  });
-  showToast("✅ Изменения применены!");
-  
-  setAiMessages((prev) => [
-    ...prev,
-    { role: "bot", content: "Готово! Я добавил это в твой план 🦜" },
-  ]);
-}
-  
-  setPendingConfirmation(null);
-});
+        await applySuggestion();
+      });
     }
   } catch (error) {
     setAiMessages((prev) =>
@@ -847,6 +774,52 @@ const deleteEvent = (id: number) => {
     );
   } finally {
     setIsLoadingAI(false);
+  }
+};
+    const applySuggestion = async () => {
+  if (!appState.username) return;
+
+  setIsLoadingAI(true);
+  setAiMessages((prev) => [...prev, { role: "bot", content: "Применяю..." }]);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/apply-suggestion`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: appState.username,
+        tripId: trip.id,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success && data.trip) {
+      // Обновляем стейт
+      const newTrips = appState.trips.map(t =>
+        t.id === trip.id ? data.trip : t
+      );
+      setAppState({ ...appState, trips: newTrips });
+      
+      setAiMessages((prev) => [
+        ...prev.slice(0, -1),
+        { role: "bot", content: "Готово! Я добавил это в твой план 🦜" },
+      ]);
+      showToast("✅ Добавлено в план!");
+    } else {
+      setAiMessages((prev) => [
+        ...prev.slice(0, -1),
+        { role: "bot", content: "Не получилось применить 😢 Попробуй вручную." },
+      ]);
+    }
+  } catch (error) {
+    setAiMessages((prev) => [
+      ...prev.slice(0, -1),
+      { role: "bot", content: "Ошибка соединения 🦜💥" },
+    ]);
+  } finally {
+    setIsLoadingAI(false);
+    setPendingConfirmation(null);
   }
 };
 
@@ -1118,6 +1091,7 @@ body.light-theme .event-btn {
 }
 /* Крестики закрытия модалок */
 .modal-close {
+user-select: none;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -1175,9 +1149,30 @@ body.light-theme .form-textarea {
   color: var(--text);
 }
         body {
+        user-select: text;
           font-family: 'Nunito', sans-serif;
             -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+/* Но запрещаем на кнопках и интерактивных элементах */
+button, .nav-item, .day-header, .hero-edit, .idea-card, .ai-chip, .cat-pill, .icon-opt, .curr-btn {
+  user-select: none;
+  cursor: pointer;
+}
+
+/* Разрешаем выделение в текстовых полях и контенте */
+input, textarea, .event-content, .day-info, .idea-text, .ai-msg, .modal, .doc-info, .hero-name, .hero-sub {
+  user-select: text;
+}
+
+/* Для попапов тоже разрешаем */
+.modal, .modal *:not(button):not(.modal-close) {
+  user-select: text;
+}
+
+/* Для главного контента */
+#main, .section, .event-title, .event-detail, .day-name, .day-date {
+  user-select: text;
 }
 input, button, textarea, select {
   font-family: inherit;
@@ -1190,7 +1185,7 @@ input, button, textarea, select {
           color: var(--text);
           min-height: 100vh;
           overflow-x: hidden;
-          user-select: none;
+          user-select: text;
           transition: background 0.3s, color 0.3s;
           margin: 0;
         }
@@ -1532,6 +1527,7 @@ body.light-theme .react-datepicker__header {
 
         /* Modals */
         .modal-overlay {
+        user-select: text;
           position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(6px);
           z-index: 500; display: flex; align-items: flex-end; justify-content: center;
         }
@@ -1994,18 +1990,13 @@ a:hover, .event-link:hover, .doc-link:hover {
               ))}
               {pendingConfirmation && (
   <div className="ai-confirm">
-    <div>Применить изменения?</div>
+    <div>Применить предложение?</div>
     <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-      <button 
-        className="ai-confirm-yes" 
-        onClick={() => {
-          pendingConfirmation(); // 👈 Выполняет действие
-        }}
-      >
+      <button className="ai-confirm-yes" onClick={pendingConfirmation}>
         ✅ Да
       </button>
-      <button 
-        className="ai-confirm-no" 
+      <button
+        className="ai-confirm-no"
         onClick={() => {
           setPendingConfirmation(null);
           setAiMessages((prev) => [...prev, { role: "bot", content: "Хорошо, ничего не меняю 👍" }]);
