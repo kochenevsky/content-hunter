@@ -294,7 +294,7 @@ export default function CrazyNinaPage() {
   const [aiInput, setAiInput] = useState("");
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [pendingConfirmation, setPendingConfirmation] = useState<(() => void) | null>(null);
-
+  const [showTemplates, setShowTemplates] = useState(false);
   // Modals state
   const [modalEvent, setModalEvent] = useState<{ open: boolean; editId: number | null; sectionOverride: string | null }>({ open: false, editId: null, sectionOverride: null });
   const [modalDay, setModalDay] = useState<{ open: boolean; editId: number | null }>({ open: false, editId: null });
@@ -321,10 +321,33 @@ export default function CrazyNinaPage() {
   
   // 👇 ДОБАВИТЬ СЮДА - ref для отслеживания изменений trips
   const prevTripsRef = useRef(appState.trips);
+
+    const [confirmDelete, setConfirmDelete] = useState<{
+  open: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+}>({ open: false, title: "", message: "", onConfirm: () => {} });
+
+const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+  setConfirmDelete({ open: true, title, message, onConfirm });
+};
   // ==========================================================================
   // Theme & Color Application
   // ==========================================================================
 
+useEffect(() => {
+  const handleClickOutside = (e: MouseEvent) => {
+    if (appState.aiOpen && aiPanelRef.current && !aiPanelRef.current.contains(e.target as Node) && 
+        (e.target as Element).id !== 'parrot-btn' && !(e.target as Element).closest('#parrot-btn')) {
+      setAppState({ ...appState, aiOpen: false });
+    }
+  };
+  
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, [appState.aiOpen]);
+    
 useEffect(() => {
   if (!appState.username && appState.trips.length > 0) {
     const hasRealData = appState.trips.some(t => t.name !== "" || t.days.length > 0);
@@ -586,17 +609,40 @@ if (appState.username) {
   };
 
   const deleteDay = (id: number) => {
-    const newDays = trip.days.filter((d) => d.id !== id);
-    const newEvents = trip.events.filter((e) => e.dayId !== id);
-    setAppState({
-      ...appState,
-      trips: appState.trips.map((t) =>
-        t.id === trip.id ? { ...t, days: newDays, events: newEvents } : t
-      ),
-    });
-    showToast("День удалён");
-  };
+  showConfirm(
+    "Удалить день?",
+    "Все события этого дня тоже будут удалены.",
+    () => {
+      const newDays = trip.days.filter((d) => d.id !== id);
+      const newEvents = trip.events.filter((e) => e.dayId !== id);
+      setAppState({
+        ...appState,
+        trips: appState.trips.map((t) =>
+          t.id === trip.id ? { ...t, days: newDays, events: newEvents } : t
+        ),
+      });
+      showToast("День удалён");
+    }
+  );
+};
 
+const deleteEvent = (id: number) => {
+  const ev = trip.events.find(e => e.id === id);
+  showConfirm(
+    "Удалить событие?",
+    `"${ev?.name || 'Событие'}" будет удалено.`,
+    () => {
+      const newEvents = trip.events.filter((e) => e.id !== id);
+      setAppState({
+        ...appState,
+        trips: appState.trips.map((t) =>
+          t.id === trip.id ? { ...t, events: newEvents } : t
+        ),
+      });
+      showToast("Событие удалено");
+    }
+  );
+};
   // ==========================================================================
   // Event CRUD
   // ==========================================================================
@@ -632,14 +678,41 @@ if (appState.username) {
     showToast("Событие сохранено");
   };
 
-  const deleteEvent = (id: number) => {
-    const newEvents = trip.events.filter((e) => e.id !== id);
-    setAppState({
-      ...appState,
-      trips: appState.trips.map((t) => (t.id === trip.id ? { ...t, events: newEvents } : t)),
-    });
-    showToast("Событие удалено");
-  };
+  const deleteDay = (id: number) => {
+  showConfirm(
+    "Удалить день?",
+    "Все события этого дня тоже будут удалены.",
+    () => {
+      const newDays = trip.days.filter((d) => d.id !== id);
+      const newEvents = trip.events.filter((e) => e.dayId !== id);
+      setAppState({
+        ...appState,
+        trips: appState.trips.map((t) =>
+          t.id === trip.id ? { ...t, days: newDays, events: newEvents } : t
+        ),
+      });
+      showToast("День удалён");
+    }
+  );
+};
+
+const deleteEvent = (id: number) => {
+  const ev = trip.events.find(e => e.id === id);
+  showConfirm(
+    "Удалить событие?",
+    `"${ev?.name || 'Событие'}" будет удалено.`,
+    () => {
+      const newEvents = trip.events.filter((e) => e.id !== id);
+      setAppState({
+        ...appState,
+        trips: appState.trips.map((t) =>
+          t.id === trip.id ? { ...t, events: newEvents } : t
+        ),
+      });
+      showToast("Событие удалено");
+    }
+  );
+};
 
   // ==========================================================================
   // Idea CRUD
@@ -1045,15 +1118,23 @@ body.light-theme .event-btn {
 }
 /* Крестики закрытия модалок */
 .modal-close {
-  background: var(--card) !important;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--card);
   border: 1px solid var(--border) !important;
-  color: var(--text2) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--text2);
   transition: all 0.2s;
 }
 .modal-close:hover {
-  background: var(--j-mid) !important;
-  border-color: var(--leaf) !important;
-  color: var(--text) !important;
+  background: rgba(229, 57, 53, 0.15);
+  border-color: rgba(229, 57, 53, 0.3) !important;
+  color: #EF9A9A;
 }
 
 /* Кнопки листания (дней/событий) */
@@ -1095,6 +1176,16 @@ body.light-theme .form-textarea {
 }
         body {
           font-family: 'Nunito', sans-serif;
+            -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+input, button, textarea, select {
+  font-family: inherit;
+}
+@media (max-width: 768px) {
+  body { font-size: 15px; }
+  .hero-name { font-size: 1.4rem !important; }
+  .stat-val { font-size: 1.1rem !important; }
           background: var(--j-deep);
           color: var(--text);
           min-height: 100vh;
@@ -1107,8 +1198,7 @@ body.light-theme .form-textarea {
   position: relative;
   z-index: 1;
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 #main {
@@ -1320,10 +1410,62 @@ body.light-theme .react-datepicker__header {
 
         /* Events */
         .event {
-          display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px;
-          background: rgba(255,255,255,.04); border-radius: 12px; border-left: 3px solid;
-          margin-bottom: 9px; position: relative;
-        }
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+  margin-bottom: 9px;
+  position: relative;
+  overflow: hidden;
+  transition: padding-right 0.2s;
+}
+.event:hover {
+  padding-right: 70px;
+}
+.event-actions {
+  position: absolute;
+  top: 0;
+  right: -70px;
+  bottom: 0;
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: right 0.2s, opacity 0.2s;
+}
+.event:hover .event-actions {
+  right: 0;
+  opacity: 1;
+}
+.event-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text2);
+  transition: background 0.15s;
+}
+.event-btn:first-child {
+  background: rgba(30, 136, 229, 0.15);
+  color: var(--blue);
+}
+.event-btn:first-child:hover {
+  background: rgba(30, 136, 229, 0.3);
+}
+.event-btn.del {
+  background: rgba(229, 57, 53, 0.15);
+  color: #EF9A9A;
+}
+.event-btn.del:hover {
+  background: rgba(229, 57, 53, 0.3);
+}
         .event.transport { border-color: var(--blue); }
         .event.hotel { border-color: var(--leaf); }
         .event.food { border-color: var(--sun); }
@@ -1334,13 +1476,6 @@ body.light-theme .react-datepicker__header {
         .event-detail { font-size: .76rem; color: var(--text2); }
         .event-price { font-family: 'Baloo 2', cursive; font-weight: 700; font-size: .9rem; color: var(--sun); }
         .event-actions { position: absolute; top: 8px; right: 10px; display: flex; gap: 4px; opacity: 0; transition: opacity .2s; }
-        .event:hover .event-actions { opacity: 1; }
-        .event-btn {
-          background: rgba(255,255,255,.08); border: none; border-radius: 8px; padding: 3px 7px;
-          cursor: pointer; font-size: .75rem; color: var(--text2);
-        }
-        .event-btn.del:hover { background: rgba(229,57,53,.25); color: #EF9A9A; }
-
         .btn-add-evt {
           width: 100%; margin-top: 4px; padding: 9px;
           background: transparent; border: 1.5px dashed rgba(255,255,255,.13); border-radius: 10px;
@@ -1424,14 +1559,6 @@ body.light-theme .react-datepicker__header {
           width: 100%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
           border-radius: 12px; padding: 10px 14px; font-size: .9rem; color: var(--text); outline: none;
         }
-        .form-select option {
-  background: var(--j-dark);
-  color: var(--text);
-}
-body.light-theme .form-select option {
-  background: var(--j-deep);
-  color: var(--text);
-}
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .btn-primary {
@@ -1488,7 +1615,32 @@ body.light-theme .form-select option {
         .ai-msg { padding: 9px 13px; border-radius: 14px; font-size: .82rem; max-width: 90%; }
         .ai-msg.bot { background: rgba(255,255,255,.07); align-self: flex-start; }
         .ai-msg.user { background: linear-gradient(135deg,#a31c4a,var(--pink)); color: #fff; align-self: flex-end; }
-        .ai-confirm { background: rgba(255,215,0,.08); border: 1px solid rgba(255,215,0,.2); border-radius: 10px; padding: 10px 12px; }
+        .ai-confirm {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.ai-confirm-yes {
+  background: var(--leaf) !important;
+  border: none !important;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--j-deep) !important;
+  cursor: pointer;
+}
+.ai-confirm-no {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text2) !important;
+  cursor: pointer;
+}
         .ai-chip {
           padding: 5px 11px; border-radius: 50px; background: rgba(255,255,255,.07);
           border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.7);
@@ -1538,17 +1690,17 @@ body.light-theme .form-select option {
     width: 100%;
     margin-top: 8px;
   }
-  .event {
-    flex-wrap: wrap;
+    .event {
+    padding-right: 70px !important;
+  }
+  .event-actions {
+    right: 0 !important;
+    opacity: 1 !important;
   }
   .event-price {
     margin-left: 43px;
     width: 100%;
     text-align: left;
-  }
-  .event-actions {
-    top: 4px;
-    right: 4px;
   }
   .simple-card-header {
     flex-wrap: wrap;
@@ -1796,6 +1948,37 @@ a:hover, .event-link:hover, .doc-link:hover {
       </div>
 
       {/* AI Panel */}
+<AnimatePresence>
+  {showTemplates && (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      style={{
+        padding: "8px",
+        borderBottom: "1px solid rgba(255,255,255,.07)",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 6,
+      }}
+    >
+      {["📋 Что не учли?", "💸 Оптимизировать", "🗺️ Что посмотреть?", "🍜 Что попробовать?"].map((t) => (
+        <span
+          key={t}
+          className="ai-chip"
+          onClick={() => {
+            setAiInput(t);
+            setShowTemplates(false);
+            sendAIMessage(t);
+          }}
+        >
+          {t}
+        </span>
+      ))}
+    </motion.div>
+  )}
+</AnimatePresence>
+      
       <AnimatePresence>
         {appState.aiOpen && (
           <motion.div id="ai-panel" ref={aiPanelRef} initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.95 }}>
@@ -1841,9 +2024,28 @@ a:hover, .event-link:hover, .doc-link:hover {
               ))}
             </div>
             <div id="ai-input-wrap">
-              <input id="ai-input" value={aiInput} onChange={(e) => setAiInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendAIMessage(aiInput)} placeholder="Спроси попугая..." disabled={isLoadingAI} />
-              <button id="ai-send" onClick={() => sendAIMessage(aiInput)} disabled={isLoadingAI} style={{ background: "linear-gradient(135deg,#a31c4a,var(--pink))", border: "none", borderRadius: 10, width: 36, height: 36, cursor: "pointer" }}>➤</button>
-            </div>
+  <input
+    id="ai-input"
+    value={aiInput}
+    onChange={(e) => setAiInput(e.target.value)}
+    onKeyDown={(e) => e.key === "Enter" && sendAIMessage(aiInput)}
+    placeholder={aiInput ? "Напиши сообщение..." : "Выбери шаблон или напиши..."}
+    disabled={isLoadingAI}
+  />
+  {aiInput ? (
+    <button id="ai-send" onClick={() => sendAIMessage(aiInput)} disabled={isLoadingAI}>
+      ➤
+    </button>
+  ) : (
+    <button
+      id="ai-send"
+      style={{ background: "linear-gradient(135deg, var(--j-mid), var(--j-bright))" }}
+      onClick={() => setShowTemplates(!showTemplates)}
+    >
+      📋
+    </button>
+  )}
+</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1997,6 +2199,57 @@ a:hover, .event-link:hover, .doc-link:hover {
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence>
+  {confirmDelete.open && (
+    <motion.div
+      className="modal-overlay"
+      style={{ alignItems: "center" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => setConfirmDelete({ ...confirmDelete, open: false })}
+    >
+      <motion.div
+        className="modal"
+        style={{ borderRadius: 24, maxWidth: 400 }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-title" style={{ marginBottom: 12 }}>
+          <span>{confirmDelete.title}</span>
+          <button
+            className="modal-close"
+            onClick={() => setConfirmDelete({ ...confirmDelete, open: false })}
+          >
+            ✕
+          </button>
+        </div>
+        <p style={{ color: "var(--text2)", marginBottom: 24 }}>{confirmDelete.message}</p>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            className="btn-secondary"
+            style={{ marginTop: 0 }}
+            onClick={() => setConfirmDelete({ ...confirmDelete, open: false })}
+          >
+            Отмена
+          </button>
+          <button
+            className="btn-primary"
+            style={{ background: "linear-gradient(135deg, #E53935, #B71C1C)" }}
+            onClick={() => {
+              confirmDelete.onConfirm();
+              setConfirmDelete({ ...confirmDelete, open: false });
+            }}
+          >
+            Удалить
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
     </>
   );
 }
