@@ -313,6 +313,9 @@ export default function CrazyNinaPage() {
   const aiMessagesEndRef = useRef<HTMLDivElement>(null);
 
   const trip = appState.trips[appState.currentTrip];
+    if (!trip) {
+  return <div>Создай путешествие</div>;
+}
   const sym = CURRENCIES.find((c) => c.code === trip.currency)?.sym || "₽";
   const fmt = (v: number) => (v ? `${sym} ${v.toLocaleString("ru")}` : "");
 
@@ -2139,7 +2142,12 @@ a:hover, .event-link:hover, .doc-link:hover {
             <div id="ai-msgs">
               {aiMessages.length === 0 && <div className="ai-msg bot">Привет! Спроси меня о путешествии 🦜</div>}
               {aiMessages.map((msg, i) => (
-                <div key={i} className={`ai-msg ${msg.role}`}>{typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)}</div>
+                <div key={i} className={`ai-msg ${msg.role}`}>
+      {/* 👇 Принудительно преобразуем в строку и экранируем HTML */}
+      {typeof msg.content === 'string' 
+        ? msg.content 
+        : JSON.stringify(msg.content)}
+    </div>
               ))}
               {pendingConfirmation && (
   <div className="ai-confirm">
