@@ -1,3 +1,4 @@
+'use client';
 
 import React from 'react';
 import { Bot, Zap, BarChart3, Rocket, MessageSquare, CheckCircle, ArrowRight, ShieldCheck, ZapIcon } from 'lucide-react';
@@ -130,7 +131,7 @@ const ZeroBotLanding = () => {
         </div>
       </section>
 
-      {/* Workflow */}
+      {/* Workflow - Улучшенная версия без нестабильного изображения */}
       <section id="workflow" className="py-24 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row gap-12 items-center">
@@ -158,11 +159,11 @@ const ZeroBotLanding = () => {
             <div className="flex-1 relative">
                 <div className="absolute -inset-4 bg-indigo-500/20 blur-3xl rounded-full"></div>
                 <div className="relative p-1 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl">
-                    <img 
-                        src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=1000" 
-                        alt="AI Workflow" 
-                        className="rounded-[22px] w-full shadow-2xl"
-                    />
+                    <div className="bg-slate-800 rounded-[22px] p-8 shadow-2xl text-center">
+                        <div className="text-6xl mb-4">⚡</div>
+                        <div className="text-xl font-bold mb-2">AI Workflow Engine</div>
+                        <div className="text-slate-400 text-sm">Processing your prompt → Deploying infrastructure</div>
+                    </div>
                 </div>
             </div>
           </div>
