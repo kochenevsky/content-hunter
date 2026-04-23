@@ -1,5 +1,7 @@
 'use client';
 
+import 'tailwindcss/tailwind.css'; // Добавьте эту строку
+
 import React from 'react';
 import { Bot, Zap, BarChart3, Rocket, MessageSquare, CheckCircle, ArrowRight, ShieldCheck, ZapIcon } from 'lucide-react';
 
