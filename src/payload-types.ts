@@ -450,6 +450,25 @@ export interface Pricing {
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faq".
  */
+export interface PricingPro {
+  id: number;
+  name: string;
+  price: number;
+  currency?: ('RUB' | 'USD' | 'EUR') | null;
+  period?: string | null;
+  description?: string | null;
+  features?: {
+    feature?: string | null;
+    included?: boolean | null;
+    id?: string | null;
+  }[] | null;
+  isPopular?: boolean | null;
+  ctaText?: string | null;
+  ctaLink?: string | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
 export interface Faq {
   id: number;
   question: string;
