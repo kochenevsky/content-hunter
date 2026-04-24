@@ -4,9 +4,9 @@ import { headers } from 'next/headers'
 
 // ===== Домен =====
 
-function getDomain(): 'ru' | 'pro' {
+async function getDomain(): Promise<'ru' | 'pro'> {
   try {
-    const headersList = headers()
+    const headersList = await headers()
     const host = headersList.get('host') || ''
     return host.includes('.pro') ? 'pro' : 'ru'
   } catch {
@@ -73,7 +73,7 @@ export async function getFAQ(limit = 100) {
 // ✅ ЕДИНАЯ функция getPricing с учётом домена
 export async function getPricing(limit = 10) {
   try {
-    const domain = getDomain()
+    const domain = await getDomain()
     const collection = domain === 'pro' ? 'pricing-pro' : 'pricing' // ← ключевая строка
     
     const payload = await getPayloadClient()
