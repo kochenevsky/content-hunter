@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { headers } from 'next/server'
+import { headers } from 'next/headers'
 
 // ===== Домен =====
 
