@@ -78,7 +78,7 @@ export async function getPricing(limit = 10) {
     
     const payload = await getPayloadClient()
     const result = await payload.find({
-      collection, // ← динамическая коллекция
+      collection: collection as any, // ← динамическая коллекция
       sort: 'order',
       limit,
     })
