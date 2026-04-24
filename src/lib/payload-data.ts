@@ -1,10 +1,20 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { headers } from 'next/server'
 
-/**
- * Утилиты для получения данных из Payload CMS.
- * Все функции серверные — используют Local API (без HTTP-запросов).
- */
+// ===== Домен =====
+
+function getDomain(): 'ru' | 'pro' {
+  try {
+    const headersList = headers()
+    const host = headersList.get('host') || ''
+    return host.includes('.pro') ? 'pro' : 'ru'
+  } catch {
+    return 'ru'
+  }
+}
+
+// ===== Payload Client =====
 
 export async function getPayloadClient() {
   return getPayload({ config })
@@ -20,7 +30,7 @@ export async function getCases(limit = 100) {
       where: { published: { equals: true } },
       sort: '-order',
       limit,
-      depth: 1, // для обложки image с url
+      depth: 1,
     })
     return result.docs
   } catch (error) {
@@ -60,11 +70,15 @@ export async function getFAQ(limit = 100) {
   }
 }
 
+// ✅ ЕДИНАЯ функция getPricing с учётом домена
 export async function getPricing(limit = 10) {
   try {
+    const domain = getDomain()
+    const collection = domain === 'pro' ? 'pricing-pro' : 'pricing' // ← ключевая строка
+    
     const payload = await getPayloadClient()
     const result = await payload.find({
-      collection: 'pricing',
+      collection, // ← динамическая коллекция
       sort: 'order',
       limit,
     })
