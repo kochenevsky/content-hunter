@@ -10,6 +10,7 @@ import sharp from 'sharp'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import pg from 'pg'
 
+
 /**
  * Для Supabase Transaction mode (порт 6543): убираем named prepared statements.
  * Supavisor в Transaction mode не поддерживает их, т.к. бэкенд-соединение
@@ -44,8 +45,10 @@ import { Pages } from './collections/Pages'
 import { Cases } from './collections/Cases'
 import { BlogPosts } from './collections/BlogPosts'
 import { Pricing } from './collections/Pricing'
+import { PricingPro } from './collections/PricingPro'
 import { FAQ } from './collections/FAQ'
 import { Team } from './collections/Team'
+
 
 // Globals
 import { Header } from './globals/Header'
@@ -149,6 +152,7 @@ export default buildConfig({
     Cases,
     BlogPosts,
     Pricing,
+    PricingPro,
     FAQ,
     Team,
   ],
