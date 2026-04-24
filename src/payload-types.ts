@@ -73,6 +73,7 @@ export interface Config {
     cases: Case;
     'blog-posts': BlogPost;
     pricing: Pricing;
+    'pricing-pro': PricingPro;
     faq: Faq;
     team: Team;
     'payload-kv': PayloadKv;
