@@ -2,15 +2,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
+const CTA_LINK = "https://t.me/m/N0r_C6tjMTJi";
+
 const ZeroBotLanding = () => {
-  const scrollToCTA = () => {
-    window.location.href = "https://t.me/m/N0r_C6tjMTJi";
-  };
+  const scrollToCTA = () => { window.location.href = CTA_LINK; };
 
   // Exit-intent popup
   const [showPopup, setShowPopup] = useState(false);
   const [popupShown, setPopupShown] = useState(false);
   const [email, setEmail] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleMouseLeave = (e: MouseEvent) => {
@@ -53,1050 +54,718 @@ const ZeroBotLanding = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Active workflow tab
-  const [activeAgent, setActiveAgent] = useState(0);
+  const [activeCase, setActiveCase] = useState(0);
+  const [activeWorkflow, setActiveWorkflow] = useState(0);
 
-  const agents = [
+  const cases = [
     {
-      icon: '🧑‍💼',
-      name: 'Support Agent',
-      tagline: 'Handle customer queries 24/7 without hiring',
-      description: 'Connects to your Notion, Google Docs, or website. Answers refund questions, troubleshoots issues, escalates to human when needed.',
-      workflow: [
-        { step: 'User asks question', detail: 'Via Telegram, your website, or any channel' },
-        { step: 'AI searches knowledge base', detail: 'Reads your docs in real-time' },
-        { step: 'Generates precise answer', detail: 'With source references' },
-        { step: 'Escalates if unsure', detail: 'Human handoff with full context' },
-      ],
-      metrics: ['87% queries resolved automatically', '< 3 sec response time', '94% satisfaction rate'],
-      color: '#6366f1',
+      icon: '🛍️',
+      name: 'E-commerce',
+      title: 'Sales & Order Bot',
+      desc: 'A bot that shows your catalog, processes orders, tracks delivery status, and sends personalised promo codes — all without leaving Telegram.',
+      prompt: '"Create a Telegram shop bot for my clothing store. It should show categories, accept orders, integrate with Stripe, and notify me on every new purchase."',
+      metrics: ['3× conversion vs website', 'Avg reply: 0.3 sec', 'Handles 500+ orders/day'],
+    },
+    {
+      icon: '🏋️',
+      name: 'Fitness & Health',
+      title: 'Personal AI Coach',
+      desc: 'Tracks calories and water intake, generates dynamic workout plans, sends morning motivation, and adapts to user feedback every week.',
+      prompt: '"Build me a fitness bot that logs daily meals, suggests workouts based on my goals, and sends reminders at 7am and 9pm."',
+      metrics: ['92% user retention (30 days)', 'Avg session: 4.2 min', '4.8★ user rating'],
+    },
+    {
+      icon: '💬',
+      name: 'Customer Support',
+      title: '24/7 AI Support Agent',
+      desc: 'Answers FAQs from your knowledge base, escalates complex issues to a human, and learns from every conversation to get smarter over time.',
+      prompt: '"Build a support bot for my SaaS product. It should read our Notion docs, answer questions, and forward unsolved cases to our Slack channel."',
+      metrics: ['78% tickets auto-resolved', '−40% support cost', 'Zero downtime'],
     },
     {
       icon: '📊',
-      name: 'Data Analysis Agent',
-      tagline: 'Turn raw data into decisions — automatically',
-      description: 'Pulls from Google Sheets, Airtable, or any database. Generates reports, sends alerts when KPIs drop, and suggests next actions.',
-      workflow: [
-        { step: 'Connects to data sources', detail: 'Sheets, Airtable, SQL, APIs' },
-        { step: 'Runs scheduled analysis', detail: 'Daily, weekly, or on-trigger' },
-        { step: 'Detects anomalies', detail: 'AI flags unusual patterns instantly' },
-        { step: 'Sends report to Telegram', detail: 'Summary + actionable insights' },
-      ],
-      metrics: ['100+ data sources', 'Real-time alerts', '5x faster reporting'],
-      color: '#8b5cf6',
+      name: 'Finance & Crypto',
+      title: 'Market Alert Bot',
+      desc: 'Monitors wallets, tracks prices, detects whale movements, and sends instant alerts with charts to your private channel or group.',
+      prompt: '"Alert my group when BTC moves more than 5% in one hour, or when a wallet holding 100+ ETH makes a transaction."',
+      metrics: ['Real-time alerts < 1 sec', 'Multi-chain support', 'Custom threshold rules'],
     },
     {
-      icon: '💰',
-      name: 'Sales & CRM Agent',
-      tagline: 'Never lose a lead due to slow follow-up',
-      description: 'Qualifies inbound leads, books meetings, sends personalized follow-ups, and updates your CRM — all without lifting a finger.',
-      workflow: [
-        { step: 'Lead submits form', detail: 'Website, ads, or referral' },
-        { step: 'AI qualifies in 30 seconds', detail: 'Scores lead by ICP match' },
-        { step: 'Auto sends personalized DM', detail: 'Tailored to their industry' },
-        { step: 'Books meeting + updates CRM', detail: 'HubSpot, Notion, or custom' },
-      ],
-      metrics: ['3x more meetings booked', '48h → 30s follow-up time', '+62% conversion rate'],
-      color: '#ec4899',
+      icon: '🎓',
+      name: 'Education',
+      title: 'Interactive Tutor Bot',
+      desc: 'Sends daily lessons, quizzes students, tracks progress, and adapts difficulty based on performance. Perfect for online schools and language apps.',
+      prompt: '"Create a Spanish language tutor bot that sends a lesson every morning, tests vocabulary, and adjusts the level after each quiz."',
+      metrics: ['2× learning speed', '85% quiz completion', 'Full progress analytics'],
     },
     {
-      icon: '🤝',
-      name: 'Meeting Prep Agent',
-      tagline: 'Walk into every call fully briefed',
-      description: 'Researches the company, pulls LinkedIn info, reads your past notes, and sends you a briefing 10 minutes before every call.',
-      workflow: [
-        { step: 'Calendar event detected', detail: 'Google Calendar or Calendly' },
-        { step: 'AI researches the company', detail: 'Funding, news, key people' },
-        { step: 'Pulls your CRM history', detail: 'Past deals, emails, notes' },
-        { step: 'Sends briefing to Telegram', detail: '10 min before the call' },
-      ],
-      metrics: ['< 2 min briefing generation', 'LinkedIn + news + CRM merged', 'No prep time wasted'],
-      color: '#f59e0b',
+      icon: '🏢',
+      name: 'Business & HR',
+      title: 'Internal Team Assistant',
+      desc: 'Handles employee onboarding, answers internal policy questions, books meeting rooms, and routes requests to the right department.',
+      prompt: '"Build an internal bot for our 200-person company. It should answer HR questions, manage vacation requests, and integrate with our Google Calendar."',
+      metrics: ['−60% HR ticket load', 'Onboarding in 15 min', 'GDPR-compliant'],
+    },
+  ];
+
+  const workflows = [
+    {
+      step: '01',
+      icon: '💬',
+      title: 'You Write the Prompt',
+      desc: 'Describe what your bot should do in plain language — no technical knowledge needed. The more detail you give, the smarter your bot will be.',
+      detail: 'Natural language processing interprets intent, identifies required integrations, and maps out conversation trees automatically.',
+    },
+    {
+      step: '02',
+      icon: '🧠',
+      title: 'AI Designs the Logic',
+      desc: 'ZeroBot\'s engine generates the full conversation flow, command structure, state management, and API connection plan in seconds.',
+      detail: 'Our model is trained on 50,000+ real bot architectures. It knows exactly what patterns work for your use case.',
+    },
+    {
+      step: '03',
+      icon: '⚙️',
+      title: 'Structure is Reviewed',
+      desc: 'You see a visual map of your bot: all commands, messages, logic branches, and integrations. Edit anything with one click before deploying.',
+      detail: 'A simple visual editor lets you tweak responses, add conditions, and connect external APIs without writing a single line of code.',
+    },
+    {
+      step: '04',
+      icon: '🚀',
+      title: 'One-Click Deployment',
+      desc: 'ZeroBot registers the bot via Telegram Managed Bots API, spins up a dedicated server, and your bot goes live — in under 60 seconds.',
+      detail: 'Auto-scaled infrastructure runs on EU/US cloud. Zero DevOps required. No server maintenance, ever.',
+    },
+    {
+      step: '05',
+      icon: '📈',
+      title: 'Dashboard & Growth',
+      desc: 'Monitor every message, user journey, and conversion in real time. Correct AI responses, A/B test flows, and scale with one click.',
+      detail: 'Full analytics: retention, drop-off points, popular commands, revenue attribution, and export to CSV or Google Sheets.',
     },
   ];
 
   const pains = [
     {
-      pain: 'You pay developers $150/hr to build bots that take weeks',
-      solution: 'ZeroBot builds and deploys in under 60 seconds — no dev required',
+      icon: '⏳',
+      pain: 'Building a bot takes weeks',
+      fix: 'ZeroBot deploys your bot in under 60 seconds — from the first word of your prompt to a live, working Telegram bot.',
     },
     {
-      pain: 'Your team wastes hours on repetitive tasks that AI could handle',
-      solution: 'Agents run 24/7, handle the boring stuff, and escalate when it matters',
+      icon: '💸',
+      pain: 'Developers cost $3,000–$15,000',
+      fix: 'Start for free. Pro plan is $29/month. ZeroBot replaces a mid-level backend developer for your bot infrastructure entirely.',
     },
     {
-      pain: 'Every no-code tool has limits — you hit them in week 2',
-      solution: 'ZeroBot is built on real code. No ceiling. Full flexibility.',
+      icon: '🔧',
+      pain: 'Maintenance kills your momentum',
+      fix: 'We handle servers, updates, Telegram API changes, and scaling. You focus on your product — not on keeping servers alive.',
     },
     {
-      pain: 'You tried ChatGPT for business and got a mess of prompts',
-      solution: 'Structured agents with memory, integrations, and actual deployments',
+      icon: '🤯',
+      pain: 'No-code tools are too limited',
+      fix: 'ZeroBot generates production-grade code with custom logic, webhooks, payments, and multi-step flows — not just simple reply bots.',
+    },
+    {
+      icon: '📉',
+      pain: 'You can\'t see what\'s happening inside your bot',
+      fix: 'Our analytics dashboard shows every conversation, drop-off point, and user action in real time. Full transparency, always.',
+    },
+    {
+      icon: '🔐',
+      pain: 'Data security is unclear on other platforms',
+      fix: 'Your bot runs on an isolated server. All data is encrypted. GDPR-compliant by default. You own your data — always.',
     },
   ];
 
-  const testimonials = [
-    {
-      name: 'Alex Rivet',
-      role: 'Founder @ SalesFlow',
-      avatar: 'AR',
-      color: '#6366f1',
-      quote: 'I built a fully functional lead qualification bot in 7 minutes. It now handles 300 inbound leads per week. We closed $80k ARR from those leads last month.',
-      metric: '$80k ARR',
-    },
-    {
-      name: 'Sarah Chen',
-      role: 'Head of Ops @ Growthlab',
-      avatar: 'SC',
-      color: '#8b5cf6',
-      quote: 'ZeroBot replaced our entire support tier-1. 87% of tickets are resolved automatically now. My team finally focuses on complex issues instead of FAQ hell.',
-      metric: '87% auto-resolved',
-    },
-    {
-      name: 'Marcio Delgado',
-      role: 'Indie Hacker',
-      avatar: 'MD',
-      color: '#ec4899',
-      quote: 'I was about to spend $15k on a custom Telegram bot. ZeroBot did the same thing for $29/month. Launched in one afternoon. Legit game changer.',
-      metric: 'Saved $14,971',
-    },
+  const forWhom = [
+    { icon: '🧑‍💼', title: 'Entrepreneurs & Founders', desc: 'Launch an MVP chatbot for your product in hours, not months. Test demand before writing a single line of code.' },
+    { icon: '🛒', title: 'E-commerce Owners', desc: 'Turn your Telegram channel into a full sales machine. Catalog, checkout, notifications — all automated.' },
+    { icon: '🎓', title: 'Online Educators & Coaches', desc: 'Automate lessons, homework, quizzes, and student tracking. Spend time teaching, not managing.' },
+    { icon: '📣', title: 'Marketing Agencies', desc: 'Build lead-gen and promo bots for clients in minutes. Package it as a service and multiply your revenue.' },
+    { icon: '🏢', title: 'Operations & HR Teams', desc: 'Automate internal requests, onboarding, FAQs, and approvals. Reduce manual work by 60%.' },
+    { icon: '👨‍💻', title: 'Developers & Indie Hackers', desc: 'Skip the boilerplate. Generate the scaffolding, deploy it, and focus only on the unique business logic.' },
+    { icon: '💹', title: 'Traders & Crypto Projects', desc: 'Real-time alerts, wallet monitoring, price trackers, and community management bots — built in seconds.' },
+    { icon: '🤝', title: 'Communities & Content Creators', desc: 'Engage your audience with interactive bots: polls, games, giveaways, scheduled content, and subscriber analytics.' },
   ];
 
-  const faqs = [
-    {
-      q: 'Do I need coding skills?',
-      a: 'Zero coding required. Describe what you want in plain English and ZeroBot handles the rest — architecture, logic, deployment, and monitoring.',
-    },
-    {
-      q: 'What integrations are supported?',
-      a: 'Telegram, WhatsApp, Google Sheets, Notion, HubSpot, Airtable, Slack, custom APIs, and 50+ more. New integrations added weekly.',
-    },
-    {
-      q: 'How is this different from Zapier or Make?',
-      a: 'Zapier connects tools. ZeroBot builds AI agents that think, decide, and act. The difference is like a conveyor belt vs an autonomous employee.',
-    },
-    {
-      q: 'What happens if the bot makes a mistake?',
-      a: 'Every action is logged. You can review, correct, and retrain your agent from the dashboard. Human-in-the-loop mode available for critical decisions.',
-    },
-    {
-      q: 'Can I white-label bots for my clients?',
-      a: 'Yes. Enterprise plan includes full white-label, custom domains, and your own branding. Many agencies resell ZeroBot-powered bots.',
-    },
+  const reviews = [
+    { name: 'Alex Morozov', role: 'SaaS Founder', text: 'I described my idea at 11pm and had a working lead-gen bot by midnight. No exaggeration. This platform is witchcraft.' },
+    { name: 'Sarah Chen', role: 'Head of Product, Shopify store', text: 'Our order bot handles 600+ transactions per day. The analytics dashboard helped us cut drop-off by 35% in the first week.' },
+    { name: 'Marcio Dias', role: 'Indie Hacker', text: 'I tried Botpress, ManyChat, and custom code. ZeroBot is the first tool that actually generates real logic, not toy examples.' },
+    { name: 'Alina K.', role: 'Online School Owner', text: 'Students love the tutor bot. Lesson delivery, quizzes, progress tracking — all automated. I freed up 15 hours per week.' },
+    { name: 'Denis V.', role: 'Crypto Community Manager', text: 'Whale alert bot, price notifications, and giveaway management — all running 24/7 since day one. Zero downtime.' },
+    { name: 'Tobias R.', role: 'Marketing Agency CEO', text: 'We now offer "Telegram Bot Setup" as a $1,500 service. It takes us 20 minutes to deliver. ZeroBot is our secret weapon.' },
+  ];
+
+  const faqItems = [
+    { q: 'Do I need to know how to code?', a: 'Not at all. ZeroBot is designed for non-technical users. If you can describe what you want in words, ZeroBot builds it.' },
+    { q: 'How does the bot deployment work?', a: 'We use the Telegram Managed Bots API (launched April 2026). ZeroBot automatically registers your bot and hosts it on our cloud. You receive a live link instantly.' },
+    { q: 'Can I connect my bot to external services?', a: 'Yes. ZeroBot supports Stripe (payments), Google Sheets, Notion, Airtable, Webhooks, and any REST API. More integrations are added weekly.' },
+    { q: 'What happens to my data?', a: 'Your bot runs on an isolated server. Data is encrypted at rest and in transit. We are GDPR-compliant and you retain full data ownership.' },
+    { q: 'Can I edit the bot after it\'s deployed?', a: 'Absolutely. From the dashboard you can change responses, add commands, update logic, and redeploy with one click — no downtime.' },
+    { q: 'What if I need a very complex bot?', a: 'Our Pro and Enterprise plans support advanced logic: multi-step flows, conditional branches, memory, user segmentation, and custom integrations. Contact us for a consultation.' },
   ];
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", background: '#ffffff', color: '#0f0f0f', overflowX: 'hidden' }}>
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background: '#030712', color: '#f1f5f9', overflowX: 'hidden', minHeight: '100vh' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap');
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-          --indigo: #6366f1;
-          --purple: #8b5cf6;
-          --pink: #ec4899;
-          --amber: #f59e0b;
-          --bg: #ffffff;
-          --text: #0f0f0f;
-          --muted: #6b7280;
-          --border: #e5e7eb;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        ::selection { background: rgba(99,102,241,0.3); }
         html { scroll-behavior: smooth; }
 
-        .hero-gradient {
-          background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.15) 0%, transparent 70%),
-                      radial-gradient(ellipse 60% 40% at 80% 20%, rgba(236,72,153,0.1) 0%, transparent 60%),
-                      radial-gradient(ellipse 50% 40% at 10% 30%, rgba(139,92,246,0.08) 0%, transparent 60%),
-                      #ffffff;
-        }
-
-        .mesh-gradient {
-          background: radial-gradient(ellipse 100% 80% at 20% 50%, rgba(99,102,241,0.12) 0%, transparent 60%),
-                      radial-gradient(ellipse 80% 60% at 80% 30%, rgba(236,72,153,0.1) 0%, transparent 60%),
-                      radial-gradient(ellipse 60% 50% at 50% 100%, rgba(245,158,11,0.08) 0%, transparent 60%),
-                      #fafafa;
-        }
-
-        .floating-card {
-          animation: float 6s ease-in-out infinite;
-        }
-        .floating-card:nth-child(2) { animation-delay: -2s; }
-        .floating-card:nth-child(3) { animation-delay: -4s; }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
-        }
-
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes pulse-ring {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(2.5); opacity: 0; }
-        }
-
-        @keyframes scroll-x {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-
-        .animate-fade-up { animation: fadeUp 0.7s ease forwards; }
-        .animate-fade-up-delay-1 { animation: fadeUp 0.7s 0.1s ease both; }
-        .animate-fade-up-delay-2 { animation: fadeUp 0.7s 0.2s ease both; }
-        .animate-fade-up-delay-3 { animation: fadeUp 0.7s 0.3s ease both; }
-        .animate-fade-up-delay-4 { animation: fadeUp 0.7s 0.4s ease both; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
 
         .btn-primary {
-          background: #0f0f0f;
-          color: #fff;
-          border: none;
-          border-radius: 10px;
-          padding: 14px 28px;
-          font-size: 15px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-family: inherit;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 14px 28px; background: #6366f1; color: #fff;
+          border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+          cursor: pointer; transition: all 0.2s; text-decoration: none; white-space: nowrap;
         }
-        .btn-primary:hover { background: #1f1f1f; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-
+        .btn-primary:hover { background: #5558e3; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
         .btn-secondary {
-          background: transparent;
-          color: #0f0f0f;
-          border: 1.5px solid #e5e7eb;
-          border-radius: 10px;
-          padding: 14px 28px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-family: inherit;
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 14px 28px; background: rgba(255,255,255,0.06); color: #fff;
+          border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 15px; font-weight: 700;
+          cursor: pointer; transition: all 0.2s; white-space: nowrap;
         }
-        .btn-secondary:hover { border-color: #0f0f0f; background: #f9f9f9; }
-
-        .nav-link {
-          color: #4b5563;
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 500;
-          transition: color 0.2s;
-          cursor: pointer;
-          background: none;
-          border: none;
-          font-family: inherit;
-        }
-        .nav-link:hover { color: #0f0f0f; }
-
-        .section-label {
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--indigo);
-        }
-
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
         .card {
-          background: #fff;
-          border: 1.5px solid #f3f4f6;
-          border-radius: 20px;
-          padding: 32px;
-          transition: all 0.3s ease;
+          background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 20px; transition: all 0.25s;
         }
-        .card:hover { border-color: #e0e0ff; box-shadow: 0 20px 50px rgba(99,102,241,0.08); transform: translateY(-4px); }
-
+        .card:hover { border-color: rgba(99,102,241,0.3); transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+        .glow { box-shadow: 0 0 80px rgba(99,102,241,0.15); }
         .gradient-text {
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
+        .badge {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 5px 12px; background: rgba(99,102,241,0.12);
+          border: 1px solid rgba(99,102,241,0.25); border-radius: 100px;
+          font-size: 12px; font-weight: 600; color: #818cf8; letter-spacing: 0.02em;
+        }
+        .section { padding: 96px 24px; }
+        .section-sm { padding: 64px 24px; }
+        .container { max-width: 1140px; margin: 0 auto; }
+        .container-sm { max-width: 720px; margin: 0 auto; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 0 24px; }
 
-        .tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 14px;
-          border-radius: 100px;
-          font-size: 12px;
-          font-weight: 600;
-          background: #f3f4ff;
-          color: #6366f1;
-          border: 1px solid #e0e0ff;
+        /* Mobile */
+        @media (max-width: 900px) {
+          .grid-4 { grid-template-columns: 1fr 1fr; }
+          .grid-3 { grid-template-columns: 1fr 1fr; }
+          .grid-2 { grid-template-columns: 1fr; }
+          .hero-title { font-size: 38px !important; line-height: 1.15 !important; }
+          .hero-sub { font-size: 16px !important; }
+          .section { padding: 64px 20px; }
+          .section-sm { padding: 48px 20px; }
+          .hide-mobile { display: none !important; }
+          .hero-btns { flex-direction: column; align-items: stretch !important; }
+          .hero-btns button, .hero-btns a { width: 100%; justify-content: center; }
+          .workflow-row { flex-direction: column !important; }
+          .nav-links-desktop { display: none !important; }
+          .pricing-cards { flex-direction: column !important; align-items: center !important; }
+          .pricing-card { width: 100% !important; max-width: 400px; }
+          .case-tabs { flex-wrap: wrap !important; }
+          .stats-row { grid-template-columns: 1fr 1fr !important; }
+          .review-grid { grid-template-columns: 1fr !important; }
+          .for-whom-grid { grid-template-columns: 1fr 1fr !important; }
+          .pain-grid { grid-template-columns: 1fr !important; }
+          .footer-inner { flex-direction: column !important; gap: 16px !important; text-align: center; }
+          .footer-links { flex-wrap: wrap; justify-content: center !important; }
         }
-
-        .workflow-step {
-          display: flex;
-          gap: 16px;
-          padding: 20px 0;
-          border-bottom: 1px solid #f3f4f6;
-          transition: all 0.2s ease;
-        }
-        .workflow-step:last-child { border-bottom: none; }
-
-        .step-num {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: #f3f4ff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 800;
-          color: #6366f1;
-          flex-shrink: 0;
-        }
-
-        .agent-tab {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 20px 24px;
-          cursor: pointer;
-          border-left: 3px solid transparent;
-          transition: all 0.2s ease;
-          border-radius: 0;
-          background: none;
-          border: none;
-          border-left: 3px solid transparent;
-          text-align: left;
-          font-family: inherit;
-          width: 100%;
-        }
-        .agent-tab.active { border-left-color: #6366f1; background: #f8f8ff; }
-        .agent-tab:hover { background: #fafafa; }
-
-        .metric-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          border-radius: 100px;
-          background: #f0fdf4;
-          color: #16a34a;
-          font-size: 12px;
-          font-weight: 600;
-          border: 1px solid #bbf7d0;
-        }
-
-        .logo-scroll {
-          display: flex;
-          gap: 48px;
-          animation: scroll-x 20s linear infinite;
-          width: max-content;
-        }
-        .logo-scroll-wrap {
-          overflow: hidden;
-          mask: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-        }
-
-        .faq-item {
-          border-bottom: 1px solid #f3f4f6;
-        }
-        .faq-q {
-          width: 100%;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 24px 0;
-          cursor: pointer;
-          background: none;
-          border: none;
-          font-family: inherit;
-          font-size: 16px;
-          font-weight: 600;
-          color: #0f0f0f;
-          text-align: left;
-          gap: 16px;
-        }
-        .faq-a {
-          padding-bottom: 20px;
-          color: #6b7280;
-          line-height: 1.7;
-          font-size: 15px;
-        }
-
-        .popup-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.5);
-          backdrop-filter: blur(4px);
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: fadeIn 0.3s ease;
-        }
-        .popup-box {
-          background: #fff;
-          border-radius: 24px;
-          padding: 48px;
-          max-width: 480px;
-          width: 90%;
-          position: relative;
-          animation: fadeUp 0.4s ease;
-          box-shadow: 0 40px 80px rgba(0,0,0,0.15);
-        }
-
-        .input-field {
-          width: 100%;
-          padding: 14px 18px;
-          border: 1.5px solid #e5e7eb;
-          border-radius: 10px;
-          font-size: 15px;
-          font-family: inherit;
-          outline: none;
-          transition: border-color 0.2s;
-        }
-        .input-field:focus { border-color: #6366f1; }
-
-        .pain-card {
-          padding: 32px;
-          border-radius: 20px;
-          background: #fff;
-          border: 1.5px solid #f3f4f6;
-          position: relative;
-          overflow: hidden;
-          transition: all 0.3s ease;
-        }
-        .pain-card::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, #6366f1, #ec4899);
-          transform: scaleX(0);
-          transform-origin: left;
-          transition: transform 0.3s ease;
-        }
-        .pain-card:hover::before { transform: scaleX(1); }
-        .pain-card:hover { box-shadow: 0 20px 50px rgba(0,0,0,0.05); }
-
-        .hero-dashboard {
-          background: #fff;
-          border: 1.5px solid #e5e7eb;
-          border-radius: 20px;
-          overflow: hidden;
-          box-shadow: 0 40px 80px rgba(0,0,0,0.08);
-        }
-
-        .chat-bubble {
-          padding: 12px 16px;
-          border-radius: 16px;
-          font-size: 14px;
-          line-height: 1.5;
-          max-width: 85%;
-        }
-        .chat-bubble.bot {
-          background: #f3f4ff;
-          color: #0f0f0f;
-          border-bottom-left-radius: 4px;
-        }
-        .chat-bubble.user {
-          background: #6366f1;
-          color: #fff;
-          border-bottom-right-radius: 4px;
-          margin-left: auto;
-        }
-
-        @media (max-width: 768px) {
-          .hero-title { font-size: 40px !important; }
-          .section-title { font-size: 32px !important; }
+        @media (max-width: 540px) {
+          .grid-3 { grid-template-columns: 1fr; }
+          .grid-4 { grid-template-columns: 1fr; }
+          .for-whom-grid { grid-template-columns: 1fr !important; }
+          .hero-title { font-size: 30px !important; }
+          .stats-row { grid-template-columns: 1fr !important; }
+          .case-tabs { gap: 6px !important; }
+          .case-tab { font-size: 12px !important; padding: 7px 12px !important; }
         }
       `}</style>
 
-      {/* Exit Intent Popup */}
-      {showPopup && (
-        <div className="popup-overlay" onClick={() => setShowPopup(false)}>
-          <div className="popup-box" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => setShowPopup(false)}
-              style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#9ca3af' }}
-            >
-              ×
+      {/* ─── NAV ─── */}
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(3,7,18,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+        <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 800, fontSize: 18, color: '#fff', letterSpacing: '-0.02em' }}>
+            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, fontWeight: 900, flexShrink: 0 }}>Z</div>
+            ZeroBot
+          </div>
+          {/* Desktop nav */}
+          <div className="nav-links-desktop" style={{ display: 'flex', gap: 32 }}>
+            {[['#features', 'Features'], ['#for-whom', 'For Whom'], ['#workflow', 'Workflow'], ['#pricing', 'Pricing'], ['#faq', 'FAQ']].map(([href, label]) => (
+              <a key={label} href={href} style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.5)', textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+              >{label}</a>
+            ))}
+          </div>
+          {/* Desktop CTA */}
+          <button onClick={scrollToCTA} className="btn-primary hide-mobile" style={{ padding: '10px 22px', fontSize: 14, borderRadius: 10 }}>
+            Get Started Free →
+          </button>
+          {/* Mobile hamburger */}
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ display: 'none', background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: 4 }} className="mobile-menu-btn">
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
+        </div>
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div style={{ background: '#0f172a', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '16px 24px 20px' }}>
+            {[['#features', 'Features'], ['#for-whom', 'For Whom'], ['#workflow', 'Workflow'], ['#pricing', 'Pricing'], ['#faq', 'FAQ']].map(([href, label]) => (
+              <a key={label} href={href} onClick={() => setMobileMenuOpen(false)} style={{ display: 'block', padding: '12px 0', fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.7)', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{label}</a>
+            ))}
+            <button onClick={scrollToCTA} className="btn-primary" style={{ marginTop: 16, width: '100%' }}>Get Started Free →</button>
+          </div>
+        )}
+      </nav>
+
+      {/* ─── HERO ─── */}
+      <section style={{ paddingTop: 120, paddingBottom: 80, paddingLeft: 24, paddingRight: 24, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        {/* Background glow */}
+        <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 400, background: 'radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
+          <div className="badge" style={{ marginBottom: 24 }}>
+            <span>⚡</span> Powered by Telegram Bot API 9.6 — Managed Bots
+          </div>
+          <h1 className="hero-title gradient-text" style={{ fontSize: 68, fontWeight: 900, lineHeight: 1.08, letterSpacing: '-0.03em', marginBottom: 24 }}>
+            Build any Telegram Bot<br />with one AI Prompt.
+          </h1>
+          <p className="hero-sub" style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, marginBottom: 40, maxWidth: 580, margin: '0 auto 40px' }}>
+            Describe your idea. ZeroBot designs the logic, writes the code, and deploys it live — in under 60 seconds. No developers. No servers. No limits.
+          </p>
+          <div className="hero-btns" style={{ display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button onClick={scrollToCTA} className="btn-primary" style={{ fontSize: 16, padding: '16px 32px', borderRadius: 14 }}>
+              🚀 Build My Bot for Free
             </button>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>🎁</div>
-            <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Wait — before you go</h3>
-            <p style={{ color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>
-              Get a <strong style={{ color: '#0f0f0f' }}>free bot blueprint</strong> tailored to your business. We'll build it — you just describe what you need.
+            <button onClick={scrollToCTA} className="btn-secondary" style={{ fontSize: 16, padding: '16px 32px', borderRadius: 14 }}>
+              📞 Talk to a Human
+            </button>
+          </div>
+          <p style={{ marginTop: 16, fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>No credit card required · Free forever plan · Live in 60 seconds</p>
+
+          {/* Prompt demo box */}
+          <div style={{ marginTop: 56, background: 'rgba(15,23,42,0.9)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 20, padding: '24px 28px', textAlign: 'left', maxWidth: 680, margin: '56px auto 0', boxShadow: '0 32px 80px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {['#ef4444','#f59e0b','#22c55e'].map(c => <div key={c} style={{ width: 11, height: 11, borderRadius: '50%', background: c, opacity: 0.6 }} />)}
+              <span style={{ marginLeft: 8, fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>zerobot.io — New Bot</span>
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Your idea →</div>
+            <div style={{ fontSize: 15, color: '#e2e8f0', fontStyle: 'italic', lineHeight: 1.6, marginBottom: 20 }}>
+              "Create a sales bot for my online clothing store. Show categories, accept orders via Telegram, send tracking updates, and notify me in a separate admin chat on every purchase."
+            </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {['✅ Flow mapped', '⚙️ Code generated', '🚀 Deployed', '📊 Dashboard ready'].map((step, i) => (
+                <div key={i} style={{ fontSize: 12, fontWeight: 600, color: '#818cf8', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 8, padding: '5px 12px' }}>{step}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── STATS ─── */}
+      <section className="section-sm" ref={statsRef}>
+        <div className="container">
+          <div className="stats-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+            {[
+              { value: `${counts.bots.toLocaleString()}+`, label: 'Bots Deployed', sub: 'across 40 countries' },
+              { value: `${counts.users.toLocaleString()}+`, label: 'End Users Served', sub: 'via ZeroBot-powered bots' },
+              { value: `${counts.messages}M+`, label: 'Messages / Month', sub: 'processed on our infrastructure' },
+            ].map((stat, i) => (
+              <div key={i} style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '32px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: 44, fontWeight: 900, background: 'linear-gradient(135deg, #6366f1, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.02em' }}>{stat.value}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginTop: 6 }}>{stat.label}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>{stat.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── PAIN POINTS ─── */}
+      <section className="section" id="pains">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>😤 The Problem</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">Why is building a bot still this painful?</h2>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.45)', maxWidth: 520, margin: '0 auto' }}>Every builder runs into the same walls. ZeroBot tears them all down.</p>
+          </div>
+          <div className="pain-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
+            {pains.map((item, i) => (
+              <div key={i} className="card" style={{ padding: '28px 32px', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                <div style={{ fontSize: 28, flexShrink: 0, marginTop: 2 }}>{item.icon}</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#f87171', marginBottom: 6, textDecoration: 'line-through', opacity: 0.7 }}>{item.pain}</div>
+                  <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.55 }}>{item.fix}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── FOR WHOM ─── */}
+      <section className="section" id="for-whom">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>👥 Who It's For</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">ZeroBot is built for you.</h2>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.45)', maxWidth: 540, margin: '0 auto' }}>Whether you have 0 or 10 years of tech experience — if you have an idea, ZeroBot delivers it.</p>
+          </div>
+          <div className="for-whom-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+            {forWhom.map((item, i) => (
+              <div key={i} className="card" style={{ padding: '28px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: 36, marginBottom: 14 }}>{item.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 40 }}>
+            <button onClick={scrollToCTA} className="btn-primary">I want to build my bot →</button>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── USE CASES ─── */}
+      <section className="section" id="features">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>💼 Use Cases</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">What ZeroBot can build for you</h2>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.45)', maxWidth: 520, margin: '0 auto' }}>From simple FAQ bots to enterprise-grade AI agents — one prompt is all it takes.</p>
+          </div>
+          {/* Tabs */}
+          <div className="case-tabs" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 36 }}>
+            {cases.map((c, i) => (
+              <button key={i} className="case-tab" onClick={() => setActiveCase(i)} style={{ padding: '9px 18px', borderRadius: 100, border: `1px solid ${activeCase === i ? '#6366f1' : 'rgba(255,255,255,0.08)'}`, background: activeCase === i ? 'rgba(99,102,241,0.2)' : 'transparent', color: activeCase === i ? '#a5b4fc' : 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>
+                {c.icon} {c.name}
+              </button>
+            ))}
+          </div>
+          {/* Active case */}
+          {cases[activeCase] && (
+            <div className="card" style={{ padding: '40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', marginBottom: 12, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{cases[activeCase].name}</div>
+                <h3 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16, letterSpacing: '-0.02em' }}>{cases[activeCase].title}</h3>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, marginBottom: 28 }}>{cases[activeCase].desc}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
+                  {cases[activeCase].metrics.map((m, j) => (
+                    <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', flexShrink: 0 }} />
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0' }}>{m}</span>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={scrollToCTA} className="btn-primary">Build this bot →</button>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.3)', marginBottom: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>The prompt that built it</div>
+                <div style={{ background: '#0f172a', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 16, padding: '24px 20px', fontSize: 14, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.7 }}>
+                  {cases[activeCase].prompt}
+                </div>
+                <div style={{ marginTop: 20, background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 12, padding: '14px 18px', display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <span style={{ fontSize: 18 }}>⚡</span>
+                  <span style={{ fontSize: 13, color: '#a5b4fc', fontWeight: 600 }}>Average deploy time for this type: under 45 seconds</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── WORKFLOW ─── */}
+      <section className="section" id="workflow">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>🔁 How It Works</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">From idea to live bot in 5 steps.</h2>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.45)', maxWidth: 500, margin: '0 auto' }}>No DevOps. No config. No headaches. Just results.</p>
+          </div>
+          {/* Step pills */}
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 40 }}>
+            {workflows.map((w, i) => (
+              <button key={i} onClick={() => setActiveWorkflow(i)} style={{ padding: '9px 18px', borderRadius: 100, border: `1px solid ${activeWorkflow === i ? '#6366f1' : 'rgba(255,255,255,0.08)'}`, background: activeWorkflow === i ? 'rgba(99,102,241,0.2)' : 'transparent', color: activeWorkflow === i ? '#a5b4fc' : 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>{w.icon}</span> {w.step}. {w.title}
+              </button>
+            ))}
+          </div>
+          {/* Active step detail */}
+          <div className="card" style={{ padding: '48px 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 64, fontWeight: 900, color: 'rgba(99,102,241,0.15)', lineHeight: 1, marginBottom: 16, letterSpacing: '-0.04em' }}>{workflows[activeWorkflow].step}</div>
+              <h3 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>{workflows[activeWorkflow].icon} {workflows[activeWorkflow].title}</h3>
+              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: 24 }}>{workflows[activeWorkflow].desc}</p>
+              <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 12, padding: '16px 20px', fontSize: 14, color: '#94a3b8', lineHeight: 1.6 }}>
+                {workflows[activeWorkflow].detail}
+              </div>
+            </div>
+            {/* Visual connector */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {workflows.map((w, i) => (
+                <div key={i} onClick={() => setActiveWorkflow(i)} style={{ padding: '16px 20px', borderRadius: 14, border: `1px solid ${activeWorkflow === i ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.05)'}`, background: activeWorkflow === i ? 'rgba(99,102,241,0.1)' : 'transparent', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: activeWorkflow === i ? '#6366f1' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, transition: 'all 0.2s' }}>{w.icon}</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: activeWorkflow === i ? '#e2e8f0' : 'rgba(255,255,255,0.45)' }}>{w.step}. {w.title}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── FEATURES GRID ─── */}
+      <section className="section">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>✨ Platform Features</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">Everything you need. Nothing you don't.</h2>
+          </div>
+          <div className="grid-3">
+            {[
+              { icon: '🧠', title: 'AI Logic Engine', desc: 'Our model generates complete conversation trees, branching logic, and fallback handlers — not just linear chat scripts.' },
+              { icon: '⚡', title: 'Instant Deployment', desc: 'Zero-config deploy to EU/US cloud. Your bot gets a dedicated server, HTTPS webhook, and auto-scaling out of the box.' },
+              { icon: '📊', title: 'Real-Time Analytics', desc: 'Track messages, user retention, command popularity, and conversion funnels. Export to Google Sheets or CSV anytime.' },
+              { icon: '🔗', title: 'Integrations Hub', desc: 'Connect Stripe, Notion, Google Sheets, Airtable, any REST API, or custom webhooks. 40+ integrations available.' },
+              { icon: '✏️', title: 'Live Editor', desc: 'Edit bot responses, add commands, or restructure flows from the dashboard — with one-click redeploy, zero downtime.' },
+              { icon: '🔐', title: 'Security First', desc: 'Isolated server per bot, encrypted storage, GDPR compliance, and role-based access control for your team.' },
+              { icon: '🌍', title: 'Multi-Language', desc: 'Your bot detects the user\'s Telegram language and responds accordingly. Full i18n support for global audiences.' },
+              { icon: '👥', title: 'User Segmentation', desc: 'Tag users, create segments, and send targeted broadcasts to specific audience groups right from the dashboard.' },
+              { icon: '🤖', title: 'AI Corrections', desc: 'When a user asks something unexpected, flag it in the dashboard. Teach your bot with one click, redeploy instantly.' },
+            ].map((f, i) => (
+              <div key={i} className="card" style={{ padding: '28px 24px' }}>
+                <div style={{ fontSize: 28, marginBottom: 14 }}>{f.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>{f.title}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.65 }}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── REVIEWS ─── */}
+      <section className="section">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>⭐ Reviews</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">"The only platform that makes<br />AI-built actually mean something."</h2>
+          </div>
+          <div className="review-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            {reviews.map((rev, i) => (
+              <div key={i} className="card" style={{ padding: '28px 24px' }}>
+                <div style={{ display: 'flex', gap: 3, marginBottom: 16 }}>
+                  {[...Array(5)].map((_, s) => <span key={s} style={{ color: '#f59e0b', fontSize: 14 }}>★</span>)}
+                </div>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 20, fontStyle: 'italic' }}>"{rev.text}"</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>
+                    {rev.name[0]}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>{rev.name}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{rev.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── PRICING ─── */}
+      <section className="section" id="pricing">
+        <div className="container-sm">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>💳 Pricing</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">Start free. Scale as you grow.</h2>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.45)' }}>No hidden fees. Cancel anytime. Upgrade in one click.</p>
+          </div>
+          <div className="pricing-cards" style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {/* Free */}
+            <div className="pricing-card card" style={{ flex: '1 1 260px', maxWidth: 320, padding: '36px 28px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Free</div>
+              <div style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 4 }}>$0</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 32 }}>forever</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 36, flex: 1 }}>
+                {['1 active bot', 'Up to 500 users/month', 'Standard AI engine', 'Basic analytics', 'Community support'].map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: 'rgba(255,255,255,0.65)' }}>
+                    <span style={{ color: '#22c55e', fontSize: 15 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={scrollToCTA} className="btn-secondary" style={{ width: '100%' }}>Get Started Free</button>
+            </div>
+            {/* Pro */}
+            <div className="pricing-card" style={{ flex: '1 1 260px', maxWidth: 340, background: 'rgba(15,23,42,0.95)', border: '2px solid #6366f1', borderRadius: 20, padding: '36px 28px', display: 'flex', flexDirection: 'column', boxShadow: '0 0 60px rgba(99,102,241,0.2)', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: '#6366f1', color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 14px', borderRadius: 100, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Most Popular</div>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#818cf8', marginBottom: 8 }}>Pro</div>
+              <div style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 4 }}>$29</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 32 }}>per month</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 36, flex: 1 }}>
+                {['10 active bots', 'Unlimited users', 'Advanced AI + memory', 'Full analytics & exports', 'Integrations (Stripe, Notion, etc.)', 'Live editor & redeploy', 'Priority email support'].map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: '#e2e8f0' }}>
+                    <span style={{ color: '#818cf8', fontSize: 15 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={scrollToCTA} className="btn-primary" style={{ width: '100%', fontSize: 16 }}>Start Pro Trial →</button>
+            </div>
+            {/* Enterprise */}
+            <div className="pricing-card card" style={{ flex: '1 1 260px', maxWidth: 320, padding: '36px 28px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Enterprise</div>
+              <div style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 4 }}>Custom</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 32 }}>contact us</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 36, flex: 1 }}>
+                {['Unlimited bots', 'Dedicated infrastructure', 'White-label dashboard', 'Custom integrations', 'SLA & 24/7 support', 'Dedicated account manager', 'On-premise available'].map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: 'rgba(255,255,255,0.65)' }}>
+                    <span style={{ color: '#22c55e', fontSize: 15 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={scrollToCTA} className="btn-secondary" style={{ width: '100%' }}>Contact Sales</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── FAQ ─── */}
+      <section className="section" id="faq">
+        <div className="container-sm">
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <div className="badge" style={{ marginBottom: 16 }}>❓ FAQ</div>
+            <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.03em' }} className="gradient-text">Common Questions</h2>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {faqItems.map((item, i) => (
+              <div key={i} style={{ background: 'rgba(15,23,42,0.7)', border: `1px solid ${openFaq === i ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} style={{ width: '100%', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', color: '#f1f5f9', cursor: 'pointer', fontSize: 15, fontWeight: 600, textAlign: 'left', gap: 16 }}>
+                  <span>{item.q}</span>
+                  <span style={{ flexShrink: 0, fontSize: 20, color: openFaq === i ? '#818cf8' : 'rgba(255,255,255,0.3)', transition: 'transform 0.2s', transform: openFaq === i ? 'rotate(45deg)' : 'none' }}>+</span>
+                </button>
+                {openFaq === i && (
+                  <div style={{ padding: '0 24px 20px', fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7 }}>{item.a}</div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 40 }}>
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)', marginBottom: 16 }}>Still have questions? Talk to a real human.</p>
+            <button onClick={scrollToCTA} className="btn-secondary">💬 Open Telegram Chat</button>
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ─── FINAL CTA ─── */}
+      <section className="section">
+        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center', padding: '0 24px' }}>
+          <div style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.25) 0%, transparent 70%)', borderRadius: 32, border: '1px solid rgba(99,102,241,0.2)', padding: '64px 40px' }}>
+            <div style={{ fontSize: 48, marginBottom: 20 }}>🚀</div>
+            <h2 style={{ fontSize: 40, fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 16 }} className="gradient-text">
+              Your next AI employee is one prompt away.
+            </h2>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.45)', marginBottom: 36, lineHeight: 1.6 }}>
+              Join 12,000+ builders who stopped waiting for developers and started shipping bots today.
             </p>
-            <input
-              className="input-field"
-              placeholder="Your Telegram username or email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{ marginBottom: 12 }}
-            />
-            <button
-              className="btn-primary"
-              style={{ width: '100%', justifyContent: 'center', padding: '16px' }}
-              onClick={() => { scrollToCTA(); setShowPopup(false); }}
-            >
-              Get My Free Blueprint →
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={scrollToCTA} className="btn-primary" style={{ fontSize: 17, padding: '18px 36px', borderRadius: 16 }}>
+                🚀 Start Building Free
+              </button>
+              <button onClick={scrollToCTA} className="btn-secondary" style={{ fontSize: 17, padding: '18px 36px', borderRadius: 16 }}>
+                📞 Book a Demo
+              </button>
+            </div>
+            <p style={{ marginTop: 20, fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>Free plan available · No credit card · Cancel anytime</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FOOTER ─── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '32px 24px' }}>
+        <div className="container">
+          <div className="footer-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: 16, color: '#fff' }}>
+              <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, fontWeight: 900 }}>Z</div>
+              ZeroBot
+            </div>
+            <div className="footer-links" style={{ display: 'flex', gap: 28 }}>
+              {[['#features', 'Features'], ['#for-whom', 'For Whom'], ['#pricing', 'Pricing'], ['#faq', 'FAQ'], [CTA_LINK, 'Support']].map(([href, label]) => (
+                <a key={label} href={href} style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                >{label}</a>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', whiteSpace: 'nowrap' }}>© 2026 ZeroBot. Built by AI, for humans.</div>
+          </div>
+        </div>
+      </footer>
+
+      {/* ─── EXIT POPUP ─── */}
+      {showPopup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onClick={() => setShowPopup(false)}>
+          <div style={{ background: '#0f172a', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 24, padding: '48px 40px', maxWidth: 460, width: '100%', textAlign: 'center', position: 'relative', boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowPopup(false)} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>👋</div>
+            <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>Wait — your bot idea is just one message away.</h3>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 28, lineHeight: 1.6 }}>Get a free consultation in Telegram. Our team will help you scope your bot and launch it today.</p>
+            <button onClick={scrollToCTA} className="btn-primary" style={{ width: '100%', fontSize: 16, padding: '16px 0', borderRadius: 14 }}>
+              💬 Get Free Consultation
             </button>
-            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 12, textAlign: 'center' }}>No spam. No credit card. Just value.</p>
+            <button onClick={() => setShowPopup(false)} style={{ marginTop: 12, width: '100%', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 13, cursor: 'pointer', padding: '8px 0' }}>
+              No thanks, I'll figure it out myself
+            </button>
           </div>
         </div>
       )}
 
-      {/* Navigation */}
-      <nav style={{ position: 'fixed', top: 0, width: '100%', zIndex: 100, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #f3f4f6' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: 18, color: '#0f0f0f' }}>
-            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16 }}>Z</div>
-            ZeroBot
-          </div>
-          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-            <a href="#features" className="nav-link">Features</a>
-            <a href="#workflow" className="nav-link">Workflow</a>
-            <a href="#cases" className="nav-link">Cases</a>
-            <a href="#pricing" className="nav-link">Pricing</a>
-          </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <button onClick={scrollToCTA} className="btn-secondary" style={{ padding: '10px 20px', fontSize: 14 }}>
-              Book Demo
-            </button>
-            <button onClick={scrollToCTA} className="btn-primary" style={{ padding: '10px 20px', fontSize: 14 }}>
-              Get Started Free
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="hero-gradient" style={{ paddingTop: 120, paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
-          <div className="tag animate-fade-up" style={{ marginBottom: 24 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', display: 'inline-block' }}></span>
-            We raised a $5M Seed — building the future of bot infrastructure
-          </div>
-
-          <h1 className="hero-title animate-fade-up-delay-1" style={{ fontSize: 68, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.05, marginBottom: 24, fontFamily: "'DM Serif Display', serif" }}>
-            AI bots built{' '}
-            <span style={{ textDecoration: 'line-through', color: '#d1d5db', fontStyle: 'italic' }}>for</span>{' '}
-            <span className="gradient-text">by your team.</span>
-          </h1>
-
-          <p className="animate-fade-up-delay-2" style={{ fontSize: 20, color: '#6b7280', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.6 }}>
-            Describe any automation in plain English. ZeroBot builds, deploys, and runs AI agents that work 24/7 — without a single line of code.
-          </p>
-
-          <div className="animate-fade-up-delay-3" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 64 }}>
-            <button onClick={scrollToCTA} className="btn-primary" style={{ fontSize: 16, padding: '16px 32px' }}>
-              Start Building Free →
-            </button>
-            <button onClick={scrollToCTA} className="btn-secondary" style={{ fontSize: 16, padding: '16px 32px' }}>
-              See Live Demo
-            </button>
-          </div>
-
-          {/* Hero visual */}
-          <div className="animate-fade-up-delay-4" style={{ position: 'relative', maxWidth: 900, margin: '0 auto' }}>
-            {/* Floating cards */}
-            <div className="floating-card" style={{ position: 'absolute', top: -20, left: -40, background: '#fff', border: '1.5px solid #f3f4f6', borderRadius: 16, padding: '12px 20px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', zIndex: 2, whiteSpace: 'nowrap' }}>
-              <div style={{ fontSize: 12, color: '#16a34a', fontWeight: 700, marginBottom: 2 }}>✓ Bot deployed</div>
-              <div style={{ fontSize: 13, color: '#0f0f0f', fontWeight: 600 }}>Support Agent • 2s ago</div>
-            </div>
-            <div className="floating-card" style={{ position: 'absolute', top: 40, right: -30, background: '#fff', border: '1.5px solid #f3f4f6', borderRadius: 16, padding: '12px 20px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', zIndex: 2 }}>
-              <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, marginBottom: 2 }}>📊 KPI Alert</div>
-              <div style={{ fontSize: 13, color: '#0f0f0f', fontWeight: 600 }}>Revenue up 34% this week</div>
-            </div>
-            <div className="floating-card" style={{ position: 'absolute', bottom: 40, left: -20, background: '#fff', border: '1.5px solid #f3f4f6', borderRadius: 16, padding: '12px 20px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', zIndex: 2 }}>
-              <div style={{ fontSize: 12, color: '#f59e0b', fontWeight: 700, marginBottom: 2 }}>🤝 Lead qualified</div>
-              <div style={{ fontSize: 13, color: '#0f0f0f', fontWeight: 600 }}>Meeting booked • $45k deal</div>
-            </div>
-
-            <div className="hero-dashboard">
-              <div style={{ background: '#f9fafb', borderBottom: '1px solid #f3f4f6', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ display: 'flex', gap: 5 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fca5a5' }}></div>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fcd34d' }}></div>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#86efac' }}></div>
-                </div>
-                <div style={{ flex: 1, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 12px', fontSize: 12, color: '#9ca3af', textAlign: 'center' }}>
-                  app.zerobot.io/dashboard
-                </div>
-              </div>
-              <div style={{ padding: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                {/* Left - chat */}
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#6b7280', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Support Agent — Live</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div className="chat-bubble user">How do I get a refund for my last order?</div>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff', fontWeight: 700 }}>Z</div>
-                      <div className="chat-bubble bot">I found your order #4821 from March 12. You're eligible for a full refund. I've initiated it — you'll receive $67.50 within 3-5 business days. Anything else? ✓</div>
-                    </div>
-                    <div className="chat-bubble user">That's fast! Thanks 🙏</div>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff', fontWeight: 700 }}>Z</div>
-                      <div className="chat-bubble bot">Happy to help! I've also logged this case in your CRM. Is there anything about your experience you'd like to share? 😊</div>
-                    </div>
-                  </div>
-                </div>
-                {/* Right - stats */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Metrics</div>
-                  {[
-                    { label: 'Queries resolved today', value: '284', change: '+12%', color: '#6366f1' },
-                    { label: 'Avg. response time', value: '1.8s', change: '-40%', color: '#8b5cf6' },
-                    { label: 'CSAT Score', value: '94%', change: '+3%', color: '#16a34a' },
-                  ].map((stat, i) => (
-                    <div key={i} style={{ padding: '16px 20px', background: '#f9fafb', borderRadius: 12, border: '1px solid #f3f4f6' }}>
-                      <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>{stat.label}</div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                        <div style={{ fontSize: 24, fontWeight: 800, color: '#0f0f0f' }}>{stat.value}</div>
-                        <div style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>{stat.change}</div>
-                      </div>
-                    </div>
-                  ))}
-                  <div style={{ padding: '12px 16px', background: '#f0fdf4', borderRadius: 12, border: '1px solid #bbf7d0', fontSize: 13, color: '#16a34a', fontWeight: 600 }}>
-                    ✓ Agent running — 99.98% uptime
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Logo scroll */}
-      <section style={{ padding: '40px 0', borderTop: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center', marginBottom: 24 }}>
-          <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 500 }}>Trusted by teams at forward-thinking companies</span>
-        </div>
-        <div className="logo-scroll-wrap">
-          <div className="logo-scroll">
-            {['Shopify', 'HubSpot', 'Notion', 'Stripe', 'Linear', 'Vercel', 'Figma', 'Intercom', 'Shopify', 'HubSpot', 'Notion', 'Stripe', 'Linear', 'Vercel', 'Figma', 'Intercom'].map((name, i) => (
-              <span key={i} style={{ fontSize: 18, fontWeight: 700, color: '#d1d5db', whiteSpace: 'nowrap' }}>{name}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pain → Solution Section */}
-      <section style={{ padding: '100px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>The Problem</div>
-            <h2 className="section-title" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
-              Building bots shouldn't feel like{' '}
-              <span style={{ fontFamily: "'DM Serif Display', serif", fontStyle: 'italic', color: '#6b7280' }}>this.</span>
-            </h2>
-            <p style={{ fontSize: 18, color: '#6b7280', maxWidth: 500, margin: '0 auto' }}>
-              Most teams give up on automation because every tool is either too simple or too complex.
-            </p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
-            {pains.map((item, i) => (
-              <div key={i} className="pain-card">
-                <div style={{ marginBottom: 20 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, marginTop: 2 }}>✗</div>
-                    <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.6, textDecoration: 'line-through' }}>{item.pain}</p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#16a34a', flexShrink: 0, marginTop: 2 }}>✓</div>
-                    <p style={{ fontSize: 15, color: '#0f0f0f', lineHeight: 1.6, fontWeight: 500 }}>{item.solution}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Counter */}
-      <section ref={statsRef} className="mesh-gradient" style={{ padding: '80px 24px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, textAlign: 'center' }}>
-          {[
-            { value: `${counts.bots.toLocaleString()}+`, label: 'Bots deployed', sub: 'across all industries' },
-            { value: `${counts.users.toLocaleString()}+`, label: 'End users served', sub: 'by ZeroBot agents daily' },
-            { value: `${counts.messages}M+`, label: 'Messages processed', sub: 'per month' },
-          ].map((stat, i) => (
-            <div key={i}>
-              <div style={{ fontSize: 52, fontWeight: 900, letterSpacing: '-0.02em', color: '#0f0f0f', marginBottom: 8, fontFamily: "'DM Serif Display', serif" }}>{stat.value}</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#0f0f0f', marginBottom: 4 }}>{stat.label}</div>
-              <div style={{ fontSize: 14, color: '#9ca3af' }}>{stat.sub}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Agent Showcase / Workflow */}
-      <section id="workflow" style={{ padding: '100px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>How It Works</div>
-            <h2 className="section-title" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
-              Roll out specialized agents in minutes
-            </h2>
-            <p style={{ fontSize: 18, color: '#6b7280', maxWidth: 500, margin: '0 auto' }}>
-              Pick from battle-tested archetypes or describe your own. Every agent is production-ready.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.8fr', gap: 0, background: '#f9fafb', borderRadius: 24, border: '1.5px solid #f3f4f6', overflow: 'hidden' }}>
-            {/* Left tabs */}
-            <div style={{ borderRight: '1px solid #f3f4f6' }}>
-              {agents.map((agent, i) => (
-                <button
-                  key={i}
-                  className={`agent-tab ${activeAgent === i ? 'active' : ''}`}
-                  onClick={() => setActiveAgent(i)}
-                >
-                  <span style={{ fontSize: 24 }}>{agent.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: '#0f0f0f', marginBottom: 2 }}>{agent.name}</div>
-                    <div style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.4 }}>{agent.tagline}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Right detail */}
-            <div style={{ padding: 40 }}>
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>{agents[activeAgent].name}</h3>
-                <p style={{ color: '#6b7280', lineHeight: 1.6 }}>{agents[activeAgent].description}</p>
-              </div>
-
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>Workflow</div>
-                {agents[activeAgent].workflow.map((step, i) => (
-                  <div key={i} className="workflow-step">
-                    <div className="step-num">{String(i + 1).padStart(2, '0')}</div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#0f0f0f', marginBottom: 2 }}>{step.step}</div>
-                      <div style={{ fontSize: 13, color: '#9ca3af' }}>{step.detail}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {agents[activeAgent].metrics.map((m, i) => (
-                  <span key={i} className="metric-pill">✓ {m}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works - 4 steps */}
-      <section id="features" style={{ padding: '100px 24px', background: '#f9fafb' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>The Process</div>
-            <h2 className="section-title" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em' }}>
-              From idea to live in 4 steps
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, position: 'relative' }}>
-            {[
-              { step: '01', title: 'Describe it', desc: 'Type what you want your bot to do in plain English. No jargon, no tech specs.', icon: '💬' },
-              { step: '02', title: 'AI maps it', desc: 'Our engine designs the architecture — logic, state, integrations, error handling.', icon: '🧠' },
-              { step: '03', title: 'Auto-deploys', desc: 'ZeroBot provisions a secure server and connects to Telegram, Slack, or any channel.', icon: '🚀' },
-              { step: '04', title: 'You control it', desc: 'Monitor, fine-tune, and scale from the dashboard. No re-deploys needed.', icon: '📊' },
-            ].map((item, i) => (
-              <div key={i} style={{ padding: '40px 32px', position: 'relative', borderRight: i < 3 ? '1px solid #e5e7eb' : 'none' }}>
-                <div style={{ fontSize: 40, marginBottom: 20 }}>{item.icon}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>Step {item.step}</div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 12 }}>{item.title}</h3>
-                <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7 }}>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Case Studies */}
-      <section id="cases" style={{ padding: '100px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>Case Studies</div>
-            <h2 className="section-title" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
-              If you can prompt it,{' '}
-              <span style={{ fontFamily: "'DM Serif Display', serif", fontStyle: 'italic' }}>ZeroBot</span> builds it
-            </h2>
-            <p style={{ fontSize: 18, color: '#6b7280' }}>Real automations from real customers.</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-            {[
-              {
-                category: 'E-commerce',
-                title: 'Abandoned Cart Recovery Bot',
-                desc: 'Shopify store owner built a Telegram bot that detects cart abandonment and sends personalized follow-ups with a discount code.',
-                prompt: '"Monitor my Shopify, and if someone abandons a cart over $50, DM them in 1 hour with a 10% code."',
-                result: '+23% cart recovery',
-                color: '#6366f1',
-              },
-              {
-                category: 'Finance',
-                title: 'Crypto Whale Alert + Trading Signal Bot',
-                desc: 'Quant trader set up a bot to monitor on-chain activity and send Telegram alerts with GPT-generated analysis when whales move.',
-                prompt: '"Alert me when any wallet moves 100+ ETH and generate a market impact summary."',
-                result: '3 profitable signals/week',
-                color: '#8b5cf6',
-              },
-              {
-                category: 'HR / Recruitment',
-                title: 'CV Screening + Interview Scheduler',
-                desc: 'Startup HR team automated their entire inbound hiring funnel — screening resumes, scoring candidates, and booking interviews.',
-                prompt: '"Screen CVs from our email, score against our JD, and book the top 20% directly in Calendly."',
-                result: '12h → 45min per hire',
-                color: '#ec4899',
-              },
-              {
-                category: 'Marketing',
-                title: 'Competitor Intelligence Monitor',
-                desc: 'SaaS marketing team gets a daily briefing on competitor pricing changes, new features, and press mentions — in Telegram.',
-                prompt: '"Every morning, check competitor websites for changes and send me a summarized digest."',
-                result: '2h research saved daily',
-                color: '#f59e0b',
-              },
-              {
-                category: 'Sales',
-                title: 'LinkedIn Outreach + CRM Sync',
-                desc: 'B2B SDR team automated personalized LinkedIn follow-ups based on prospect engagement signals, synced to HubSpot.',
-                prompt: '"When a prospect visits our pricing page, send a personalized LinkedIn message within 5 minutes."',
-                result: '4x response rate',
-                color: '#10b981',
-              },
-              {
-                category: 'Operations',
-                title: 'Internal Knowledge Base Q&A',
-                desc: 'Operations team built a company wiki bot that answers employee questions from Notion in real-time via Telegram.',
-                prompt: '"Connect to our Notion and let any employee ask questions about company policies, get accurate answers."',
-                result: '300 tickets/week eliminated',
-                color: '#3b82f6',
-              },
-            ].map((c, i) => (
-              <div key={i} className="card" style={{ cursor: 'pointer' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: c.color, background: `${c.color}15`, padding: '4px 10px', borderRadius: 100 }}>{c.category}</span>
-                  <span className="metric-pill">{c.result}</span>
-                </div>
-                <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 10 }}>{c.title}</h3>
-                <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6, marginBottom: 16 }}>{c.desc}</p>
-                <div style={{ background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 10, padding: '12px 16px', fontSize: 13, color: '#6b7280', fontStyle: 'italic', borderLeft: `3px solid ${c.color}` }}>
-                  {c.prompt}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section style={{ padding: '100px 24px', background: '#f9fafb' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>Testimonials</div>
-            <h2 className="section-title" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em' }}>
-              Trusted by builders who ship fast
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-            {testimonials.map((t, i) => (
-              <div key={i} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
-                  {[...Array(5)].map((_, j) => (
-                    <span key={j} style={{ color: '#f59e0b', fontSize: 16 }}>★</span>
-                  ))}
-                </div>
-                <p style={{ fontSize: 16, color: '#0f0f0f', lineHeight: 1.7, marginBottom: 24, flex: 1, fontWeight: 500 }}>"{t.quote}"</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${t.color}, ${t.color}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14 }}>{t.avatar}</div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>{t.name}</div>
-                    <div style={{ fontSize: 13, color: '#9ca3af' }}>{t.role}</div>
-                  </div>
-                  <div style={{ marginLeft: 'auto' }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a', background: '#f0fdf4', padding: '4px 10px', borderRadius: 100, border: '1px solid #bbf7d0' }}>{t.metric}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" style={{ padding: '100px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>Pricing</div>
-            <h2 className="section-title" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 16 }}>
-              Simple pricing, no surprises
-            </h2>
-            <p style={{ fontSize: 18, color: '#6b7280' }}>Start free. Scale when you're ready.</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-            {[
-              {
-                name: 'Starter',
-                price: '$0',
-                period: 'forever',
-                desc: 'For solo builders exploring automation.',
-                features: ['1 Active Bot', 'Standard AI Engine', '1,000 messages/month', 'Community support', 'Telegram integration'],
-                cta: 'Get Started Free',
-                highlighted: false,
-              },
-              {
-                name: 'Pro',
-                price: '$29',
-                period: '/month',
-                desc: 'For teams serious about automation.',
-                features: ['10 Active Bots', 'Advanced AI Engine', '50k messages/month', 'All integrations', 'Priority support', 'Analytics dashboard', 'Custom workflows'],
-                cta: 'Start Pro Trial',
-                highlighted: true,
-                badge: 'Most Popular',
-              },
-              {
-                name: 'Enterprise',
-                price: 'Custom',
-                period: '',
-                desc: 'For companies automating at scale.',
-                features: ['Unlimited Bots', 'Custom AI fine-tuning', 'Unlimited messages', 'White-label option', 'Dedicated account manager', 'SLA guarantees', 'Custom integrations'],
-                cta: 'Talk to Sales',
-                highlighted: false,
-              },
-            ].map((plan, i) => (
-              <div key={i} style={{
-                padding: 36,
-                borderRadius: 20,
-                border: plan.highlighted ? '2px solid #6366f1' : '1.5px solid #f3f4f6',
-                background: plan.highlighted ? 'linear-gradient(135deg, #f8f8ff, #fdf4ff)' : '#fff',
-                position: 'relative',
-                boxShadow: plan.highlighted ? '0 20px 50px rgba(99,102,241,0.12)' : 'none',
-                transform: plan.highlighted ? 'scale(1.03)' : 'none',
-              }}>
-                {plan.badge && (
-                  <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: '#6366f1', color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, whiteSpace: 'nowrap', letterSpacing: '0.05em' }}>
-                    {plan.badge}
-                  </div>
-                )}
-                <div style={{ marginBottom: 24 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#6b7280', marginBottom: 8 }}>{plan.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
-                    <span style={{ fontSize: 44, fontWeight: 900, color: '#0f0f0f', letterSpacing: '-0.02em' }}>{plan.price}</span>
-                    <span style={{ fontSize: 15, color: '#9ca3af' }}>{plan.period}</span>
-                  </div>
-                  <div style={{ fontSize: 14, color: '#9ca3af' }}>{plan.desc}</div>
-                </div>
-                <div style={{ marginBottom: 28 }}>
-                  {plan.features.map((f, j) => (
-                    <div key={j} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 0', borderBottom: j < plan.features.length - 1 ? '1px solid #f9fafb' : 'none' }}>
-                      <span style={{ color: '#16a34a', fontSize: 14, fontWeight: 700 }}>✓</span>
-                      <span style={{ fontSize: 14, color: '#4b5563' }}>{f}</span>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={scrollToCTA}
-                  className={plan.highlighted ? 'btn-primary' : 'btn-secondary'}
-                  style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 15 }}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section style={{ padding: '100px 24px', background: '#f9fafb' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>FAQ</div>
-            <h2 className="section-title" style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em' }}>
-              Common questions
-            </h2>
-          </div>
-          <div>
-            {faqs.map((faq, i) => (
-              <div key={i} className="faq-item">
-                <button className="faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span>{faq.q}</span>
-                  <span style={{ fontSize: 22, color: '#6b7280', transition: 'transform 0.2s', transform: openFaq === i ? 'rotate(45deg)' : 'none', flexShrink: 0 }}>+</span>
-                </button>
-                {openFaq === i && (
-                  <div className="faq-a">{faq.a}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section style={{ padding: '120px 24px', background: '#0f0f0f', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 600, height: 600, background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
-        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-          <h2 style={{ fontSize: 52, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', marginBottom: 20, fontFamily: "'DM Serif Display', serif" }}>
-            Ready to deploy your first AI employee?
-          </h2>
-          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)', marginBottom: 40, lineHeight: 1.6 }}>
-            Join 12,000+ teams who automated the boring stuff and focused on what actually matters.
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={scrollToCTA} style={{ background: '#fff', color: '#0f0f0f', border: 'none', borderRadius: 12, padding: '18px 36px', fontSize: 17, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}
-              onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
-              onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              Start Building Free →
-            </button>
-            <button onClick={scrollToCTA} style={{ background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '18px 36px', fontSize: 17, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)')}
-            >
-              Talk to Sales
-            </button>
-          </div>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', marginTop: 24 }}>No credit card required • Free plan forever • Cancel anytime</p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer style={{ background: '#0f0f0f', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '40px 24px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: 16, color: '#fff' }}>
-            <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14 }}>Z</div>
-            ZeroBot
-          </div>
-          <div style={{ display: 'flex', gap: 32 }}>
-            {['Features', 'Pricing', 'Docs', 'Blog', 'Privacy'].map((link, i) => (
-              <a key={i} href="#" style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
-              >{link}</a>
-            ))}
-          </div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>© 2026 ZeroBot. Built by AI, for humans.</div>
-        </div>
-      </footer>
+      {/* ─── MOBILE HAMBURGER STYLE FIX ─── */}
+      <style>{`
+        @media (max-width: 900px) {
+          .mobile-menu-btn { display: flex !important; }
+        }
+        /* Cases & workflow card stacking */
+        @media (max-width: 900px) {
+          .card[style*="grid-template-columns"] {
+            display: block !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
