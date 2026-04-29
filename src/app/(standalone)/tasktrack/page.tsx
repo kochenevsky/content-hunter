@@ -6,11 +6,9 @@ import {
   ChevronRight,
   Plus,
   X,
-  Calendar,
   CheckCircle2,
   Circle,
   Trash2,
-  Archive,
   Menu,
 } from 'lucide-react';
 
