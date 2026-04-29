@@ -12,7 +12,7 @@ import {
   Menu,
 } from 'lucide-react';
 
-const API_BASE = 'https://tasktracker.oxion-ezhkov.workers.dev';
+const API_BASE = 'https://api.example.com';
 
 interface CalendarEvent {
   id: string;
@@ -67,18 +67,18 @@ interface Goal {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  meeting: '#D4A5D4',
-  task: '#A8D5BA',
-  rest: '#FFD9B3',
-  study: '#B3D9FF',
+  meeting: 'rgb(212, 165, 212)',
+  task: 'rgb(168, 213, 186)',
+  rest: 'rgb(255, 217, 179)',
+  study: 'rgb(179, 217, 255)',
 };
 
 const PRIORITY_COLORS = [
-  'border-l-4 border-l-[#E8C4E8]',
-  'border-l-4 border-l-[#D4A5D4]',
-  'border-l-4 border-l-[#B86BA8]',
-  'border-l-4 border-l-[#8B4789]',
-  'border-l-4 border-l-[#5C2666]',
+  'border-l-4 border-l-[rgb(232,196,232)]',
+  'border-l-4 border-l-[rgb(212,165,212)]',
+  'border-l-4 border-l-[rgb(184,107,168)]',
+  'border-l-4 border-l-[rgb(139,71,137)]',
+  'border-l-4 border-l-[rgb(92,38,102)]',
 ];
 
 const debounce = (fn: Function, delay: number) => {
@@ -287,44 +287,34 @@ const App = () => {
     };
 
     return (
-      <div className="flex flex-col h-full gap-4 p-4">
+      <div className="flex flex-col h-full gap-3 p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">Calendar</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">Calendar</h1>
           <div className="flex gap-2">
-            <button
-              onClick={() => setCalendarView('day')}
-              className={`px-3 py-1 text-sm rounded-sm ${
-                calendarView === 'day' ? 'bg-[#D4A5D4] text-white' : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              Day
-            </button>
-            <button
-              onClick={() => setCalendarView('week')}
-              className={`px-3 py-1 text-sm rounded-sm ${
-                calendarView === 'week' ? 'bg-[#D4A5D4] text-white' : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              Week
-            </button>
-            <button
-              onClick={() => setCalendarView('month')}
-              className={`px-3 py-1 text-sm rounded-sm ${
-                calendarView === 'month' ? 'bg-[#D4A5D4] text-white' : 'bg-gray-200 text-gray-700'
-              }`}
-            >
-              Month
-            </button>
+            {(['day', 'week', 'month'] as const).map(view => (
+              <button
+                key={view}
+                onClick={() => setCalendarView(view)}
+                className={`px-3 py-1 text-sm rounded-sm transition-colors capitalize ${
+                  calendarView === view
+                    ? 'text-white'
+                    : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
+                }`}
+                style={calendarView === view ? { backgroundColor: TYPE_COLORS.meeting } : undefined}
+              >
+                {view}
+              </button>
+            ))}
           </div>
         </div>
 
         <div className="flex items-center justify-between">
-          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() - 86400000))} className="p-2">
-            <ChevronLeft size={20} />
+          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() - 86400000))} className="p-2 hover:bg-neutral-200 rounded-sm transition">
+            <ChevronLeft size={20} className="text-neutral-700" />
           </button>
-          <span className="text-sm font-medium">{currentDate.toDateString()}</span>
-          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() + 86400000))} className="p-2">
-            <ChevronRight size={20} />
+          <span className="text-sm font-medium text-neutral-700">{currentDate.toDateString()}</span>
+          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() + 86400000))} className="p-2 hover:bg-neutral-200 rounded-sm transition">
+            <ChevronRight size={20} className="text-neutral-700" />
           </button>
         </div>
 
@@ -338,30 +328,32 @@ const App = () => {
                 return (
                   <div
                     key={dateStr}
-                    className={`border rounded-sm p-2 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}`}
+                    className={`border rounded-sm p-2 transition-colors ${
+                      isToday ? 'bg-blue-50 border-blue-200' : 'bg-white border-neutral-200'
+                    }`}
                   >
-                    <div className="text-xs font-semibold text-gray-600 mb-2">
+                    <div className="text-xs font-semibold text-neutral-600 mb-2">
                       {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </div>
                     <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                       {dayEvents.map(event => (
                         <div
                           key={event.id}
-                          className="p-2 rounded-sm text-xs cursor-pointer hover:opacity-80 transition text-gray-900"
+                          className="p-2 rounded-sm text-xs cursor-pointer hover:opacity-80 transition text-neutral-900"
                           style={{
                             backgroundColor: isPastEvent(event.date, event.endTime)
-                              ? '#D3D3D3'
+                              ? 'rgb(211, 211, 211)'
                               : TYPE_COLORS[event.type],
                           }}
                           onClick={() => setSelectedEvent(event)}
                         >
                           <div className="font-medium truncate">{event.title}</div>
-                          <div className="text-gray-700">{event.startTime}</div>
+                          <div className="text-neutral-700">{event.startTime}</div>
                         </div>
                       ))}
                       <button
                         onClick={() => addCalendarEvent(dateStr, formatTime(new Date()), 'task')}
-                        className="mt-2 text-xs text-gray-600 hover:text-gray-900 p-1 rounded-sm hover:bg-gray-100 w-full text-center"
+                        className="mt-2 text-xs text-neutral-600 hover:text-neutral-900 p-1 rounded-sm hover:bg-neutral-100 w-full text-center transition"
                       >
                         + Add
                       </button>
@@ -374,26 +366,29 @@ const App = () => {
         )}
 
         {selectedEvent && (
-          <div className="border rounded-sm p-3 bg-white gap-2 flex flex-col">
+          <div className="border rounded-sm p-3 bg-white gap-2 flex flex-col border-neutral-200">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">{selectedEvent.title}</h3>
-              <button onClick={() => setSelectedEvent(null)} className="p-1">
-                <X size={16} />
+              <h3 className="font-semibold text-neutral-900">{selectedEvent.title}</h3>
+              <button onClick={() => setSelectedEvent(null)} className="p-1 hover:bg-neutral-100 rounded-sm transition">
+                <X size={16} className="text-neutral-600" />
               </button>
             </div>
             <input
               type="text"
               value={selectedEvent.title}
               onChange={e => updateCalendarEvent(selectedEvent.id, { title: e.target.value })}
-              className="text-sm px-2 py-1 border rounded-sm bg-gray-50"
+              className="text-sm px-2 py-1 border rounded-sm bg-neutral-50 border-neutral-200 focus:outline-none focus:border-neutral-400"
             />
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-neutral-600">
               {selectedEvent.startTime} - {selectedEvent.endTime}
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => deleteCalendarEvent(selectedEvent.id)}
-                className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-sm hover:bg-red-200"
+                onClick={() => {
+                  deleteCalendarEvent(selectedEvent.id);
+                  setSelectedEvent(null);
+                }}
+                className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-sm hover:bg-primary-200 transition"
               >
                 Delete
               </button>
@@ -411,10 +406,11 @@ const App = () => {
     return (
       <div className="flex flex-col h-full gap-4 p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">Tasks</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">Tasks</h1>
           <button
             onClick={addProject}
-            className="p-2 rounded-sm bg-[#A8D5BA] text-white hover:opacity-90 transition"
+            className="p-2 rounded-sm text-white hover:opacity-90 transition"
+            style={{ backgroundColor: TYPE_COLORS.task }}
           >
             <Plus size={18} />
           </button>
@@ -422,17 +418,17 @@ const App = () => {
 
         <div className="flex-1 overflow-auto space-y-4">
           {projects.map(project => (
-            <div key={project.id} className="border rounded-sm p-3 bg-white">
+            <div key={project.id} className="border rounded-sm p-3 bg-white border-neutral-200">
               <div className="flex items-center justify-between mb-2">
                 <input
                   type="text"
                   value={project.name}
                   onChange={e => updateProject(project.id, e.target.value)}
-                  className="font-semibold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-gray-400 outline-none"
+                  className="font-semibold text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1"
                 />
                 <button
                   onClick={() => deleteProject(project.id)}
-                  className="p-1 text-gray-400 hover:text-red-600 transition"
+                  className="p-1 text-neutral-400 hover:text-primary-600 transition"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -443,11 +439,11 @@ const App = () => {
                   .filter(t => t.projectId === project.id)
                   .sort((a, b) => b.priority - a.priority)
                   .map(task => (
-                    <div key={task.id} className={`p-2 rounded-sm bg-gray-50 ${PRIORITY_COLORS[task.priority - 1]}`}>
+                    <div key={task.id} className={`p-2 rounded-sm bg-neutral-50 ${PRIORITY_COLORS[task.priority - 1]}`}>
                       <div className="flex items-start gap-2">
                         <button
                           onClick={() => updateTask(task.id, { completed: true })}
-                          className="mt-1 text-gray-400 hover:text-gray-700 transition"
+                          className="mt-1 text-neutral-400 hover:text-neutral-700 transition"
                         >
                           <Circle size={16} />
                         </button>
@@ -456,7 +452,7 @@ const App = () => {
                             type="text"
                             value={task.title}
                             onChange={e => updateTask(task.id, { title: e.target.value })}
-                            className="text-sm font-medium text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-gray-400 outline-none w-full"
+                            className="text-sm font-medium text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none w-full"
                           />
                           <div className="flex flex-wrap gap-1 mt-1">
                             {task.tags.map(tag => (
@@ -466,12 +462,12 @@ const App = () => {
                             ))}
                           </div>
                           {task.subtasks.length > 0 && (
-                            <div className="mt-2 space-y-1 pl-2 border-l border-gray-300">
+                            <div className="mt-2 space-y-1 pl-2 border-l border-neutral-300">
                               {task.subtasks.map(subtask => (
                                 <div key={subtask.id} className="flex items-center gap-2">
                                   <button
                                     onClick={() => updateSubtask(task.id, subtask.id, { completed: !subtask.completed })}
-                                    className="text-gray-400 hover:text-gray-700 transition"
+                                    className="text-neutral-400 hover:text-neutral-700 transition"
                                   >
                                     {subtask.completed ? (
                                       <CheckCircle2 size={14} />
@@ -483,8 +479,8 @@ const App = () => {
                                     type="text"
                                     value={subtask.title}
                                     onChange={e => updateSubtask(task.id, subtask.id, { title: e.target.value })}
-                                    className={`text-xs bg-transparent border-b border-transparent hover:border-gray-300 focus:border-gray-400 outline-none flex-1 ${
-                                      subtask.completed ? 'line-through text-gray-500' : 'text-gray-700'
+                                    className={`text-xs bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1 ${
+                                      subtask.completed ? 'line-through text-neutral-500' : 'text-neutral-700'
                                     }`}
                                   />
                                 </div>
@@ -494,7 +490,7 @@ const App = () => {
                         </div>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="text-gray-400 hover:text-red-600 transition"
+                          className="text-neutral-400 hover:text-primary-600 transition"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -505,7 +501,7 @@ const App = () => {
 
               <button
                 onClick={() => addTask(project.id)}
-                className="w-full text-xs text-gray-600 hover:text-gray-900 py-1 rounded-sm hover:bg-gray-100 transition"
+                className="w-full text-xs text-neutral-600 hover:text-neutral-900 py-1 rounded-sm hover:bg-neutral-100 transition"
               >
                 + Add Task
               </button>
@@ -514,15 +510,15 @@ const App = () => {
         </div>
 
         {completedTasks.length > 0 && (
-          <div className="border-t pt-4">
-            <h3 className="font-semibold text-gray-700 mb-2">Completed</h3>
+          <div className="border-t border-neutral-200 pt-4">
+            <h3 className="font-semibold text-neutral-700 mb-2">Completed</h3>
             <div className="space-y-2">
               {completedTasks.map(task => (
-                <div key={task.id} className="p-2 rounded-sm bg-gray-100 line-through text-gray-500 text-sm flex items-center justify-between">
+                <div key={task.id} className="p-2 rounded-sm bg-neutral-100 line-through text-neutral-500 text-sm flex items-center justify-between">
                   <span>{task.title}</span>
                   <button
                     onClick={() => updateTask(task.id, { completed: false })}
-                    className="text-xs text-gray-600 hover:text-gray-900"
+                    className="text-xs text-neutral-600 hover:text-neutral-900"
                   >
                     Undo
                   </button>
@@ -539,10 +535,11 @@ const App = () => {
     return (
       <div className="flex flex-col h-full gap-4 p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">Ideas</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">Ideas</h1>
           <button
             onClick={addIdea}
-            className="p-2 rounded-sm bg-[#B3D9FF] text-gray-900 hover:opacity-90 transition"
+            className="p-2 rounded-sm text-neutral-900 hover:opacity-90 transition"
+            style={{ backgroundColor: TYPE_COLORS.study }}
           >
             <Plus size={18} />
           </button>
@@ -550,17 +547,17 @@ const App = () => {
 
         <div className="flex-1 overflow-auto space-y-3">
           {ideas.map(idea => (
-            <div key={idea.id} className="border rounded-sm p-3 bg-white">
+            <div key={idea.id} className="border rounded-sm p-3 bg-white border-neutral-200">
               <div className="flex items-start justify-between mb-2">
                 <input
                   type="text"
                   value={idea.title}
                   onChange={e => updateIdea(idea.id, { title: e.target.value })}
-                  className="font-semibold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-gray-400 outline-none flex-1"
+                  className="font-semibold text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1"
                 />
                 <button
                   onClick={() => deleteIdea(idea.id)}
-                  className="p-1 text-gray-400 hover:text-red-600 transition"
+                  className="p-1 text-neutral-400 hover:text-primary-600 transition"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -569,14 +566,14 @@ const App = () => {
               <textarea
                 value={idea.description}
                 onChange={e => updateIdea(idea.id, { description: e.target.value })}
-                className="w-full text-sm text-gray-700 bg-gray-50 p-2 rounded-sm border border-gray-200 mb-2 resize-none h-20"
+                className="w-full text-sm text-neutral-700 bg-neutral-50 p-2 rounded-sm border border-neutral-200 mb-2 resize-none h-20 focus:outline-none focus:border-neutral-400"
                 placeholder="Idea description..."
               />
 
               <div className="space-y-2">
                 {idea.predefinedQuestions.map((q, i) => (
                   <div key={`pq-${i}`}>
-                    <label className="text-xs font-medium text-gray-600">{q.question}</label>
+                    <label className="text-xs font-medium text-neutral-600">{q.question}</label>
                     <textarea
                       value={q.answer}
                       onChange={e => {
@@ -584,7 +581,7 @@ const App = () => {
                         updated[i].answer = e.target.value;
                         updateIdea(idea.id, { predefinedQuestions: updated });
                       }}
-                      className="w-full text-xs bg-gray-50 p-2 rounded-sm border border-gray-200 resize-none h-12 mt-1"
+                      className="w-full text-xs bg-neutral-50 p-2 rounded-sm border border-neutral-200 resize-none h-12 mt-1 focus:outline-none focus:border-neutral-400"
                       placeholder="Answer..."
                     />
                   </div>
@@ -609,10 +606,11 @@ const App = () => {
     return (
       <div className="flex flex-col h-full gap-4 p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">Goals</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">Goals</h1>
           <button
             onClick={addGoal}
-            className="p-2 rounded-sm bg-[#FFD9B3] text-gray-900 hover:opacity-90 transition"
+            className="p-2 rounded-sm text-neutral-900 hover:opacity-90 transition"
+            style={{ backgroundColor: TYPE_COLORS.rest }}
           >
             <Plus size={18} />
           </button>
@@ -620,17 +618,17 @@ const App = () => {
 
         <div className="flex-1 overflow-auto space-y-3">
           {goals.map(goal => (
-            <div key={goal.id} className="border rounded-sm p-3 bg-white">
+            <div key={goal.id} className="border rounded-sm p-3 bg-white border-neutral-200">
               <div className="flex items-start justify-between mb-2">
                 <input
                   type="text"
                   value={goal.title}
                   onChange={e => updateGoal(goal.id, { title: e.target.value })}
-                  className="font-semibold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-gray-400 outline-none flex-1"
+                  className="font-semibold text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1"
                 />
                 <button
                   onClick={() => deleteGoal(goal.id)}
-                  className="p-1 text-gray-400 hover:text-red-600 transition"
+                  className="p-1 text-neutral-400 hover:text-primary-600 transition"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -639,7 +637,7 @@ const App = () => {
               <select
                 value={goal.timeframe}
                 onChange={e => updateGoal(goal.id, { timeframe: e.target.value as any })}
-                className="text-xs border rounded-sm px-2 py-1 bg-gray-50 text-gray-700 mb-2"
+                className="text-xs border rounded-sm px-2 py-1 bg-neutral-50 text-neutral-700 mb-2 border-neutral-200 focus:outline-none focus:border-neutral-400"
               >
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
@@ -647,22 +645,22 @@ const App = () => {
               </select>
 
               <div className="mt-2 mb-2">
-                <label className="text-xs font-medium text-gray-600">Progress</label>
+                <label className="text-xs font-medium text-neutral-600">Progress</label>
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={goal.progress}
                   onChange={e => updateGoal(goal.id, { progress: parseInt(e.target.value) })}
-                  className="w-full mt-1"
+                  className="w-full mt-1 accent-neutral-600"
                 />
-                <div className="text-xs text-gray-500 mt-1">{goal.progress}%</div>
+                <div className="text-xs text-neutral-500 mt-1">{goal.progress}%</div>
               </div>
 
               <div className="space-y-2">
                 {goal.customFields.map((field, i) => (
                   <div key={i}>
-                    <label className="text-xs font-medium text-gray-600">{field.name}</label>
+                    <label className="text-xs font-medium text-neutral-600">{field.name}</label>
                     <input
                       type="text"
                       value={field.value}
@@ -671,7 +669,7 @@ const App = () => {
                         updated[i].value = e.target.value;
                         updateGoal(goal.id, { customFields: updated });
                       }}
-                      className="w-full text-xs bg-gray-50 p-2 rounded-sm border border-gray-200 mt-1"
+                      className="w-full text-xs bg-neutral-50 p-2 rounded-sm border border-neutral-200 mt-1 focus:outline-none focus:border-neutral-400"
                     />
                   </div>
                 ))}
@@ -683,7 +681,7 @@ const App = () => {
                     customFields: [...goal.customFields, { name: 'New Field', value: '' }],
                   })
                 }
-                className="mt-2 text-xs text-gray-600 hover:text-gray-900 py-1 rounded-sm hover:bg-gray-100 transition"
+                className="mt-2 text-xs text-neutral-600 hover:text-neutral-900 py-1 rounded-sm hover:bg-neutral-100 transition"
               >
                 + Add Field
               </button>
@@ -695,7 +693,7 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F5F3F0]">
+    <div className="flex h-screen bg-neutral-100">
       <div className="flex-1 flex flex-col overflow-hidden">
         {currentSection === 'calendar' && renderCalendar()}
         {currentSection === 'tasks' && renderTasks()}
@@ -706,57 +704,31 @@ const App = () => {
       <div ref={navMenuRef} className="fixed bottom-6 right-6">
         <button
           onClick={() => setShowNavMenu(!showNavMenu)}
-          className="w-14 h-14 rounded-full bg-[#D4A5D4] text-white flex items-center justify-center shadow-lg hover:shadow-xl transition hover:opacity-90"
+          className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg hover:shadow-xl transition hover:opacity-90"
+          style={{ backgroundColor: TYPE_COLORS.meeting }}
         >
           <Menu size={24} />
         </button>
 
         {showNavMenu && (
-          <div className="absolute bottom-20 right-0 bg-white border border-gray-200 rounded-sm shadow-lg overflow-hidden">
-            <button
-              onClick={() => {
-                setCurrentSection('calendar');
-                setShowNavMenu(false);
-              }}
-              className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition ${
-                currentSection === 'calendar' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
-              }`}
-            >
-              Calendar
-            </button>
-            <button
-              onClick={() => {
-                setCurrentSection('tasks');
-                setShowNavMenu(false);
-              }}
-              className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition ${
-                currentSection === 'tasks' ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-700'
-              }`}
-            >
-              Tasks
-            </button>
-            <button
-              onClick={() => {
-                setCurrentSection('ideas');
-                setShowNavMenu(false);
-              }}
-              className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition ${
-                currentSection === 'ideas' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
-              }`}
-            >
-              Ideas
-            </button>
-            <button
-              onClick={() => {
-                setCurrentSection('goals');
-                setShowNavMenu(false);
-              }}
-              className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition ${
-                currentSection === 'goals' ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-700'
-              }`}
-            >
-              Goals
-            </button>
+          <div className="absolute bottom-20 right-0 bg-white border border-neutral-200 rounded-sm shadow-lg overflow-hidden">
+            {['calendar', 'tasks', 'ideas', 'goals'].map(section => (
+              <button
+                key={section}
+                onClick={() => {
+                  setCurrentSection(section as any);
+                  setShowNavMenu(false);
+                }}
+                className={`block w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 transition capitalize font-medium ${
+                  currentSection === section
+                    ? 'text-neutral-900'
+                    : 'text-neutral-700'
+                }`}
+                style={currentSection === section ? { backgroundColor: TYPE_COLORS[section as keyof typeof TYPE_COLORS] + '20' } : undefined}
+              >
+                {section}
+              </button>
+            ))}
           </div>
         )}
       </div>
