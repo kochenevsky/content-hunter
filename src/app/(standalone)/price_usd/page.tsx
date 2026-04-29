@@ -13,11 +13,11 @@ const tariffData = [
     rent: '$0',
     days: '10',
     posts: '200',
-    price: '$335',
+    price: '$485',
     views: '60 000',
     forecast: '300 000',
-    costPerPost: '$1,63',
-    costPerView: '$0,0011'
+    costPerPost: '$2,42',
+    costPerView: '$0,0016'
   },
   {
     name: 'Мини блог',
@@ -29,7 +29,7 @@ const tariffData = [
     price: '$620',
     views: '120 000',
     forecast: '600 000',
-    costPerPost: '$1,50',
+    costPerPost: '$1,55',
     costPerView: '$0,0010'
   },
   {
@@ -42,7 +42,7 @@ const tariffData = [
     price: '$810',
     views: '180 000',
     forecast: '900 000',
-    costPerPost: '$1,30',
+    costPerPost: '$1,35',
     costPerView: '$0,0009'
   },
   {
@@ -55,7 +55,7 @@ const tariffData = [
     price: '$1215',
     views: '300 000',
     forecast: '1 500 000',
-    costPerPost: '$1,17',
+    costPerPost: '$1,21',
     costPerView: '$0,0008'
   }
 ];
