@@ -12,7 +12,7 @@ import {
   Menu,
 } from 'lucide-react';
 
-const API_BASE = 'https://api.example.com';
+const API_BASE = 'https://tasktracker.oxion-ezhkov.workers.dev';
 
 interface CalendarEvent {
   id: string;
