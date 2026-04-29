@@ -13,11 +13,11 @@ const tariffData = [
     rent: '₽0',
     days: '10',
     posts: '200',
-    price: '₽25 000',
+    price: '₽36 000',
     views: '60 000',
     forecast: '300 000',
-    costPerPost: '₽125',
-    costPerView: '₽0,08'
+    costPerPost: '₽180',
+    costPerView: '₽0,12'
   },
   {
     name: 'Мини блог',
