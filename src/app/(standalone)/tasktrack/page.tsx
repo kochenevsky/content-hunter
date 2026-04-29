@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X, CheckCircle2, Circle, Archive, Trash2, Menu, GripVertical, Target, Lightbulb, CalendarDays, LayoutBoard, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, CheckCircle2, Circle, Archive, Trash2, Menu, GripVertical, Target, Lightbulb, CalendarDays, Kanban, ChevronDown } from 'lucide-react';
 
 const API_BASE = 'https://tasktracker.oxion-ezhkov.workers.dev';
 const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
@@ -1065,7 +1065,7 @@ const App = () => {
 
   const NAV_ITEMS = [
     { key: 'calendar', label: 'Calendar', icon: CalendarDays },
-    { key: 'tasks', label: 'Tasks', icon: LayoutBoard },
+    { key: 'tasks', label: 'Tasks', icon: Kanban },
     { key: 'ideas', label: 'Ideas', icon: Lightbulb },
     { key: 'goals', label: 'Goals', icon: Target },
   ];
