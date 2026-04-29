@@ -7,11 +7,21 @@ import { useState, useEffect } from 'react';
 export default function FarmPageClient({ slideUrls }: { slideUrls: string[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [utmParams, setUtmParams] = useState('');
+  const [isWebView, setIsWebView] = useState(false);  // ← ДОБАВИТЬ
   
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const utmString = params.toString();
     setUtmParams(utmString ? `&${utmString}` : '');
+    
+    // Определить встроенный браузер
+    const ua = navigator.userAgent;
+    setIsWebView(
+      /TikTok/i.test(ua) || 
+      /Instagram/i.test(ua) || 
+      /FBAN|FBAV/i.test(ua) ||
+      /Line/i.test(ua)
+    );
   }, []);
 
   const handleCtaClick = (e: React.MouseEvent) => {
@@ -323,17 +333,54 @@ return (
         }
 
         .farm-slide-num {
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          background: rgba(0,0,0,0.55);
-          backdrop-filter: blur(4px);
-          border-radius: 6px;
-          padding: 3px 7px;
-          font-size: 10px;
-          font-weight: 700;
-          color: rgba(255,255,255,0.55);
-        }
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.75);  /* ← темнее вместо blur */
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-content {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Для iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .modal-content {
+    max-height: -webkit-fill-available;
+  }
+}
+
+/* Для встроенных браузеров */
+.modal-overlay-webview {
+  background: rgba(0, 0, 0, 0.95) !important;
+  /* без backdrop-filter */
+}
+
+/* Общие исправления для iOS */
+.consult-root,
+.farm-root {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Фиксированные элементы на iOS */
+.sticky-panel {
+  position: fixed;
+  bottom: 0;
+  /* Для iPhone с челкой */
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.modal-overlay-webview .modal-content {
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
         /* ── FINAL CTA ── */
         .farm-final {
