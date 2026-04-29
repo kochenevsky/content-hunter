@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X, CheckCircle2, Circle, Trash2, Menu, GripVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, CheckCircle2, Circle, Archive, Trash2, Menu, GripVertical } from 'lucide-react';
 
 const API_BASE = 'https://tasktracker.oxion-ezhkov.workers.dev';
 const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
