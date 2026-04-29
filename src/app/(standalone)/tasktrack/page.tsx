@@ -67,19 +67,13 @@ interface Goal {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  meeting: 'rgb(212, 165, 212)',
-  task: 'rgb(168, 213, 186)',
-  rest: 'rgb(255, 217, 179)',
-  study: 'rgb(179, 217, 255)',
+  meeting: '#D4A5D4',
+  task: '#A8D5BA',
+  rest: '#FFD9B3',
+  study: '#B3D9FF',
 };
 
-const PRIORITY_COLORS = [
-  'border-l-4 border-l-[rgb(232,196,232)]',
-  'border-l-4 border-l-[rgb(212,165,212)]',
-  'border-l-4 border-l-[rgb(184,107,168)]',
-  'border-l-4 border-l-[rgb(139,71,137)]',
-  'border-l-4 border-l-[rgb(92,38,102)]',
-];
+const PRIORITY_COLORS = ['#E8C4E8', '#D4A5D4', '#B86BA8', '#8B4789', '#5C2666'];
 
 const debounce = (fn: Function, delay: number) => {
   let timeout: NodeJS.Timeout;
@@ -287,20 +281,25 @@ const App = () => {
     };
 
     return (
-      <div className="flex flex-col h-full gap-3 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-neutral-900">Calendar</h1>
-          <div className="flex gap-2">
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Calendar</h1>
+          <div style={{ display: 'flex', gap: '8px' }}>
             {(['day', 'week', 'month'] as const).map(view => (
               <button
                 key={view}
                 onClick={() => setCalendarView(view)}
-                className={`px-3 py-1 text-sm rounded-sm transition-colors capitalize ${
-                  calendarView === view
-                    ? 'text-white'
-                    : 'bg-neutral-200 text-neutral-700 hover:bg-neutral-300'
-                }`}
-                style={calendarView === view ? { backgroundColor: TYPE_COLORS.meeting } : undefined}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '14px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: calendarView === view ? TYPE_COLORS.meeting : '#e5e5e5',
+                  color: calendarView === view ? 'white' : '#404040',
+                  textTransform: 'capitalize',
+                  transition: 'all 0.2s',
+                }}
               >
                 {view}
               </button>
@@ -308,19 +307,19 @@ const App = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() - 86400000))} className="p-2 hover:bg-neutral-200 rounded-sm transition">
-            <ChevronLeft size={20} className="text-neutral-700" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() - 86400000))} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
+            <ChevronLeft size={20} color="#404040" />
           </button>
-          <span className="text-sm font-medium text-neutral-700">{currentDate.toDateString()}</span>
-          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() + 86400000))} className="p-2 hover:bg-neutral-200 rounded-sm transition">
-            <ChevronRight size={20} className="text-neutral-700" />
+          <span style={{ fontSize: '14px', fontWeight: '500', color: '#404040' }}>{currentDate.toDateString()}</span>
+          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() + 86400000))} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
+            <ChevronRight size={20} color="#404040" />
           </button>
         </div>
 
         {calendarView === 'week' && (
-          <div className="flex-1 overflow-auto">
-            <div className="grid grid-cols-3 gap-2">
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
               {weekDates.map(date => {
                 const dateStr = formatDate(date);
                 const dayEvents = calendarEvents.filter(e => e.date === dateStr);
@@ -328,32 +327,60 @@ const App = () => {
                 return (
                   <div
                     key={dateStr}
-                    className={`border rounded-sm p-2 transition-colors ${
-                      isToday ? 'bg-blue-50 border-blue-200' : 'bg-white border-neutral-200'
-                    }`}
+                    style={{
+                      border: `1px solid ${isToday ? '#dbeafe' : '#e5e5e5'}`,
+                      borderRadius: '4px',
+                      padding: '8px',
+                      backgroundColor: isToday ? '#f0f9ff' : 'white',
+                    }}
                   >
-                    <div className="text-xs font-semibold text-neutral-600 mb-2">
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#737373', marginBottom: '8px' }}>
                       {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </div>
-                    <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '256px', overflowY: 'auto' }}>
                       {dayEvents.map(event => (
                         <div
                           key={event.id}
-                          className="p-2 rounded-sm text-xs cursor-pointer hover:opacity-80 transition text-neutral-900"
-                          style={{
-                            backgroundColor: isPastEvent(event.date, event.endTime)
-                              ? 'rgb(211, 211, 211)'
-                              : TYPE_COLORS[event.type],
-                          }}
                           onClick={() => setSelectedEvent(event)}
+                          style={{
+                            padding: '8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            backgroundColor: isPastEvent(event.date, event.endTime) ? '#d3d3d3' : TYPE_COLORS[event.type],
+                            color: '#2c2c2c',
+                            transition: 'opacity 0.2s',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+                          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                         >
-                          <div className="font-medium truncate">{event.title}</div>
-                          <div className="text-neutral-700">{event.startTime}</div>
+                          <div style={{ fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</div>
+                          <div style={{ color: '#404040' }}>{event.startTime}</div>
                         </div>
                       ))}
                       <button
                         onClick={() => addCalendarEvent(dateStr, formatTime(new Date()), 'task')}
-                        className="mt-2 text-xs text-neutral-600 hover:text-neutral-900 p-1 rounded-sm hover:bg-neutral-100 w-full text-center transition"
+                        style={{
+                          marginTop: '8px',
+                          fontSize: '12px',
+                          color: '#737373',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.2s',
+                          width: '100%',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                          e.currentTarget.style.color = '#2c2c2c';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#737373';
+                        }}
                       >
                         + Add
                       </button>
@@ -366,29 +393,40 @@ const App = () => {
         )}
 
         {selectedEvent && (
-          <div className="border rounded-sm p-3 bg-white gap-2 flex flex-col border-neutral-200">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-neutral-900">{selectedEvent.title}</h3>
-              <button onClick={() => setSelectedEvent(null)} className="p-1 hover:bg-neutral-100 rounded-sm transition">
-                <X size={16} className="text-neutral-600" />
+          <div style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ fontWeight: '600', color: '#2c2c2c' }}>{selectedEvent.title}</h3>
+              <button onClick={() => setSelectedEvent(null)} style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
+                <X size={16} color="#a3a3a3" />
               </button>
             </div>
             <input
               type="text"
               value={selectedEvent.title}
               onChange={e => updateCalendarEvent(selectedEvent.id, { title: e.target.value })}
-              className="text-sm px-2 py-1 border rounded-sm bg-neutral-50 border-neutral-200 focus:outline-none focus:border-neutral-400"
+              style={{ fontSize: '14px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
             />
-            <div className="text-xs text-neutral-600">
+            <div style={{ fontSize: '12px', color: '#737373' }}>
               {selectedEvent.startTime} - {selectedEvent.endTime}
             </div>
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 onClick={() => {
                   deleteCalendarEvent(selectedEvent.id);
                   setSelectedEvent(null);
                 }}
-                className="text-xs px-2 py-1 bg-primary-100 text-primary-700 rounded-sm hover:bg-primary-200 transition"
+                style={{
+                  fontSize: '12px',
+                  padding: '6px 12px',
+                  backgroundColor: '#fee2e2',
+                  color: '#b91c1c',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fecaca')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#fee2e2')}
               >
                 Delete
               </button>
@@ -404,84 +442,124 @@ const App = () => {
     const completedTasks = tasks.filter(t => t.completed);
 
     return (
-      <div className="flex flex-col h-full gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-neutral-900">Tasks</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Tasks</h1>
           <button
             onClick={addProject}
-            className="p-2 rounded-sm text-white hover:opacity-90 transition"
-            style={{ backgroundColor: TYPE_COLORS.task }}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: 'none',
+              backgroundColor: TYPE_COLORS.task,
+              color: 'white',
+              cursor: 'pointer',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
             <Plus size={18} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto space-y-4">
+        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {projects.map(project => (
-            <div key={project.id} className="border rounded-sm p-3 bg-white border-neutral-200">
-              <div className="flex items-center justify-between mb-2">
+            <div key={project.id} style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <input
                   type="text"
                   value={project.name}
                   onChange={e => updateProject(project.id, e.target.value)}
-                  className="font-semibold text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1"
+                  style={{
+                    fontWeight: '600',
+                    color: '#2c2c2c',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    borderBottom: '1px solid transparent',
+                    outline: 'none',
+                    flex: 1,
+                    fontSize: '14px',
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
+                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
                 />
                 <button
                   onClick={() => deleteProject(project.id)}
-                  className="p-1 text-neutral-400 hover:text-primary-600 transition"
+                  style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
 
-              <div className="space-y-2 mb-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
                 {activeTasks
                   .filter(t => t.projectId === project.id)
                   .sort((a, b) => b.priority - a.priority)
                   .map(task => (
-                    <div key={task.id} className={`p-2 rounded-sm bg-neutral-50 ${PRIORITY_COLORS[task.priority - 1]}`}>
-                      <div className="flex items-start gap-2">
+                    <div key={task.id} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#fafafa', borderLeft: `4px solid ${PRIORITY_COLORS[task.priority - 1]}` }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                         <button
                           onClick={() => updateTask(task.id, { completed: true })}
-                          className="mt-1 text-neutral-400 hover:text-neutral-700 transition"
+                          style={{ marginTop: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = '#525252')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
                         >
                           <Circle size={16} />
                         </button>
-                        <div className="flex-1 min-w-0">
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <input
                             type="text"
                             value={task.title}
                             onChange={e => updateTask(task.id, { title: e.target.value })}
-                            className="text-sm font-medium text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none w-full"
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              color: '#2c2c2c',
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              borderBottom: '1px solid transparent',
+                              outline: 'none',
+                              width: '100%',
+                            }}
+                            onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
+                            onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
                           />
-                          <div className="flex flex-wrap gap-1 mt-1">
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                             {task.tags.map(tag => (
-                              <span key={tag} className="px-2 py-0.5 text-xs rounded-sm bg-blue-100 text-blue-700">
+                              <span key={tag} style={{ padding: '2px 8px', fontSize: '12px', borderRadius: '4px', backgroundColor: '#dbeafe', color: '#1e40af' }}>
                                 {tag}
                               </span>
                             ))}
                           </div>
                           {task.subtasks.length > 0 && (
-                            <div className="mt-2 space-y-1 pl-2 border-l border-neutral-300">
+                            <div style={{ marginTop: '8px', paddingLeft: '8px', borderLeft: '1px solid #d4d4d4', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               {task.subtasks.map(subtask => (
-                                <div key={subtask.id} className="flex items-center gap-2">
+                                <div key={subtask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                   <button
                                     onClick={() => updateSubtask(task.id, subtask.id, { completed: !subtask.completed })}
-                                    className="text-neutral-400 hover:text-neutral-700 transition"
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3' }}
                                   >
-                                    {subtask.completed ? (
-                                      <CheckCircle2 size={14} />
-                                    ) : (
-                                      <Circle size={14} />
-                                    )}
+                                    {subtask.completed ? <CheckCircle2 size={14} /> : <Circle size={14} />}
                                   </button>
                                   <input
                                     type="text"
                                     value={subtask.title}
                                     onChange={e => updateSubtask(task.id, subtask.id, { title: e.target.value })}
-                                    className={`text-xs bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1 ${
-                                      subtask.completed ? 'line-through text-neutral-500' : 'text-neutral-700'
-                                    }`}
+                                    style={{
+                                      fontSize: '12px',
+                                      backgroundColor: 'transparent',
+                                      border: 'none',
+                                      borderBottom: '1px solid transparent',
+                                      outline: 'none',
+                                      flex: 1,
+                                      color: subtask.completed ? '#a3a3a3' : '#404040',
+                                      textDecoration: subtask.completed ? 'line-through' : 'none',
+                                    }}
+                                    onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
+                                    onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
                                   />
                                 </div>
                               ))}
@@ -490,7 +568,9 @@ const App = () => {
                         </div>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="text-neutral-400 hover:text-primary-600 transition"
+                          style={{ color: '#a3a3a3', background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.2s' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -501,7 +581,25 @@ const App = () => {
 
               <button
                 onClick={() => addTask(project.id)}
-                className="w-full text-xs text-neutral-600 hover:text-neutral-900 py-1 rounded-sm hover:bg-neutral-100 transition"
+                style={{
+                  width: '100%',
+                  fontSize: '12px',
+                  color: '#737373',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  e.currentTarget.style.color = '#2c2c2c';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#737373';
+                }}
               >
                 + Add Task
               </button>
@@ -510,15 +608,15 @@ const App = () => {
         </div>
 
         {completedTasks.length > 0 && (
-          <div className="border-t border-neutral-200 pt-4">
-            <h3 className="font-semibold text-neutral-700 mb-2">Completed</h3>
-            <div className="space-y-2">
+          <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '16px' }}>
+            <h3 style={{ fontWeight: '600', color: '#525252', marginBottom: '8px' }}>Completed</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {completedTasks.map(task => (
-                <div key={task.id} className="p-2 rounded-sm bg-neutral-100 line-through text-neutral-500 text-sm flex items-center justify-between">
+                <div key={task.id} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#f0f0f0', textDecoration: 'line-through', color: '#a3a3a3', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span>{task.title}</span>
                   <button
                     onClick={() => updateTask(task.id, { completed: false })}
-                    className="text-xs text-neutral-600 hover:text-neutral-900"
+                    style={{ fontSize: '12px', color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
                     Undo
                   </button>
@@ -533,31 +631,53 @@ const App = () => {
 
   const renderIdeas = () => {
     return (
-      <div className="flex flex-col h-full gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-neutral-900">Ideas</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Ideas</h1>
           <button
             onClick={addIdea}
-            className="p-2 rounded-sm text-neutral-900 hover:opacity-90 transition"
-            style={{ backgroundColor: TYPE_COLORS.study }}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: 'none',
+              backgroundColor: TYPE_COLORS.study,
+              color: '#2c2c2c',
+              cursor: 'pointer',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
             <Plus size={18} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto space-y-3">
+        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {ideas.map(idea => (
-            <div key={idea.id} className="border rounded-sm p-3 bg-white border-neutral-200">
-              <div className="flex items-start justify-between mb-2">
+            <div key={idea.id} style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <input
                   type="text"
                   value={idea.title}
                   onChange={e => updateIdea(idea.id, { title: e.target.value })}
-                  className="font-semibold text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1"
+                  style={{
+                    fontWeight: '600',
+                    color: '#2c2c2c',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    borderBottom: '1px solid transparent',
+                    outline: 'none',
+                    flex: 1,
+                    fontSize: '14px',
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
+                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
                 />
                 <button
                   onClick={() => deleteIdea(idea.id)}
-                  className="p-1 text-neutral-400 hover:text-primary-600 transition"
+                  style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -566,14 +686,14 @@ const App = () => {
               <textarea
                 value={idea.description}
                 onChange={e => updateIdea(idea.id, { description: e.target.value })}
-                className="w-full text-sm text-neutral-700 bg-neutral-50 p-2 rounded-sm border border-neutral-200 mb-2 resize-none h-20 focus:outline-none focus:border-neutral-400"
+                style={{ width: '100%', fontSize: '14px', color: '#404040', backgroundColor: '#fafafa', padding: '8px', borderRadius: '4px', border: '1px solid #e5e5e5', marginBottom: '8px', resize: 'none', height: '80px', outline: 'none' }}
                 placeholder="Idea description..."
               />
 
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {idea.predefinedQuestions.map((q, i) => (
                   <div key={`pq-${i}`}>
-                    <label className="text-xs font-medium text-neutral-600">{q.question}</label>
+                    <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373' }}>{q.question}</label>
                     <textarea
                       value={q.answer}
                       onChange={e => {
@@ -581,16 +701,16 @@ const App = () => {
                         updated[i].answer = e.target.value;
                         updateIdea(idea.id, { predefinedQuestions: updated });
                       }}
-                      className="w-full text-xs bg-neutral-50 p-2 rounded-sm border border-neutral-200 resize-none h-12 mt-1 focus:outline-none focus:border-neutral-400"
+                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '8px', borderRadius: '4px', border: '1px solid #e5e5e5', resize: 'none', height: '48px', marginTop: '4px', outline: 'none' }}
                       placeholder="Answer..."
                     />
                   </div>
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-1 mt-2">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
                 {idea.tags.map(tag => (
-                  <span key={tag} className="px-2 py-0.5 text-xs rounded-sm bg-amber-100 text-amber-700">
+                  <span key={tag} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', backgroundColor: '#fef3c7', color: '#b45309' }}>
                     {tag}
                   </span>
                 ))}
@@ -604,31 +724,53 @@ const App = () => {
 
   const renderGoals = () => {
     return (
-      <div className="flex flex-col h-full gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-neutral-900">Goals</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Goals</h1>
           <button
             onClick={addGoal}
-            className="p-2 rounded-sm text-neutral-900 hover:opacity-90 transition"
-            style={{ backgroundColor: TYPE_COLORS.rest }}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: 'none',
+              backgroundColor: TYPE_COLORS.rest,
+              color: '#2c2c2c',
+              cursor: 'pointer',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
             <Plus size={18} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto space-y-3">
+        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {goals.map(goal => (
-            <div key={goal.id} className="border rounded-sm p-3 bg-white border-neutral-200">
-              <div className="flex items-start justify-between mb-2">
+            <div key={goal.id} style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <input
                   type="text"
                   value={goal.title}
                   onChange={e => updateGoal(goal.id, { title: e.target.value })}
-                  className="font-semibold text-neutral-900 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-neutral-400 outline-none flex-1"
+                  style={{
+                    fontWeight: '600',
+                    color: '#2c2c2c',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    borderBottom: '1px solid transparent',
+                    outline: 'none',
+                    flex: 1,
+                    fontSize: '14px',
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
+                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
                 />
                 <button
                   onClick={() => deleteGoal(goal.id)}
-                  className="p-1 text-neutral-400 hover:text-primary-600 transition"
+                  style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -637,30 +779,30 @@ const App = () => {
               <select
                 value={goal.timeframe}
                 onChange={e => updateGoal(goal.id, { timeframe: e.target.value as any })}
-                className="text-xs border rounded-sm px-2 py-1 bg-neutral-50 text-neutral-700 mb-2 border-neutral-200 focus:outline-none focus:border-neutral-400"
+                style={{ fontSize: '12px', borderRadius: '4px', padding: '4px 8px', backgroundColor: '#fafafa', color: '#404040', marginBottom: '8px', border: '1px solid #e5e5e5', outline: 'none' }}
               >
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>
 
-              <div className="mt-2 mb-2">
-                <label className="text-xs font-medium text-neutral-600">Progress</label>
+              <div style={{ marginTop: '8px', marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373' }}>Progress</label>
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={goal.progress}
                   onChange={e => updateGoal(goal.id, { progress: parseInt(e.target.value) })}
-                  className="w-full mt-1 accent-neutral-600"
+                  style={{ width: '100%', marginTop: '4px' }}
                 />
-                <div className="text-xs text-neutral-500 mt-1">{goal.progress}%</div>
+                <div style={{ fontSize: '12px', color: '#a3a3a3', marginTop: '4px' }}>{goal.progress}%</div>
               </div>
 
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {goal.customFields.map((field, i) => (
                   <div key={i}>
-                    <label className="text-xs font-medium text-neutral-600">{field.name}</label>
+                    <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373' }}>{field.name}</label>
                     <input
                       type="text"
                       value={field.value}
@@ -669,7 +811,7 @@ const App = () => {
                         updated[i].value = e.target.value;
                         updateGoal(goal.id, { customFields: updated });
                       }}
-                      className="w-full text-xs bg-neutral-50 p-2 rounded-sm border border-neutral-200 mt-1 focus:outline-none focus:border-neutral-400"
+                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '6px 8px', borderRadius: '4px', border: '1px solid #e5e5e5', marginTop: '4px', outline: 'none' }}
                     />
                   </div>
                 ))}
@@ -681,7 +823,25 @@ const App = () => {
                     customFields: [...goal.customFields, { name: 'New Field', value: '' }],
                   })
                 }
-                className="mt-2 text-xs text-neutral-600 hover:text-neutral-900 py-1 rounded-sm hover:bg-neutral-100 transition"
+                style={{
+                  marginTop: '8px',
+                  fontSize: '12px',
+                  color: '#737373',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  e.currentTarget.style.color = '#2c2c2c';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#737373';
+                }}
               >
                 + Add Field
               </button>
@@ -693,25 +853,45 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-neutral-100">
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f5f3f0', fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px', color: '#2c2c2c' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {currentSection === 'calendar' && renderCalendar()}
         {currentSection === 'tasks' && renderTasks()}
         {currentSection === 'ideas' && renderIdeas()}
         {currentSection === 'goals' && renderGoals()}
       </div>
 
-      <div ref={navMenuRef} className="fixed bottom-6 right-6">
+      <div ref={navMenuRef} style={{ position: 'fixed', bottom: '24px', right: '24px' }}>
         <button
           onClick={() => setShowNavMenu(!showNavMenu)}
-          className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg hover:shadow-xl transition hover:opacity-90"
-          style={{ backgroundColor: TYPE_COLORS.meeting }}
+          style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            backgroundColor: TYPE_COLORS.meeting,
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.15)';
+            e.currentTarget.style.opacity = '0.9';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+            e.currentTarget.style.opacity = '1';
+          }}
         >
           <Menu size={24} />
         </button>
 
         {showNavMenu && (
-          <div className="absolute bottom-20 right-0 bg-white border border-neutral-200 rounded-sm shadow-lg overflow-hidden">
+          <div style={{ position: 'absolute', bottom: '80px', right: 0, backgroundColor: 'white', border: '1px solid #e5e5e5', borderRadius: '4px', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
             {['calendar', 'tasks', 'ideas', 'goals'].map(section => (
               <button
                 key={section}
@@ -719,12 +899,22 @@ const App = () => {
                   setCurrentSection(section as any);
                   setShowNavMenu(false);
                 }}
-                className={`block w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 transition capitalize font-medium ${
-                  currentSection === section
-                    ? 'text-neutral-900'
-                    : 'text-neutral-700'
-                }`}
-                style={currentSection === section ? { backgroundColor: TYPE_COLORS[section as keyof typeof TYPE_COLORS] + '20' } : undefined}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  border: 'none',
+                  backgroundColor: currentSection === section ? TYPE_COLORS[section as keyof typeof TYPE_COLORS] + '33' : 'transparent',
+                  color: currentSection === section ? '#2c2c2c' : '#404040',
+                  cursor: 'pointer',
+                  textTransform: 'capitalize',
+                  fontWeight: currentSection === section ? '500' : '400',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={(e) => !currentSection === section && (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                onMouseLeave={(e) => !currentSection === section && (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 {section}
               </button>
