@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X, CheckCircle2, Circle, Archive, Trash2, Menu, GripVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, CheckCircle2, Circle, Archive, Trash2, Menu, GripVertical, Target, Lightbulb, CalendarDays, LayoutKanban, ChevronDown } from 'lucide-react';
 
 const API_BASE = 'https://tasktracker.oxion-ezhkov.workers.dev';
 const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
@@ -17,13 +17,13 @@ interface CalendarEvent {
   startTime: string;
   endTime: string;
   date: string;
-  tags: string[];
   archived: boolean;
 }
 
 interface Project {
   id: string;
   name: string;
+  order: number;
 }
 
 interface Subtask {
@@ -37,10 +37,10 @@ interface Task {
   projectId: string;
   title: string;
   priority: number;
-  tags: string[];
   completed: boolean;
   subtasks: Subtask[];
   archived: boolean;
+  order?: number;
 }
 
 interface Idea {
@@ -52,31 +52,36 @@ interface Idea {
   createdAt: string;
 }
 
-interface GoalField {
-  name: string;
-  value: string;
-}
-
 interface Goal {
   id: string;
   title: string;
   timeframe: 'weekly' | 'monthly' | 'yearly';
-  fields: GoalField[];
+  why: string;
+  successCriteria: string;
+  obstacles: string;
+  actions: string;
   progress: number;
-  credit: number;
-  debit: number;
   reflection: string;
   createdAt: string;
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  meeting: '#D4A5D4',
-  task: '#A8D5BA',
-  rest: '#FFD9B3',
-  study: '#B3D9FF',
+  meeting: '#c9a8d4',
+  task: '#8fc4a0',
+  rest: '#e8b88a',
+  study: '#7aaed4',
 };
 
-const PRIORITY_COLORS = ['#E8C4E8', '#D4A5D4', '#B86BA8', '#8B4789', '#5C2666'];
+const TYPE_LABELS: Record<string, string> = {
+  meeting: 'Meeting',
+  task: 'Task',
+  rest: 'Rest',
+  study: 'Study',
+};
+
+const PRIORITY_LABELS = ['', 'Low', 'Below Avg', 'Normal', 'High', 'Critical'];
+const PRIORITY_COLORS = ['', '#b0c4b1', '#a8c0cc', '#c4a8cc', '#d4869a', '#c0392b'];
+const PRIORITY_BG = ['', '#f0f4f0', '#eef3f6', '#f5f0f8', '#fdf0f3', '#fdf0ee'];
 
 const formatDate = (date: Date) => date.toISOString().split('T')[0];
 const formatTime = (date: Date) => date.toTimeString().slice(0, 5);
@@ -97,9 +102,20 @@ const App = () => {
   const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [eventPopupPos, setEventPopupPos] = useState<{ x: number; y: number } | null>(null);
   const [draggedEvent, setDraggedEvent] = useState<{ id: string; startDate: string; startTime: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const navMenuRef = useRef<HTMLDivElement>(null);
+  const [draggedProject, setDraggedProject] = useState<string | null>(null);
+  const [draggedTask, setDraggedTask] = useState<{ id: string; fromProjectId: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'project' | 'event'; id: string; name: string } | null>(null);
+  const [editingNewTaskId, setEditingNewTaskId] = useState<string | null>(null);
+  const [editingNewEventId, setEditingNewEventId] = useState<string | null>(null);
+  const [expandedIdea, setExpandedIdea] = useState<string | null>(null);
+  const [expandedGoal, setExpandedGoal] = useState<string | null>(null);
+
+  const navRef = useRef<HTMLDivElement>(null);
+  const dayScrollRef = useRef<HTMLDivElement>(null);
+  const weekScrollRef = useRef<HTMLDivElement>(null);
 
   const saveToApi = useCallback(async (data: any, endpoint: string) => {
     try {
@@ -123,10 +139,12 @@ const App = () => {
           fetch(`${API_BASE}/ideas`),
           fetch(`${API_BASE}/goals`),
         ]);
-        
         if (eventsRes.ok) setCalendarEvents(await eventsRes.json());
         if (tasksRes.ok) setTasks(await tasksRes.json());
-        if (projectsRes.ok) setProjects(await projectsRes.json());
+        if (projectsRes.ok) {
+          const p = await projectsRes.json();
+          setProjects(p.map((pr: any, i: number) => ({ ...pr, order: pr.order ?? i })).sort((a: Project, b: Project) => a.order - b.order));
+        }
         if (ideasRes.ok) setIdeas(await ideasRes.json());
         if (goalsRes.ok) setGoals(await goalsRes.json());
       } catch (error) {
@@ -138,102 +156,141 @@ const App = () => {
     loadData();
   }, []);
 
+  // Scroll to current time on day/week view
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (navMenuRef.current && !navMenuRef.current.contains(e.target as Node)) {
+    const now = new Date();
+    const hour = now.getHours();
+    const mins = now.getMinutes();
+    const scrollTo = Math.max(0, (hour * 2 + Math.floor(mins / 30) - 2) * 48);
+    if (calendarView === 'day' && dayScrollRef.current) {
+      setTimeout(() => dayScrollRef.current?.scrollTo({ top: scrollTo, behavior: 'smooth' }), 100);
+    }
+    if (calendarView === 'week' && weekScrollRef.current) {
+      setTimeout(() => weekScrollRef.current?.scrollTo({ top: scrollTo, behavior: 'smooth' }), 100);
+    }
+  }, [calendarView]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
         setShowNavMenu(false);
       }
+      // Close event popup on outside click
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-event-popup]') && !target.closest('[data-event-chip]')) {
+        setSelectedEvent(null);
+        setEventPopupPos(null);
+      }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
   const addCalendarEvent = (date: string, startTime: string, type: 'meeting' | 'task' | 'rest' | 'study') => {
+    // Check if slot already has event
+    const existing = calendarEvents.find(e => e.date === date && e.startTime === startTime && !e.archived);
+    if (existing) return;
     const newEvent: CalendarEvent = {
       id: Date.now().toString(),
-      title: 'New Event',
+      title: '',
       type,
       startTime,
-      endTime: addMinutes(startTime, 30),
+      endTime: addMinutes(startTime, 60),
       date,
-      tags: [],
       archived: false,
     };
-    setCalendarEvents([...calendarEvents, newEvent]);
+    setCalendarEvents(prev => [...prev, newEvent]);
+    setEditingNewEventId(newEvent.id);
+    setSelectedEvent(newEvent);
     saveToApi(newEvent, '/calendar');
   };
 
   const updateCalendarEvent = (id: string, updates: Partial<CalendarEvent>) => {
-    const updated = calendarEvents.map(e => (e.id === id ? { ...e, ...updates } : e));
-    setCalendarEvents(updated);
-    const event = updated.find(e => e.id === id);
-    if (event) saveToApi(event, '/calendar');
+    setCalendarEvents(prev => {
+      const updated = prev.map(e => (e.id === id ? { ...e, ...updates } : e));
+      const event = updated.find(e => e.id === id);
+      if (event) saveToApi(event, '/calendar');
+      return updated;
+    });
+    if (selectedEvent?.id === id) setSelectedEvent(prev => prev ? { ...prev, ...updates } : prev);
   };
 
   const deleteCalendarEvent = (id: string) => {
-    setCalendarEvents(calendarEvents.filter(e => e.id !== id));
+    setCalendarEvents(prev => prev.filter(e => e.id !== id));
+    setSelectedEvent(null);
+    setEventPopupPos(null);
     saveToApi({ id, deleted: true }, '/calendar');
   };
 
   const addProject = () => {
-    const newProject: Project = { id: Date.now().toString(), name: 'New Project' };
-    setProjects([...projects, newProject]);
+    const newProject: Project = { id: Date.now().toString(), name: 'New Project', order: projects.length };
+    setProjects(prev => [...prev, newProject]);
     saveToApi(newProject, '/projects');
   };
 
   const updateProject = (id: string, name: string) => {
-    const updated = projects.map(p => (p.id === id ? { ...p, name } : p));
-    setProjects(updated);
-    saveToApi(updated.find(p => p.id === id), '/projects');
+    setProjects(prev => {
+      const updated = prev.map(p => (p.id === id ? { ...p, name } : p));
+      saveToApi(updated.find(p => p.id === id), '/projects');
+      return updated;
+    });
   };
 
   const deleteProject = (id: string) => {
-    setProjects(projects.filter(p => p.id !== id));
-    setTasks(tasks.filter(t => t.projectId !== id));
+    setProjects(prev => prev.filter(p => p.id !== id));
+    setTasks(prev => prev.filter(t => t.projectId !== id));
     saveToApi({ id, deleted: true }, '/projects');
+    setDeleteConfirm(null);
   };
 
-  const addTask = (projectId: string) => {
+  const addTask = (projectId: string, afterTaskId?: string) => {
+    const projectTasks = tasks.filter(t => t.projectId === projectId && !t.completed && !t.archived);
+    let insertIdx = projectTasks.length;
+    if (afterTaskId) {
+      const idx = projectTasks.findIndex(t => t.id === afterTaskId);
+      if (idx !== -1) insertIdx = idx + 1;
+    }
     const newTask: Task = {
       id: Date.now().toString(),
       projectId,
-      title: 'New Task',
+      title: '',
       priority: 3,
-      tags: [],
       completed: false,
       subtasks: [],
       archived: false,
+      order: insertIdx,
     };
-    setTasks([...tasks, newTask]);
+    setTasks(prev => [...prev, newTask]);
+    setEditingNewTaskId(newTask.id);
     saveToApi(newTask, '/tasks');
+    return newTask.id;
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
-    const updated = tasks.map(t => (t.id === id ? { ...t, ...updates } : t));
-    setTasks(updated);
-    const task = updated.find(t => t.id === id);
-    if (task) saveToApi(task, '/tasks');
+    setTasks(prev => {
+      const updated = prev.map(t => (t.id === id ? { ...t, ...updates } : t));
+      const task = updated.find(t => t.id === id);
+      if (task) saveToApi(task, '/tasks');
+      return updated;
+    });
   };
 
   const deleteTask = (id: string) => {
-    setTasks(tasks.filter(t => t.id !== id));
+    setTasks(prev => prev.filter(t => t.id !== id));
     saveToApi({ id, deleted: true }, '/tasks');
   };
 
-  const archiveTask = (id: string) => {
-    updateTask(id, { archived: true });
-  };
-
   const addSubtask = (taskId: string) => {
-    updateTask(taskId, {
-      subtasks: [...(tasks.find(t => t.id === taskId)?.subtasks || []), { id: Date.now().toString(), title: 'New Subtask', completed: false }],
-    });
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const newSub: Subtask = { id: Date.now().toString(), title: 'New subtask', completed: false };
+    updateTask(taskId, { subtasks: [...task.subtasks, newSub] });
   };
 
   const updateSubtask = (taskId: string, subtaskId: string, updates: Partial<Subtask>) => {
-    updateTask(taskId, {
-      subtasks: (tasks.find(t => t.id === taskId)?.subtasks || []).map(s => (s.id === subtaskId ? { ...s, ...updates } : s)),
-    });
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    updateTask(taskId, { subtasks: task.subtasks.map(s => s.id === subtaskId ? { ...s, ...updates } : s) });
   };
 
   const addIdea = () => {
@@ -242,26 +299,29 @@ const App = () => {
       title: 'New Idea',
       tags: [],
       questions: [
-        { question: 'Problem', answer: '' },
-        { question: 'Solution', answer: '' },
-        { question: 'Target Market', answer: '' },
+        { question: 'What problem does this solve?', answer: '' },
+        { question: 'Who is it for?', answer: '' },
+        { question: 'How is it different?', answer: '' },
       ],
       description: '',
       createdAt: new Date().toISOString(),
     };
-    setIdeas([...ideas, newIdea]);
+    setIdeas(prev => [...prev, newIdea]);
+    setExpandedIdea(newIdea.id);
     saveToApi(newIdea, '/ideas');
   };
 
   const updateIdea = (id: string, updates: Partial<Idea>) => {
-    const updated = ideas.map(i => (i.id === id ? { ...i, ...updates } : i));
-    setIdeas(updated);
-    const idea = updated.find(i => i.id === id);
-    if (idea) saveToApi(idea, '/ideas');
+    setIdeas(prev => {
+      const updated = prev.map(i => (i.id === id ? { ...i, ...updates } : i));
+      const idea = updated.find(i => i.id === id);
+      if (idea) saveToApi(idea, '/ideas');
+      return updated;
+    });
   };
 
   const deleteIdea = (id: string) => {
-    setIdeas(ideas.filter(i => i.id !== id));
+    setIdeas(prev => prev.filter(i => i.id !== id));
     saveToApi({ id, deleted: true }, '/ideas');
   };
 
@@ -270,26 +330,30 @@ const App = () => {
       id: Date.now().toString(),
       title: 'New Goal',
       timeframe: 'weekly',
-      fields: [],
+      why: '',
+      successCriteria: '',
+      obstacles: '',
+      actions: '',
       progress: 0,
-      credit: 0,
-      debit: 0,
       reflection: '',
       createdAt: new Date().toISOString(),
     };
-    setGoals([...goals, newGoal]);
+    setGoals(prev => [...prev, newGoal]);
+    setExpandedGoal(newGoal.id);
     saveToApi(newGoal, '/goals');
   };
 
   const updateGoal = (id: string, updates: Partial<Goal>) => {
-    const updated = goals.map(g => (g.id === id ? { ...g, ...updates } : g));
-    setGoals(updated);
-    const goal = updated.find(g => g.id === id);
-    if (goal) saveToApi(goal, '/goals');
+    setGoals(prev => {
+      const updated = prev.map(g => (g.id === id ? { ...g, ...updates } : g));
+      const goal = updated.find(g => g.id === id);
+      if (goal) saveToApi(goal, '/goals');
+      return updated;
+    });
   };
 
   const deleteGoal = (id: string) => {
-    setGoals(goals.filter(g => g.id !== id));
+    setGoals(prev => prev.filter(g => g.id !== id));
     saveToApi({ id, deleted: true }, '/goals');
   };
 
@@ -297,8 +361,13 @@ const App = () => {
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(d.setDate(diff));
-    return Array.from({ length: 7 }, (_, i) => new Date(monday.getTime() + i * 86400000));
+    const monday = new Date(d);
+    monday.setDate(diff);
+    return Array.from({ length: 7 }, (_, i) => {
+      const dd = new Date(monday);
+      dd.setDate(monday.getDate() + i);
+      return dd;
+    });
   };
 
   const getMonthDates = (date: Date) => {
@@ -306,70 +375,240 @@ const App = () => {
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const dates = [];
+    const dates: Date[] = [];
     for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
       dates.push(new Date(d));
     }
     return dates;
   };
 
-  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '18px', color: '#737373' }}>Loading...</div>;
+  const navigate = (dir: number) => {
+    const d = new Date(currentDate);
+    if (calendarView === 'day') d.setDate(d.getDate() + dir);
+    else if (calendarView === 'week') d.setDate(d.getDate() + dir * 7);
+    else if (calendarView === 'month') d.setMonth(d.getMonth() + dir);
+    setCurrentDate(d);
+  };
+
+  const openEventPopup = (event: CalendarEvent, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setEventPopupPos({ x: rect.right + 8, y: rect.top });
+    setSelectedEvent(event);
+  };
+
+  const now = new Date();
+  const currentDateStr = formatDate(now);
+  const currentTime = formatTime(now);
+
+  const isSlotPast = (dateStr: string, time: string) =>
+    dateStr < currentDateStr || (dateStr === currentDateStr && time < currentTime);
+
+  const isEventPast = (event: CalendarEvent) => isSlotPast(event.date, event.startTime);
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#f7f5f2', fontFamily: "'Georgia', serif", fontSize: '16px', color: '#888', letterSpacing: '0.05em' }}>
+      Loading…
+    </div>
+  );
+
+  // ─── CALENDAR ────────────────────────────────────────────────────────────────
+
+  const renderEventChip = (event: CalendarEvent, compact = false) => {
+    const past = isEventPast(event);
+    const color = past ? '#c8c4be' : TYPE_COLORS[event.type];
+    const textColor = past ? '#999' : '#2c2c2c';
+    return (
+      <div
+        key={event.id}
+        data-event-chip
+        draggable
+        onDragStart={() => setDraggedEvent({ id: event.id, startDate: event.date, startTime: event.startTime })}
+        onDragEnd={() => setDraggedEvent(null)}
+        onClick={(e) => openEventPopup(event, e)}
+        style={{
+          padding: compact ? '2px 6px' : '4px 8px',
+          borderRadius: '5px',
+          fontSize: compact ? '10px' : '11px',
+          background: color,
+          color: textColor,
+          cursor: 'grab',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          userSelect: 'none',
+          borderLeft: `3px solid ${past ? '#aaa' : TYPE_COLORS[event.type]}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          fontStyle: past ? 'italic' : 'normal',
+          opacity: past ? 0.7 : 1,
+          transition: 'opacity 0.15s',
+        }}
+      >
+        {event.title || <span style={{ opacity: 0.5 }}>Untitled</span>}
+      </div>
+    );
+  };
+
+  const EventPopup = () => {
+    if (!selectedEvent || !eventPopupPos) return null;
+    const ev = selectedEvent;
+    const durationMins = (() => {
+      const [sh, sm] = ev.startTime.split(':').map(Number);
+      const [eh, em] = ev.endTime.split(':').map(Number);
+      return (eh * 60 + em) - (sh * 60 + sm);
+    })();
+
+    const style: React.CSSProperties = {
+      position: 'fixed',
+      left: Math.min(eventPopupPos.x, window.innerWidth - 300),
+      top: Math.min(eventPopupPos.y, window.innerHeight - 320),
+      width: '270px',
+      background: 'white',
+      border: '1px solid #e5e0d8',
+      borderRadius: '10px',
+      padding: '14px',
+      boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    };
+
+    return (
+      <div data-event-popup style={style}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            {ev.date} · {ev.startTime}
+          </span>
+          <button onClick={() => { setSelectedEvent(null); setEventPopupPos(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', padding: '2px', lineHeight: 1 }}>
+            <X size={14} />
+          </button>
+        </div>
+        <input
+          autoFocus={editingNewEventId === ev.id}
+          type="text"
+          value={ev.title}
+          placeholder="Event title…"
+          onChange={e => updateCalendarEvent(ev.id, { title: e.target.value })}
+          onKeyDown={e => { if (e.key === 'Enter') { setSelectedEvent(null); setEventPopupPos(null); setEditingNewEventId(null); } }}
+          style={{ fontSize: '14px', fontWeight: '600', color: '#2c2c2c', padding: '6px 8px', border: '1px solid #e5e0d8', borderRadius: '6px', outline: 'none', background: '#faf9f7' }}
+        />
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {(['meeting', 'task', 'rest', 'study'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => updateCalendarEvent(ev.id, { type: t })}
+              style={{
+                fontSize: '11px',
+                padding: '3px 10px',
+                borderRadius: '20px',
+                border: `1.5px solid ${ev.type === t ? TYPE_COLORS[t] : '#e0ddd8'}`,
+                background: ev.type === t ? TYPE_COLORS[t] : 'white',
+                color: ev.type === t ? '#2c2c2c' : '#888',
+                cursor: 'pointer',
+                fontWeight: ev.type === t ? '600' : '400',
+              }}
+            >
+              {TYPE_LABELS[t]}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input
+            type="time"
+            value={ev.startTime}
+            onChange={e => updateCalendarEvent(ev.id, { startTime: e.target.value })}
+            style={{ fontSize: '12px', padding: '4px 6px', border: '1px solid #e5e0d8', borderRadius: '6px', outline: 'none', background: '#faf9f7', flex: 1 }}
+          />
+          <span style={{ color: '#ccc', fontSize: '12px' }}>→</span>
+          <select
+            value={durationMins}
+            onChange={e => updateCalendarEvent(ev.id, { endTime: addMinutes(ev.startTime, parseInt(e.target.value)) })}
+            style={{ fontSize: '12px', padding: '4px 6px', border: '1px solid #e5e0d8', borderRadius: '6px', outline: 'none', background: '#faf9f7', flex: 1 }}
+          >
+            {[15, 30, 45, 60, 90, 120, 180].map(m => (
+              <option key={m} value={m}>{m}m</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+          <button
+            onClick={() => {
+              const newTask: Task = {
+                id: Date.now().toString(),
+                projectId: projects[0]?.id || '',
+                title: ev.title,
+                priority: 3,
+                completed: false,
+                subtasks: [],
+                archived: false,
+              };
+              setTasks(prev => [...prev, newTask]);
+              saveToApi(newTask, '/tasks');
+              setSelectedEvent(null);
+              setEventPopupPos(null);
+            }}
+            style={{ flex: 1, fontSize: '11px', padding: '5px 8px', background: '#f0f4f0', border: '1px solid #d4e0d4', borderRadius: '6px', cursor: 'pointer', color: '#4a7a5a' }}
+          >
+            → Add to Tasks
+          </button>
+          <button
+            onClick={() => {
+              if (deleteConfirm?.id === ev.id) {
+                deleteCalendarEvent(ev.id);
+                setDeleteConfirm(null);
+              } else {
+                setDeleteConfirm({ type: 'event', id: ev.id, name: ev.title || 'this event' });
+              }
+            }}
+            style={{ fontSize: '11px', padding: '5px 10px', background: deleteConfirm?.id === ev.id ? '#fee2e2' : '#faf9f7', border: `1px solid ${deleteConfirm?.id === ev.id ? '#fca5a5' : '#e5e0d8'}`, borderRadius: '6px', cursor: 'pointer', color: deleteConfirm?.id === ev.id ? '#b91c1c' : '#aaa' }}
+          >
+            {deleteConfirm?.id === ev.id ? 'Confirm delete' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   const renderCalendarDay = () => {
     const dateStr = formatDate(currentDate);
     const dayEvents = calendarEvents.filter(e => e.date === dateStr && !e.archived);
-    const now = new Date();
-    const currentDateStr = formatDate(now);
-    const currentTime = formatTime(now);
 
     return (
-      <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
-        <h2 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>{currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px' }}>
+      <div ref={dayScrollRef} style={{ flex: 1, overflow: 'auto', padding: '0 16px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr', gap: '0' }}>
           {TIME_SLOTS.map(time => {
             const slotEvents = dayEvents.filter(e => e.startTime === time);
-            const isPast = dateStr < currentDateStr || (dateStr === currentDateStr && time < currentTime);
+            const past = isSlotPast(dateStr, time);
+            const isCurrentHour = dateStr === currentDateStr && time === currentTime.slice(0, 5).replace(/:\d\d$/, m => `:${Math.floor(parseInt(m.slice(1)) / 30) * 30}`.padStart(3, ':'));
             return (
               <React.Fragment key={time}>
-                <div style={{ fontSize: '12px', color: '#737373', paddingTop: '8px' }}>{time}</div>
+                <div style={{ fontSize: '11px', color: '#bbb', paddingTop: '10px', textAlign: 'right', paddingRight: '10px', fontFamily: "'Georgia', serif" }}>{time}</div>
                 <div
-                  onClick={() => !isPast && addCalendarEvent(dateStr, time, 'task')}
+                  onClick={() => !past && !slotEvents.length && addCalendarEvent(dateStr, time, 'task')}
                   style={{
-                    minHeight: '40px',
-                    border: `1px dashed ${isPast ? '#d4d4d4' : '#a3a3a3'}`,
-                    borderRadius: '4px',
-                    padding: '4px',
-                    backgroundColor: isPast ? '#fafafa' : 'white',
-                    cursor: isPast ? 'default' : 'pointer',
+                    minHeight: '44px',
+                    borderTop: `1px solid ${past ? '#f0ede8' : '#e8e4de'}`,
+                    padding: '4px 6px',
+                    background: past ? '#faf9f7' : 'transparent',
+                    cursor: past || slotEvents.length ? 'default' : 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '4px',
+                    gap: '3px',
+                    transition: 'background 0.1s',
                   }}
-                  onMouseEnter={(e) => !isPast && (e.currentTarget.style.backgroundColor = '#f0f9ff')}
-                  onMouseLeave={(e) => !isPast && (e.currentTarget.style.backgroundColor = 'white')}
+                  onMouseEnter={(e) => !past && !slotEvents.length && (e.currentTarget.style.background = '#f5f3f0')}
+                  onMouseLeave={(e) => !past && (e.currentTarget.style.background = 'transparent')}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedEvent) {
+                      updateCalendarEvent(draggedEvent.id, { date: dateStr, startTime: time, endTime: addMinutes(time, 60) });
+                      setDraggedEvent(null);
+                    }
+                  }}
                 >
-                  {slotEvents.map(event => (
-                    <div
-                      key={event.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedEvent(event);
-                      }}
-                      style={{
-                        padding: '4px 8px',
-                        borderRadius: '3px',
-                        fontSize: '11px',
-                        backgroundColor: TYPE_COLORS[event.type],
-                        color: '#2c2c2c',
-                        cursor: 'pointer',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {event.title}
-                    </div>
-                  ))}
+                  {slotEvents.map(event => renderEventChip(event))}
                 </div>
               </React.Fragment>
             );
@@ -381,79 +620,54 @@ const App = () => {
 
   const renderCalendarWeek = () => {
     const weekDates = getWeekDates(currentDate);
-    const now = new Date();
-    const currentDateStr = formatDate(now);
-    const currentTime = formatTime(now);
 
     return (
-      <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(7, 1fr)`, gap: '8px', minWidth: '1200px' }}>
-          <div></div>
-          {weekDates.map(date => (
-            <div key={formatDate(date)} style={{ textAlign: 'center', fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#2c2c2c' }}>
-              {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            </div>
-          ))}
-
+      <div ref={weekScrollRef} style={{ flex: 1, overflow: 'auto', padding: '0 16px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `56px repeat(7, 1fr)`, minWidth: '900px' }}>
+          <div />
+          {weekDates.map(date => {
+            const dateStr = formatDate(date);
+            const isToday = dateStr === currentDateStr;
+            return (
+              <div key={dateStr} style={{ textAlign: 'center', fontSize: '11px', fontWeight: isToday ? '700' : '500', padding: '8px 4px', color: isToday ? '#6a5acd' : '#888', letterSpacing: '0.04em', textTransform: 'uppercase', borderBottom: `2px solid ${isToday ? '#6a5acd' : 'transparent'}` }}>
+                {date.toLocaleDateString('en-US', { weekday: 'short' })} {date.getDate()}
+              </div>
+            );
+          })}
           {TIME_SLOTS.map(time => (
             <React.Fragment key={time}>
-              <div style={{ fontSize: '12px', color: '#737373', paddingTop: '8px', textAlign: 'right', paddingRight: '8px' }}>{time}</div>
+              <div style={{ fontSize: '11px', color: '#bbb', paddingTop: '10px', textAlign: 'right', paddingRight: '10px', fontFamily: "'Georgia', serif" }}>{time}</div>
               {weekDates.map(date => {
                 const dateStr = formatDate(date);
-                const dayEvents = calendarEvents.filter(e => e.date === dateStr && e.startTime === time && !e.archived);
-                const isPast = dateStr < currentDateStr || (dateStr === currentDateStr && time < currentTime);
+                const slotEvents = calendarEvents.filter(e => e.date === dateStr && e.startTime === time && !e.archived);
+                const past = isSlotPast(dateStr, time);
                 return (
                   <div
                     key={dateStr}
-                    onClick={() => !isPast && addCalendarEvent(dateStr, time, 'task')}
+                    onClick={() => !past && !slotEvents.length && addCalendarEvent(dateStr, time, 'task')}
                     style={{
-                      minHeight: '40px',
-                      border: `1px dashed ${isPast ? '#d4d4d4' : '#a3a3a3'}`,
-                      borderRadius: '4px',
-                      padding: '4px',
-                      backgroundColor: isPast ? '#fafafa' : formatDate(date) === currentDateStr ? '#f0f9ff' : 'white',
-                      cursor: isPast ? 'default' : 'pointer',
+                      minHeight: '44px',
+                      borderTop: '1px solid #f0ede8',
+                      borderLeft: '1px solid #f0ede8',
+                      padding: '3px 4px',
+                      background: past ? '#faf9f7' : dateStr === currentDateStr ? '#faf8ff' : 'transparent',
+                      cursor: past || slotEvents.length ? 'default' : 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '2px',
-                      position: 'relative',
                     }}
-                    onMouseEnter={(e) => !isPast && (e.currentTarget.style.backgroundColor = formatDate(date) === currentDateStr ? '#dbeafe' : '#f0f9ff')}
-                    onMouseLeave={(e) => !isPast && (e.currentTarget.style.backgroundColor = formatDate(date) === currentDateStr ? '#f0f9ff' : 'white')}
+                    onMouseEnter={(e) => !past && !slotEvents.length && (e.currentTarget.style.background = '#f5f3f0')}
+                    onMouseLeave={(e) => !past && (e.currentTarget.style.background = dateStr === currentDateStr ? '#faf8ff' : 'transparent')}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => {
                       e.preventDefault();
                       if (draggedEvent) {
-                        updateCalendarEvent(draggedEvent.id, { date: dateStr, startTime: time, endTime: addMinutes(time, 30) });
+                        updateCalendarEvent(draggedEvent.id, { date: dateStr, startTime: time, endTime: addMinutes(time, 60) });
                         setDraggedEvent(null);
                       }
                     }}
                   >
-                    {dayEvents.map(event => (
-                      <div
-                        key={event.id}
-                        draggable
-                        onDragStart={() => setDraggedEvent({ id: event.id, startDate: event.date, startTime: event.startTime })}
-                        onDragEnd={() => setDraggedEvent(null)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedEvent(event);
-                        }}
-                        style={{
-                          padding: '3px 6px',
-                          borderRadius: '3px',
-                          fontSize: '10px',
-                          backgroundColor: TYPE_COLORS[event.type],
-                          color: '#2c2c2c',
-                          cursor: 'grab',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {event.title}
-                      </div>
-                    ))}
+                    {slotEvents.map(event => renderEventChip(event, true))}
                   </div>
                 );
               })}
@@ -469,55 +683,24 @@ const App = () => {
     const firstDate = monthDates[0];
     const startDay = firstDate.getDay() === 0 ? 6 : firstDate.getDay() - 1;
     const calendarGrid = Array(startDay).fill(null).concat(monthDates);
-    const now = new Date();
-    const currentDateStr = formatDate(now);
 
     return (
-      <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: '0 16px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-            <div key={day} style={{ textAlign: 'center', fontSize: '12px', fontWeight: '600', padding: '8px', color: '#2c2c2c' }}>
-              {day}
-            </div>
+            <div key={day} style={{ textAlign: 'center', fontSize: '11px', fontWeight: '600', padding: '8px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{day}</div>
           ))}
           {calendarGrid.map((date, i) => {
-            if (!date) return <div key={`empty-${i}`} style={{ minHeight: '100px' }} />;
+            if (!date) return <div key={`e-${i}`} style={{ minHeight: '90px' }} />;
             const dateStr = formatDate(date);
             const dayEvents = calendarEvents.filter(e => e.date === dateStr && !e.archived);
             const isToday = dateStr === currentDateStr;
             return (
-              <div
-                key={dateStr}
-                style={{
-                  minHeight: '100px',
-                  border: `1px solid ${isToday ? '#0ea5e9' : '#e5e5e5'}`,
-                  borderRadius: '4px',
-                  padding: '8px',
-                  backgroundColor: isToday ? '#f0f9ff' : 'white',
-                }}
-              >
-                <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: isToday ? '#0ea5e9' : '#2c2c2c' }}>{date.getDate()}</div>
+              <div key={dateStr} style={{ minHeight: '90px', border: `1.5px solid ${isToday ? '#6a5acd' : '#ede9e3'}`, borderRadius: '6px', padding: '6px', background: isToday ? '#faf8ff' : 'white' }}>
+                <div style={{ fontSize: '12px', fontWeight: isToday ? '700' : '500', marginBottom: '4px', color: isToday ? '#6a5acd' : '#888' }}>{date.getDate()}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  {dayEvents.slice(0, 3).map(event => (
-                    <div
-                      key={event.id}
-                      onClick={() => setSelectedEvent(event)}
-                      style={{
-                        padding: '2px 6px',
-                        borderRadius: '3px',
-                        fontSize: '10px',
-                        backgroundColor: TYPE_COLORS[event.type],
-                        color: '#2c2c2c',
-                        cursor: 'pointer',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {event.title}
-                    </div>
-                  ))}
-                  {dayEvents.length > 3 && <div style={{ fontSize: '10px', color: '#737373' }}>+{dayEvents.length - 3}</div>}
+                  {dayEvents.slice(0, 3).map(event => renderEventChip(event, true))}
+                  {dayEvents.length > 3 && <div style={{ fontSize: '10px', color: '#bbb' }}>+{dayEvents.length - 3} more</div>}
                 </div>
               </div>
             );
@@ -528,833 +711,600 @@ const App = () => {
   };
 
   const renderCalendar = () => {
+    const navLabel = calendarView === 'day'
+      ? currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+      : calendarView === 'week'
+        ? (() => { const w = getWeekDates(currentDate); return `${w[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${w[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`; })()
+        : currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px', padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Calendar</h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #ede9e3', gap: '12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '4px' }}>
             {(['day', 'week', 'month'] as const).map(view => (
-              <button
-                key={view}
-                onClick={() => setCalendarView(view)}
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '14px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: calendarView === view ? TYPE_COLORS.meeting : '#e5e5e5',
-                  color: calendarView === view ? 'white' : '#404040',
-                  textTransform: 'capitalize',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {view}
-              </button>
+              <button key={view} onClick={() => setCalendarView(view)} style={{
+                padding: '5px 12px', fontSize: '12px', borderRadius: '20px', border: 'none', cursor: 'pointer',
+                background: calendarView === view ? '#2c2c2c' : 'transparent',
+                color: calendarView === view ? 'white' : '#888',
+                fontWeight: calendarView === view ? '600' : '400',
+                textTransform: 'capitalize', letterSpacing: '0.03em', transition: 'all 0.15s',
+              }}>{view}</button>
             ))}
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={() => navigate(-1)} style={{ padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px', color: '#888', display: 'flex' }}><ChevronLeft size={16} /></button>
+            <span style={{ fontSize: '13px', fontWeight: '500', color: '#555', minWidth: '160px', textAlign: 'center' }}>{navLabel}</span>
+            <button onClick={() => navigate(1)} style={{ padding: '5px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px', color: '#888', display: 'flex' }}><ChevronRight size={16} /></button>
+          </div>
+          <button onClick={() => setCurrentDate(new Date())} style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '20px', border: '1px solid #e0ddd8', background: 'white', cursor: 'pointer', color: '#555' }}>Today</button>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() - 86400000))} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-            <ChevronLeft size={20} color="#404040" />
-          </button>
-          <span style={{ fontSize: '14px', fontWeight: '500', color: '#404040' }}>{currentDate.toDateString()}</span>
-          <button onClick={() => setCurrentDate(new Date(currentDate.getTime() + 86400000))} style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-            <ChevronRight size={20} color="#404040" />
-          </button>
-        </div>
-
         {calendarView === 'day' && renderCalendarDay()}
         {calendarView === 'week' && renderCalendarWeek()}
         {calendarView === 'month' && renderCalendarMonth()}
-
-        {selectedEvent && (
-          <div style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h3 style={{ fontWeight: '600', color: '#2c2c2c' }}>{selectedEvent.title}</h3>
-              <button onClick={() => setSelectedEvent(null)} style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-                <X size={16} color="#a3a3a3" />
-              </button>
-            </div>
-            <input
-              type="text"
-              value={selectedEvent.title}
-              onChange={e => updateCalendarEvent(selectedEvent.id, { title: e.target.value })}
-              style={{ fontSize: '14px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
-            />
-            <select
-              value={selectedEvent.type}
-              onChange={e => updateCalendarEvent(selectedEvent.id, { type: e.target.value as any })}
-              style={{ fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
-            >
-              <option value="meeting">Meeting</option>
-              <option value="task">Task</option>
-              <option value="rest">Rest</option>
-              <option value="study">Study</option>
-            </select>
-            <input
-              type="time"
-              value={selectedEvent.startTime}
-              onChange={e => updateCalendarEvent(selectedEvent.id, { startTime: e.target.value, endTime: addMinutes(e.target.value, 30) })}
-              style={{ fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
-            />
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="number"
-                min="30"
-                step="30"
-                value={Math.round((TIME_SLOTS.indexOf(selectedEvent.endTime) - TIME_SLOTS.indexOf(selectedEvent.startTime)) * 15)}
-                onChange={e => updateCalendarEvent(selectedEvent.id, { endTime: addMinutes(selectedEvent.startTime, parseInt(e.target.value)) })}
-                placeholder="Duration (min)"
-                style={{ fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none', flex: 1 }}
-              />
-              <button
-                onClick={() => {
-                  const newTask: Task = {
-                    id: Date.now().toString(),
-                    projectId: projects[0]?.id || '',
-                    title: selectedEvent.title,
-                    priority: 3,
-                    tags: selectedEvent.tags,
-                    completed: false,
-                    subtasks: [],
-                    archived: false,
-                  };
-                  setTasks([...tasks, newTask]);
-                  saveToApi(newTask, '/tasks');
-                  setSelectedEvent(null);
-                }}
-                style={{
-                  fontSize: '12px',
-                  padding: '6px 12px',
-                  backgroundColor: '#A8D5BA',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                To Tasks
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {selectedEvent.tags.map(tag => (
-                <span
-                  key={tag}
-                  onClick={() => updateCalendarEvent(selectedEvent.id, { tags: selectedEvent.tags.filter(t => t !== tag) })}
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '12px',
-                    borderRadius: '4px',
-                    backgroundColor: '#dbeafe',
-                    color: '#1e40af',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {tag} ✕
-                </span>
-              ))}
-              <input
-                type="text"
-                placeholder="Add tag"
-                onKeyPress={e => {
-                  if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
-                    const newTag = (e.target as HTMLInputElement).value;
-                    updateCalendarEvent(selectedEvent.id, { tags: [...selectedEvent.tags, newTag] });
-                    (e.target as HTMLInputElement).value = '';
-                  }
-                }}
-                style={{ fontSize: '12px', padding: '4px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={() => {
-                  deleteCalendarEvent(selectedEvent.id);
-                  setSelectedEvent(null);
-                }}
-                style={{
-                  fontSize: '12px',
-                  padding: '6px 12px',
-                  backgroundColor: '#fee2e2',
-                  color: '#b91c1c',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fecaca')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#fee2e2')}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     );
   };
+
+  // ─── TASKS (Kanban) ───────────────────────────────────────────────────────────
 
   const renderTasks = () => {
-    const activeTasks = tasks.filter(t => !t.completed && !t.archived);
-    const completedTasks = tasks.filter(t => t.completed);
-    const archivedTasks = tasks.filter(t => t.archived);
-
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Tasks</h1>
-          <button
-            onClick={addProject}
-            style={{
-              padding: '8px',
-              borderRadius: '4px',
-              border: 'none',
-              backgroundColor: TYPE_COLORS.task,
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-          >
-            <Plus size={18} />
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #ede9e3', flexShrink: 0 }}>
+          <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#2c2c2c', margin: 0, fontFamily: "'Georgia', serif" }}>Tasks</h1>
+          <button onClick={addProject} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '6px 14px', background: '#2c2c2c', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer' }}>
+            <Plus size={14} /> New List
           </button>
         </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: '16px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+          {projects.map((project) => {
+            const activeTasks = tasks.filter(t => t.projectId === project.id && !t.completed && !t.archived).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            const completedTasks = tasks.filter(t => t.projectId === project.id && t.completed);
+            const [showCompleted, setShowCompleted] = useState(false);
 
-        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {projects.map(project => (
-            <div key={project.id} style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <input
-                  type="text"
-                  value={project.name}
-                  onChange={e => updateProject(project.id, e.target.value)}
-                  style={{
-                    fontWeight: '600',
-                    color: '#2c2c2c',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    borderBottom: '1px solid transparent',
-                    outline: 'none',
-                    flex: 1,
-                    fontSize: '14px',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
-                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
-                />
-                <button
-                  onClick={() => deleteProject(project.id)}
-                  style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
-                {activeTasks
-                  .filter(t => t.projectId === project.id)
-                  .sort((a, b) => b.priority - a.priority)
-                  .map(task => (
-                    <div key={task.id} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#fafafa', borderLeft: `4px solid ${PRIORITY_COLORS[task.priority - 1]}` }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                        <button
-                          onClick={() => updateTask(task.id, { completed: true })}
-                          style={{ marginTop: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = '#525252')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
-                        >
-                          <Circle size={16} />
-                        </button>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <input
-                            type="text"
-                            value={task.title}
-                            onChange={e => updateTask(task.id, { title: e.target.value })}
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: '500',
-                              color: '#2c2c2c',
-                              backgroundColor: 'transparent',
-                              border: 'none',
-                              borderBottom: '1px solid transparent',
-                              outline: 'none',
-                              width: '100%',
-                            }}
-                            onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
-                            onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
-                          />
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', fontSize: '12px' }}>
-                            <select
-                              value={task.priority}
-                              onChange={e => updateTask(task.id, { priority: parseInt(e.target.value) })}
-                              style={{ padding: '2px 4px', border: '1px solid #e5e5e5', borderRadius: '3px', backgroundColor: '#fafafa', outline: 'none', fontSize: '11px' }}
-                            >
-                              {[1, 2, 3, 4, 5].map(p => <option key={p} value={p}>P{p}</option>)}
-                            </select>
-                          </div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                            {task.tags.map(tag => (
-                              <span
-                                key={tag}
-                                onClick={() => updateTask(task.id, { tags: task.tags.filter(t => t !== tag) })}
-                                style={{
-                                  padding: '2px 6px',
-                                  fontSize: '11px',
-                                  borderRadius: '3px',
-                                  backgroundColor: '#dbeafe',
-                                  color: '#1e40af',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                {tag} ✕
-                              </span>
-                            ))}
-                            <input
-                              type="text"
-                              placeholder="tag"
-                              onKeyPress={e => {
-                                if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
-                                  const newTag = (e.target as HTMLInputElement).value;
-                                  updateTask(task.id, { tags: [...task.tags, newTag] });
-                                  (e.target as HTMLInputElement).value = '';
-                                }
-                              }}
-                              style={{ fontSize: '11px', padding: '2px 4px', border: '1px solid #e5e5e5', borderRadius: '3px', backgroundColor: '#fafafa', outline: 'none', width: '60px' }}
-                            />
-                          </div>
-                          {task.subtasks.length > 0 && (
-                            <div style={{ marginTop: '8px', paddingLeft: '8px', borderLeft: '1px solid #d4d4d4', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              {task.subtasks.map(subtask => (
-                                <div key={subtask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <button
-                                    onClick={() => updateSubtask(task.id, subtask.id, { completed: !subtask.completed })}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3' }}
-                                  >
-                                    {subtask.completed ? <CheckCircle2 size={14} /> : <Circle size={14} />}
-                                  </button>
-                                  <input
-                                    type="text"
-                                    value={subtask.title}
-                                    onChange={e => updateSubtask(task.id, subtask.id, { title: e.target.value })}
-                                    style={{
-                                      fontSize: '12px',
-                                      backgroundColor: 'transparent',
-                                      border: 'none',
-                                      borderBottom: '1px solid transparent',
-                                      outline: 'none',
-                                      flex: 1,
-                                      color: subtask.completed ? '#a3a3a3' : '#404040',
-                                      textDecoration: subtask.completed ? 'line-through' : 'none',
-                                    }}
-                                    onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
-                                    onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => addSubtask(task.id)}
-                          style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s', fontSize: '12px' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = '#525252')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
-                        >
-                          +
-                        </button>
-                        <button
-                          onClick={() => archiveTask(task.id)}
-                          style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = '#525252')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
-                        >
-                          <Archive size={16} />
-                        </button>
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-
-              <button
-                onClick={() => addTask(project.id)}
+            return (
+              <div
+                key={project.id}
+                draggable
+                onDragStart={() => setDraggedProject(project.id)}
+                onDragEnd={() => setDraggedProject(null)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (draggedTask) {
+                    updateTask(draggedTask.id, { projectId: project.id });
+                    setDraggedTask(prev => prev ? { ...prev, fromProjectId: project.id } : prev);
+                  }
+                }}
                 style={{
-                  width: '100%',
-                  fontSize: '12px',
-                  color: '#737373',
-                  padding: '6px 8px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                  e.currentTarget.style.color = '#2c2c2c';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = '#737373';
+                  width: '280px',
+                  flexShrink: 0,
+                  background: 'white',
+                  border: '1px solid #ede9e3',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  maxHeight: 'calc(100vh - 120px)',
+                  opacity: draggedProject === project.id ? 0.5 : 1,
+                  transition: 'opacity 0.15s',
                 }}
               >
-                + Add Task
-              </button>
+                {/* Project header */}
+                <div style={{ padding: '12px 14px', borderBottom: '1px solid #f0ede8', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, cursor: 'grab' }}>
+                  <GripVertical size={14} color="#ccc" />
+                  <input
+                    type="text"
+                    value={project.name}
+                    onChange={e => updateProject(project.id, e.target.value)}
+                    style={{ flex: 1, fontWeight: '700', fontSize: '13px', color: '#2c2c2c', background: 'transparent', border: 'none', outline: 'none', fontFamily: "'Georgia', serif" }}
+                  />
+                  <span style={{ fontSize: '11px', color: '#bbb', background: '#f5f3f0', padding: '2px 7px', borderRadius: '10px' }}>{activeTasks.length}</span>
+                  <button
+                    onClick={() => setDeleteConfirm({ type: 'project', id: project.id, name: project.name })}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', padding: '2px', display: 'flex', transition: 'color 0.15s' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#ddd')}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+
+                {/* Tasks list */}
+                <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
+                  {activeTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      projects={projects}
+                      autoFocus={editingNewTaskId === task.id}
+                      onFocusDone={() => setEditingNewTaskId(null)}
+                      onUpdate={(updates) => updateTask(task.id, updates)}
+                      onDelete={() => deleteTask(task.id)}
+                      onArchive={() => updateTask(task.id, { archived: true })}
+                      onComplete={() => updateTask(task.id, { completed: true })}
+                      onAddSubtask={() => addSubtask(task.id)}
+                      onUpdateSubtask={(sid, updates) => updateSubtask(task.id, sid, updates)}
+                      onEnterKey={() => addTask(project.id, task.id)}
+                      onTabKey={() => addSubtask(task.id)}
+                      onDragStart={() => setDraggedTask({ id: task.id, fromProjectId: project.id })}
+                      onDragEnd={() => setDraggedTask(null)}
+                    />
+                  ))}
+
+                  <button
+                    onClick={() => addTask(project.id)}
+                    style={{ width: '100%', textAlign: 'left', fontSize: '12px', color: '#bbb', padding: '8px', borderRadius: '6px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#f5f3f0'; e.currentTarget.style.color = '#888'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#bbb'; }}
+                  >
+                    <Plus size={13} /> Add task
+                  </button>
+
+                  {completedTasks.length > 0 && (
+                    <div style={{ marginTop: '8px', borderTop: '1px solid #f0ede8', paddingTop: '8px' }}>
+                      <button
+                        onClick={() => setShowCompleted(v => !v)}
+                        style={{ width: '100%', textAlign: 'left', fontSize: '11px', color: '#bbb', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <ChevronDown size={12} style={{ transform: showCompleted ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                        Completed ({completedTasks.length})
+                      </button>
+                      {showCompleted && completedTasks.map(task => (
+                        <div key={task.id} style={{ padding: '6px 8px', fontSize: '12px', color: '#bbb', textDecoration: 'line-through', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>{task.title}</span>
+                          <button onClick={() => updateTask(task.id, { completed: false })} style={{ fontSize: '10px', color: '#ccc', background: 'none', border: 'none', cursor: 'pointer' }}>Undo</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {/* Archived column */}
+          {tasks.filter(t => t.archived).length > 0 && (
+            <div style={{ width: '240px', flexShrink: 0 }}>
+              <div style={{ fontSize: '12px', color: '#bbb', fontWeight: '600', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px', paddingLeft: '4px' }}>Archived</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {tasks.filter(t => t.archived).map(task => (
+                  <div key={task.id} style={{ padding: '8px 12px', borderRadius: '6px', background: '#f5f3f0', fontSize: '12px', color: '#bbb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{task.title}</span>
+                    <button onClick={() => updateTask(task.id, { archived: false })} style={{ fontSize: '10px', color: '#ccc', background: 'none', border: 'none', cursor: 'pointer' }}>Restore</button>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          )}
         </div>
-
-        {completedTasks.length > 0 && (
-          <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '16px' }}>
-            <h3 style={{ fontWeight: '600', color: '#525252', marginBottom: '8px' }}>Completed ({completedTasks.length})</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {completedTasks.map(task => (
-                <div key={task.id} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#f0f0f0', textDecoration: 'line-through', color: '#a3a3a3', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>{task.title}</span>
-                  <button
-                    onClick={() => updateTask(task.id, { completed: false })}
-                    style={{ fontSize: '12px', color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
-                  >
-                    Undo
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {archivedTasks.length > 0 && (
-          <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '16px' }}>
-            <h3 style={{ fontWeight: '600', color: '#525252', marginBottom: '8px' }}>Archive ({archivedTasks.length})</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {archivedTasks.map(task => (
-                <div key={task.id} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#f0f0f0', color: '#737373', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>{task.title}</span>
-                  <button
-                    onClick={() => updateTask(task.id, { archived: false })}
-                    style={{ fontSize: '12px', color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
-                  >
-                    Restore
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     );
   };
 
-  const renderIdeas = () => {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Ideas</h1>
-          <button
-            onClick={addIdea}
-            style={{
-              padding: '8px',
-              borderRadius: '4px',
-              border: 'none',
-              backgroundColor: TYPE_COLORS.study,
-              color: '#2c2c2c',
-              cursor: 'pointer',
-              transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-          >
-            <Plus size={18} />
-          </button>
-        </div>
+  // ─── IDEAS ───────────────────────────────────────────────────────────────────
 
-        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {ideas.map(idea => (
-            <div key={idea.id} style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <input
-                  type="text"
-                  value={idea.title}
-                  onChange={e => updateIdea(idea.id, { title: e.target.value })}
-                  style={{
-                    fontWeight: '600',
-                    color: '#2c2c2c',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    borderBottom: '1px solid transparent',
-                    outline: 'none',
-                    flex: 1,
-                    fontSize: '14px',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
-                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
-                />
-                <button
-                  onClick={() => deleteIdea(idea.id)}
-                  style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-
-              <textarea
-                value={idea.description}
-                onChange={e => updateIdea(idea.id, { description: e.target.value })}
-                style={{ width: '100%', fontSize: '14px', color: '#404040', backgroundColor: '#fafafa', padding: '8px', borderRadius: '4px', border: '1px solid #e5e5e5', marginBottom: '8px', resize: 'none', height: '60px', outline: 'none' }}
-                placeholder="Idea description..."
+  const renderIdeas = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #ede9e3', flexShrink: 0 }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#2c2c2c', margin: 0, fontFamily: "'Georgia', serif" }}>Ideas</h1>
+        <button onClick={addIdea} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '6px 14px', background: '#2c2c2c', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer' }}>
+          <Plus size={14} /> New Idea
+        </button>
+      </div>
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {ideas.length === 0 && (
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: '14px', marginTop: '40px' }}>
+            <Lightbulb size={32} style={{ marginBottom: '12px', opacity: 0.3 }} />
+            <p>No ideas yet. Capture your first one!</p>
+          </div>
+        )}
+        {ideas.map(idea => (
+          <div key={idea.id} style={{ border: '1px solid #ede9e3', borderRadius: '10px', background: 'white', overflow: 'hidden' }}>
+            <div
+              onClick={() => setExpandedIdea(expandedIdea === idea.id ? null : idea.id)}
+              style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+            >
+              <Lightbulb size={16} color="#d4a82a" />
+              <input
+                type="text"
+                value={idea.title}
+                onChange={e => { e.stopPropagation(); updateIdea(idea.id, { title: e.target.value }); }}
+                onClick={e => e.stopPropagation()}
+                style={{ flex: 1, fontWeight: '600', fontSize: '14px', color: '#2c2c2c', background: 'transparent', border: 'none', outline: 'none' }}
               />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
-                {idea.questions.map((q, i) => (
-                  <div key={i}>
-                    <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                      <input
-                        type="text"
-                        value={q.question}
+              <span style={{ fontSize: '11px', color: '#bbb' }}>{new Date(idea.createdAt).toLocaleDateString()}</span>
+              <ChevronDown size={14} color="#bbb" style={{ transform: expandedIdea === idea.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+              <button onClick={(e) => { e.stopPropagation(); deleteIdea(idea.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', padding: '2px', flexShrink: 0, display: 'flex' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#ddd')}
+              ><Trash2 size={13} /></button>
+            </div>
+            {expandedIdea === idea.id && (
+              <div style={{ padding: '0 16px 16px', borderTop: '1px solid #f5f2ee', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <textarea
+                  value={idea.description}
+                  onChange={e => updateIdea(idea.id, { description: e.target.value })}
+                  placeholder="Describe the idea in more detail…"
+                  style={{ width: '100%', fontSize: '13px', color: '#555', background: '#faf9f7', padding: '10px', borderRadius: '6px', border: '1px solid #ede9e3', resize: 'none', height: '70px', outline: 'none', marginTop: '12px', boxSizing: 'border-box' }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {idea.questions.map((q, i) => (
+                    <div key={i} style={{ background: '#faf9f7', borderRadius: '6px', padding: '10px', border: '1px solid #ede9e3' }}>
+                      <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          value={q.question}
+                          onChange={e => {
+                            const updated = [...idea.questions];
+                            updated[i].question = e.target.value;
+                            updateIdea(idea.id, { questions: updated });
+                          }}
+                          style={{ flex: 1, fontSize: '11px', fontWeight: '700', color: '#888', background: 'transparent', border: 'none', outline: 'none', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        />
+                        <button onClick={() => updateIdea(idea.id, { questions: idea.questions.filter((_, idx) => idx !== i) })}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', fontSize: '12px', padding: '0' }}>✕</button>
+                      </div>
+                      <textarea
+                        value={q.answer}
                         onChange={e => {
                           const updated = [...idea.questions];
-                          updated[i].question = e.target.value;
+                          updated[i].answer = e.target.value;
                           updateIdea(idea.id, { questions: updated });
                         }}
-                        style={{ fontSize: '12px', fontWeight: '500', color: '#737373', backgroundColor: 'transparent', border: 'none', borderBottom: '1px solid transparent', outline: 'none', flex: 1 }}
-                        onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
-                        onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+                        placeholder="Your answer…"
+                        style={{ width: '100%', fontSize: '13px', color: '#444', background: 'transparent', border: 'none', outline: 'none', resize: 'none', height: '50px', boxSizing: 'border-box' }}
                       />
-                      <button
-                        onClick={() => updateIdea(idea.id, { questions: idea.questions.filter((_, idx) => idx !== i) })}
-                        style={{ padding: '0', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', fontSize: '12px' }}
-                      >
-                        ✕
-                      </button>
                     </div>
-                    <textarea
-                      value={q.answer}
-                      onChange={e => {
-                        const updated = [...idea.questions];
-                        updated[i].answer = e.target.value;
-                        updateIdea(idea.id, { questions: updated });
-                      }}
-                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '6px', borderRadius: '3px', border: '1px solid #e5e5e5', resize: 'none', height: '40px', outline: 'none' }}
-                      placeholder="Answer..."
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => updateIdea(idea.id, { questions: [...idea.questions, { question: 'New Question', answer: '' }] })}
-                style={{
-                  fontSize: '12px',
-                  color: '#737373',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  marginBottom: '8px',
-                }}
-              >
-                + Add Question
-              </button>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                {idea.tags.map(tag => (
-                  <span
-                    key={tag}
-                    onClick={() => updateIdea(idea.id, { tags: idea.tags.filter(t => t !== tag) })}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '12px',
-                      borderRadius: '4px',
-                      backgroundColor: '#fef3c7',
-                      color: '#b45309',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {tag} ✕
-                  </span>
-                ))}
-                <input
-                  type="text"
-                  placeholder="tag"
-                  onKeyPress={e => {
-                    if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
-                      const newTag = (e.target as HTMLInputElement).value;
-                      updateIdea(idea.id, { tags: [...idea.tags, newTag] });
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                  style={{ fontSize: '12px', padding: '4px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderGoals = () => {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#2c2c2c' }}>Goals</h1>
-          <button
-            onClick={addGoal}
-            style={{
-              padding: '8px',
-              borderRadius: '4px',
-              border: 'none',
-              backgroundColor: TYPE_COLORS.rest,
-              color: '#2c2c2c',
-              cursor: 'pointer',
-              transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-          >
-            <Plus size={18} />
-          </button>
-        </div>
-
-        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {goals.map(goal => (
-            <div key={goal.id} style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <input
-                  type="text"
-                  value={goal.title}
-                  onChange={e => updateGoal(goal.id, { title: e.target.value })}
-                  style={{
-                    fontWeight: '600',
-                    color: '#2c2c2c',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    borderBottom: '1px solid transparent',
-                    outline: 'none',
-                    flex: 1,
-                    fontSize: '14px',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
-                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
-                />
+                  ))}
+                </div>
                 <button
-                  onClick={() => deleteGoal(goal.id)}
-                  style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
+                  onClick={() => updateIdea(idea.id, { questions: [...idea.questions, { question: 'New question', answer: '' }] })}
+                  style={{ alignSelf: 'flex-start', fontSize: '12px', color: '#aaa', background: 'none', border: '1px dashed #ddd', borderRadius: '6px', padding: '5px 12px', cursor: 'pointer' }}
                 >
-                  <Trash2 size={16} />
+                  + Add question
                 </button>
-              </div>
-
-              <select
-                value={goal.timeframe}
-                onChange={e => updateGoal(goal.id, { timeframe: e.target.value as any })}
-                style={{ fontSize: '12px', borderRadius: '4px', padding: '4px 8px', backgroundColor: '#fafafa', color: '#404040', marginBottom: '8px', border: '1px solid #e5e5e5', outline: 'none' }}
-              >
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-
-              <div style={{ marginBottom: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Credit</label>
-                  <input
-                    type="number"
-                    value={goal.credit}
-                    onChange={e => updateGoal(goal.id, { credit: parseInt(e.target.value) || 0 })}
-                    style={{ width: '100%', fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Debit</label>
-                  <input
-                    type="number"
-                    value={goal.debit}
-                    onChange={e => updateGoal(goal.id, { debit: parseInt(e.target.value) || 0 })}
-                    style={{ width: '100%', fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                  {idea.tags.map(tag => (
+                    <span key={tag} onClick={() => updateIdea(idea.id, { tags: idea.tags.filter(t => t !== tag) })}
+                      style={{ padding: '3px 10px', fontSize: '11px', borderRadius: '20px', background: '#fef3c7', color: '#b45309', cursor: 'pointer' }}>
+                      {tag} ✕
+                    </span>
+                  ))}
+                  <input type="text" placeholder="+ tag"
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
+                        updateIdea(idea.id, { tags: [...idea.tags, (e.target as HTMLInputElement).value] });
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }}
+                    style={{ fontSize: '11px', color: '#aaa', background: 'none', border: 'none', outline: 'none', width: '60px' }}
                   />
                 </div>
               </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Progress</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={goal.progress}
-                  onChange={e => updateGoal(goal.id, { progress: parseInt(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-                <div style={{ fontSize: '12px', color: '#a3a3a3', marginTop: '4px' }}>{goal.progress}%</div>
-              </div>
+  // ─── GOALS ───────────────────────────────────────────────────────────────────
 
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Weekly Reflection</label>
-                <textarea
-                  value={goal.reflection}
-                  onChange={e => updateGoal(goal.id, { reflection: e.target.value })}
-                  style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '6px 8px', borderRadius: '4px', border: '1px solid #e5e5e5', resize: 'none', height: '60px', outline: 'none' }}
-                  placeholder="Your reflection..."
-                />
-              </div>
+  const timeframeColors: Record<string, string> = { weekly: '#8fc4a0', monthly: '#7aaed4', yearly: '#c9a8d4' };
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {goal.fields.map((field, i) => (
-                  <div key={i}>
-                    <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                      <input
-                        type="text"
-                        value={field.name}
-                        onChange={e => {
-                          const updated = [...goal.fields];
-                          updated[i].name = e.target.value;
-                          updateGoal(goal.id, { fields: updated });
-                        }}
-                        placeholder="Field name"
-                        style={{ fontSize: '12px', padding: '4px 8px', border: '1px solid #e5e5e5', borderRadius: '3px', backgroundColor: '#fafafa', outline: 'none', flex: 1 }}
-                      />
-                      <button
-                        onClick={() => updateGoal(goal.id, { fields: goal.fields.filter((_, idx) => idx !== i) })}
-                        style={{ padding: '0', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', fontSize: '12px' }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={field.value}
-                      onChange={e => {
-                        const updated = [...goal.fields];
-                        updated[i].value = e.target.value;
-                        updateGoal(goal.id, { fields: updated });
-                      }}
-                      placeholder="Value"
-                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '4px 8px', borderRadius: '3px', border: '1px solid #e5e5e5', outline: 'none' }}
-                    />
-                  </div>
+  const renderGoals = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #ede9e3', flexShrink: 0 }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#2c2c2c', margin: 0, fontFamily: "'Georgia', serif" }}>Goals</h1>
+        <button onClick={addGoal} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '6px 14px', background: '#2c2c2c', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer' }}>
+          <Plus size={14} /> New Goal
+        </button>
+      </div>
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {goals.length === 0 && (
+          <div style={{ textAlign: 'center', color: '#ccc', fontSize: '14px', marginTop: '40px' }}>
+            <Target size={32} style={{ marginBottom: '12px', opacity: 0.3 }} />
+            <p>No goals yet. Set your first one!</p>
+          </div>
+        )}
+        {goals.map(goal => (
+          <div key={goal.id} style={{ border: '1px solid #ede9e3', borderRadius: '10px', background: 'white', overflow: 'hidden' }}>
+            <div onClick={() => setExpandedGoal(expandedGoal === goal.id ? null : goal.id)} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+              <Target size={16} color={timeframeColors[goal.timeframe]} />
+              <input
+                type="text"
+                value={goal.title}
+                onChange={e => { e.stopPropagation(); updateGoal(goal.id, { title: e.target.value }); }}
+                onClick={e => e.stopPropagation()}
+                style={{ flex: 1, fontWeight: '600', fontSize: '14px', color: '#2c2c2c', background: 'transparent', border: 'none', outline: 'none' }}
+              />
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {(['weekly', 'monthly', 'yearly'] as const).map(tf => (
+                  <button key={tf} onClick={e => { e.stopPropagation(); updateGoal(goal.id, { timeframe: tf }); }}
+                    style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '20px', border: 'none', cursor: 'pointer', background: goal.timeframe === tf ? timeframeColors[tf] : '#f0ede8', color: goal.timeframe === tf ? 'white' : '#aaa', fontWeight: goal.timeframe === tf ? '700' : '400', textTransform: 'capitalize' }}>
+                    {tf}
+                  </button>
                 ))}
               </div>
-
-              <button
-                onClick={() => updateGoal(goal.id, { fields: [...goal.fields, { name: 'New Field', value: '' }] })}
-                style={{
-                  marginTop: '8px',
-                  fontSize: '12px',
-                  color: '#737373',
-                  padding: '6px 8px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                  e.currentTarget.style.color = '#2c2c2c';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = '#737373';
-                }}
-              >
-                + Add Field
-              </button>
+              {/* Progress pill */}
+              <div style={{ width: '48px', height: '6px', background: '#f0ede8', borderRadius: '3px', flexShrink: 0, overflow: 'hidden' }}>
+                <div style={{ width: `${goal.progress}%`, height: '100%', background: timeframeColors[goal.timeframe], borderRadius: '3px', transition: 'width 0.3s' }} />
+              </div>
+              <span style={{ fontSize: '11px', color: '#bbb', minWidth: '28px', textAlign: 'right' }}>{goal.progress}%</span>
+              <ChevronDown size={14} color="#bbb" style={{ transform: expandedGoal === goal.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+              <button onClick={(e) => { e.stopPropagation(); deleteGoal(goal.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', padding: '2px', flexShrink: 0, display: 'flex' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#ddd')}
+              ><Trash2 size={13} /></button>
             </div>
-          ))}
-        </div>
+            {expandedGoal === goal.id && (
+              <div style={{ padding: '0 16px 16px', borderTop: '1px solid #f5f2ee', display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
+                <GoalField label="Why this goal matters" value={goal.why} placeholder="What motivates you to achieve this?" onChange={v => updateGoal(goal.id, { why: v })} />
+                <GoalField label="How will you know you succeeded?" value={goal.successCriteria} placeholder="Define clear, measurable criteria…" onChange={v => updateGoal(goal.id, { successCriteria: v })} />
+                <GoalField label="Potential obstacles" value={goal.obstacles} placeholder="What might get in the way?" onChange={v => updateGoal(goal.id, { obstacles: v })} />
+                <GoalField label="Actions I'll take" value={goal.actions} placeholder="Concrete next steps…" onChange={v => updateGoal(goal.id, { actions: v })} />
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>Progress</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input
+                      type="range" min="0" max="100" value={goal.progress}
+                      onChange={e => updateGoal(goal.id, { progress: parseInt(e.target.value) })}
+                      style={{ flex: 1, accentColor: timeframeColors[goal.timeframe], cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#555', minWidth: '36px' }}>{goal.progress}%</span>
+                  </div>
+                </div>
+                <GoalField label="Reflection" value={goal.reflection} placeholder="What have you learned? What would you do differently?" onChange={v => updateGoal(goal.id, { reflection: v })} />
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-    );
-  };
+    </div>
+  );
+
+  // ─── NAV ─────────────────────────────────────────────────────────────────────
+
+  const NAV_ITEMS = [
+    { key: 'calendar', label: 'Calendar', icon: CalendarDays },
+    { key: 'tasks', label: 'Tasks', icon: LayoutKanban },
+    { key: 'ideas', label: 'Ideas', icon: Lightbulb },
+    { key: 'goals', label: 'Goals', icon: Target },
+  ];
 
   return (
-    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f5f3f0', fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px', color: '#2c2c2c' }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', background: '#f7f5f2', fontFamily: "'system-ui', '-apple-system', sans-serif", fontSize: '14px', color: '#2c2c2c', overflow: 'hidden' }}>
+      {/* Sidebar nav */}
+      <div
+        ref={navRef}
+        onMouseEnter={() => setShowNavMenu(true)}
+        onMouseLeave={() => setShowNavMenu(false)}
+        style={{
+          width: showNavMenu ? '160px' : '52px',
+          transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
+          background: '#2c2c2c',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          padding: '16px 0',
+          gap: '4px',
+          overflow: 'hidden',
+          flexShrink: 0,
+          zIndex: 10,
+        }}
+      >
+        <div style={{ height: '40px', display: 'flex', alignItems: 'center', paddingLeft: '14px', marginBottom: '12px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '18px', fontFamily: "'Georgia', serif", color: 'white', fontWeight: '700', opacity: showNavMenu ? 1 : 0, transition: 'opacity 0.2s', letterSpacing: '-0.02em' }}>Flow</span>
+          {!showNavMenu && <div style={{ width: '24px', height: '24px', background: '#6a5acd', borderRadius: '6px', flexShrink: 0 }} />}
+        </div>
+        {NAV_ITEMS.map(({ key, label, icon: Icon }) => {
+          const active = currentSection === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setCurrentSection(key as any)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 14px',
+                background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: active ? 'white' : 'rgba(255,255,255,0.5)',
+                borderLeft: `3px solid ${active ? '#6a5acd' : 'transparent'}`,
+                transition: 'all 0.15s',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textAlign: 'left',
+                width: '100%',
+              }}
+              onMouseEnter={(e) => !active && (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
+              onMouseLeave={(e) => !active && (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+            >
+              <Icon size={18} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '13px', fontWeight: active ? '600' : '400', opacity: showNavMenu ? 1 : 0, transition: 'opacity 0.15s' }}>{label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main content */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {currentSection === 'calendar' && renderCalendar()}
         {currentSection === 'tasks' && renderTasks()}
         {currentSection === 'ideas' && renderIdeas()}
         {currentSection === 'goals' && renderGoals()}
       </div>
 
-      <div ref={navMenuRef} style={{ position: 'fixed', bottom: '24px', right: '24px' }}>
-        <button
-          onClick={() => setShowNavMenu(!showNavMenu)}
-          style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            backgroundColor: TYPE_COLORS.meeting,
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.15)';
-            e.currentTarget.style.opacity = '0.9';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-            e.currentTarget.style.opacity = '1';
-          }}
-        >
-          <Menu size={24} />
-        </button>
+      {/* Event popup */}
+      <EventPopup />
 
-        {showNavMenu && (
-          <div style={{ position: 'absolute', bottom: '80px', right: 0, backgroundColor: 'white', border: '1px solid #e5e5e5', borderRadius: '4px', boxShadow: '0 10px 15px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-            {['calendar', 'tasks', 'ideas', 'goals'].map(section => (
+      {/* Delete confirmation modal */}
+      {deleteConfirm && deleteConfirm.type === 'project' && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}
+          onClick={() => setDeleteConfirm(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '12px', padding: '24px', width: '320px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: '700', color: '#2c2c2c', fontFamily: "'Georgia', serif" }}>Delete "{deleteConfirm.name}"?</h3>
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#888', lineHeight: '1.5' }}>This will permanently delete the list and all its tasks. This cannot be undone.</p>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setDeleteConfirm(null)} style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '20px', border: '1px solid #e0ddd8', background: 'white', cursor: 'pointer', color: '#555' }}>Cancel</button>
+              <button onClick={() => deleteProject(deleteConfirm.id)} style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '20px', border: 'none', background: '#dc2626', color: 'white', cursor: 'pointer', fontWeight: '600' }}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── TASK CARD COMPONENT ──────────────────────────────────────────────────────
+
+interface TaskCardProps {
+  task: Task;
+  projects: Project[];
+  autoFocus: boolean;
+  onFocusDone: () => void;
+  onUpdate: (updates: Partial<Task>) => void;
+  onDelete: () => void;
+  onArchive: () => void;
+  onComplete: () => void;
+  onAddSubtask: () => void;
+  onUpdateSubtask: (id: string, updates: Partial<Subtask>) => void;
+  onEnterKey: () => void;
+  onTabKey: () => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+}
+
+const TaskCard = ({ task, projects, autoFocus, onFocusDone, onUpdate, onDelete, onArchive, onComplete, onAddSubtask, onUpdateSubtask, onEnterKey, onTabKey, onDragStart, onDragEnd }: TaskCardProps) => {
+  const [showActions, setShowActions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      inputRef.current.focus();
+      onFocusDone();
+    }
+  }, [autoFocus]);
+
+  const priority = task.priority;
+  const pColor = PRIORITY_COLORS[priority] || '#ccc';
+  const pBg = PRIORITY_BG[priority] || '#f5f5f5';
+  const pLabel = PRIORITY_LABELS[priority] || '';
+
+  return (
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+      style={{
+        padding: '10px 10px 10px 8px',
+        borderRadius: '8px',
+        marginBottom: '4px',
+        background: '#faf9f7',
+        border: '1px solid #ede9e3',
+        borderLeft: `3px solid ${pColor}`,
+        cursor: 'grab',
+        transition: 'box-shadow 0.15s',
+      }}
+      onMouseOver={(e) => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)')}
+      onMouseOut={(e) => (e.currentTarget.style.boxShadow = 'none')}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+        <button onClick={onComplete} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', padding: '1px', marginTop: '2px', flexShrink: 0, display: 'flex', transition: 'color 0.15s' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#8fc4a0')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#ccc')}
+        >
+          <Circle size={15} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={task.title}
+            placeholder="Task name…"
+            onChange={e => onUpdate({ title: e.target.value })}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { e.preventDefault(); onEnterKey(); }
+              if (e.key === 'Tab') { e.preventDefault(); onTabKey(); }
+            }}
+            style={{ width: '100%', fontSize: '13px', color: '#2c2c2c', background: 'transparent', border: 'none', outline: 'none', fontWeight: '500' }}
+          />
+          {/* Priority selector */}
+          <div style={{ display: 'flex', gap: '4px', marginTop: '6px', alignItems: 'center' }}>
+            {[1, 2, 3, 4, 5].map(p => (
               <button
-                key={section}
-                onClick={() => {
-                  setCurrentSection(section as any);
-                  setShowNavMenu(false);
-                }}
+                key={p}
+                onClick={() => onUpdate({ priority: p })}
+                title={PRIORITY_LABELS[p]}
                 style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '12px 16px',
-                  fontSize: '14px',
+                  width: p <= priority ? '14px' : '10px',
+                  height: '6px',
+                  borderRadius: '3px',
                   border: 'none',
-                  backgroundColor: currentSection === section ? TYPE_COLORS[section as keyof typeof TYPE_COLORS] + '33' : 'transparent',
-                  color: currentSection === section ? '#2c2c2c' : '#404040',
                   cursor: 'pointer',
-                  textTransform: 'capitalize',
-                  fontWeight: currentSection === section ? '500' : '400',
-                  transition: 'background-color 0.2s',
+                  background: p <= priority ? PRIORITY_COLORS[p] : '#e8e4de',
+                  transition: 'all 0.15s',
+                  flexShrink: 0,
                 }}
-                onMouseEnter={(e) => currentSection !== section && (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                onMouseLeave={(e) => currentSection !== section && (e.currentTarget.style.backgroundColor = 'transparent')}
-              >
-                {section}
-              </button>
+              />
             ))}
+            <span style={{ fontSize: '10px', color: '#bbb', marginLeft: '4px' }}>{pLabel}</span>
+          </div>
+
+          {/* Subtasks */}
+          {task.subtasks.length > 0 && (
+            <div style={{ marginTop: '8px', paddingLeft: '8px', borderLeft: '1.5px solid #e8e4de', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {task.subtasks.map(sub => (
+                <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button onClick={() => onUpdateSubtask(sub.id, { completed: !sub.completed })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: sub.completed ? '#8fc4a0' : '#ccc', padding: '0', display: 'flex', flexShrink: 0 }}>
+                    {sub.completed ? <CheckCircle2 size={12} /> : <Circle size={12} />}
+                  </button>
+                  <input
+                    type="text"
+                    value={sub.title}
+                    onChange={e => onUpdateSubtask(sub.id, { title: e.target.value })}
+                    style={{ fontSize: '11px', color: sub.completed ? '#ccc' : '#666', background: 'transparent', border: 'none', outline: 'none', flex: 1, textDecoration: sub.completed ? 'line-through' : 'none' }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {showActions && (
+          <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
+            <button onClick={onAddSubtask} title="Add subtask" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', padding: '2px', display: 'flex', fontSize: '11px', transition: 'color 0.15s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#888')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#ccc')}
+            >⤵</button>
+            <button onClick={onArchive} title="Archive" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', padding: '2px', display: 'flex', transition: 'color 0.15s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#888')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#ccc')}
+            ><Archive size={12} /></button>
+            <button onClick={onDelete} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', padding: '2px', display: 'flex', transition: 'color 0.15s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#ccc')}
+            ><Trash2 size={12} /></button>
           </div>
         )}
       </div>
     </div>
   );
 };
+
+// ─── GOAL FIELD COMPONENT ─────────────────────────────────────────────────────
+
+const GoalField = ({ label, value, placeholder, onChange }: { label: string; value: string; placeholder: string; onChange: (v: string) => void }) => (
+  <div>
+    <label style={{ fontSize: '11px', fontWeight: '700', color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px', marginTop: '8px' }}>{label}</label>
+    <textarea
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      style={{ width: '100%', fontSize: '13px', color: '#444', background: '#faf9f7', padding: '10px', borderRadius: '6px', border: '1px solid #ede9e3', resize: 'none', height: '64px', outline: 'none', boxSizing: 'border-box', lineHeight: '1.5' }}
+    />
+  </div>
+);
 
 export default App;
