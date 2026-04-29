@@ -41,6 +41,14 @@ const config: Config = {
           card: '#1a1a1a',
           border: '#2a2a2a',
         },
+        // Pastel colors for task app
+        pastel: {
+          purple: 'rgb(212, 165, 212)',
+          green: 'rgb(168, 213, 186)',
+          peach: 'rgb(255, 217, 179)',
+          blue: 'rgb(179, 217, 255)',
+          gray: 'rgb(211, 211, 211)',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
