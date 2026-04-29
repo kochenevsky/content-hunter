@@ -1,18 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  X,
-  CheckCircle2,
-  Circle,
-  Trash2,
-  Menu,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, CheckCircle2, Circle, Trash2, Menu, GripVertical } from 'lucide-react';
 
 const API_BASE = 'https://tasktracker.oxion-ezhkov.workers.dev';
+const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
+  const hours = Math.floor(i / 2);
+  const mins = (i % 2) * 30;
+  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+});
 
 interface CalendarEvent {
   id: string;
@@ -51,18 +47,25 @@ interface Idea {
   id: string;
   title: string;
   tags: string[];
-  predefinedQuestions: { question: string; answer: string }[];
-  customQuestions: { question: string; answer: string }[];
+  questions: { question: string; answer: string }[];
   description: string;
   createdAt: string;
+}
+
+interface GoalField {
+  name: string;
+  value: string;
 }
 
 interface Goal {
   id: string;
   title: string;
   timeframe: 'weekly' | 'monthly' | 'yearly';
-  customFields: { name: string; value: string }[];
+  fields: GoalField[];
   progress: number;
+  credit: number;
+  debit: number;
+  reflection: string;
   createdAt: string;
 }
 
@@ -75,16 +78,13 @@ const TYPE_COLORS: Record<string, string> = {
 
 const PRIORITY_COLORS = ['#E8C4E8', '#D4A5D4', '#B86BA8', '#8B4789', '#5C2666'];
 
-const debounce = (fn: Function, delay: number) => {
-  let timeout: NodeJS.Timeout;
-  return (...args: any[]) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
-};
-
 const formatDate = (date: Date) => date.toISOString().split('T')[0];
 const formatTime = (date: Date) => date.toTimeString().slice(0, 5);
+const addMinutes = (time: string, mins: number) => {
+  const [h, m] = time.split(':').map(Number);
+  const total = h * 60 + m + mins;
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+};
 
 const App = () => {
   const [currentSection, setCurrentSection] = useState<'calendar' | 'tasks' | 'ideas' | 'goals'>('calendar');
@@ -97,22 +97,46 @@ const App = () => {
   const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [draggedEvent, setDraggedEvent] = useState<{ id: string; startDate: string; startTime: string } | null>(null);
+  const [loading, setLoading] = useState(true);
   const navMenuRef = useRef<HTMLDivElement>(null);
 
-  const saveToApi = useCallback(
-    debounce(async (data: any, endpoint: string) => {
+  const saveToApi = useCallback(async (data: any, endpoint: string) => {
+    try {
+      await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error('Save error:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
       try {
-        await fetch(`${API_BASE}${endpoint}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
+        const [eventsRes, tasksRes, projectsRes, ideasRes, goalsRes] = await Promise.all([
+          fetch(`${API_BASE}/calendar`),
+          fetch(`${API_BASE}/tasks`),
+          fetch(`${API_BASE}/projects`),
+          fetch(`${API_BASE}/ideas`),
+          fetch(`${API_BASE}/goals`),
+        ]);
+        
+        if (eventsRes.ok) setCalendarEvents(await eventsRes.json());
+        if (tasksRes.ok) setTasks(await tasksRes.json());
+        if (projectsRes.ok) setProjects(await projectsRes.json());
+        if (ideasRes.ok) setIdeas(await ideasRes.json());
+        if (goalsRes.ok) setGoals(await goalsRes.json());
       } catch (error) {
-        console.error('Save error:', error);
+        console.error('Load error:', error);
+      } finally {
+        setLoading(false);
       }
-    }, 800),
-    []
-  );
+    };
+    loadData();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -130,7 +154,7 @@ const App = () => {
       title: 'New Event',
       type,
       startTime,
-      endTime: new Date(new Date(`${date}T${startTime}`).getTime() + 30 * 60000).toTimeString().slice(0, 5),
+      endTime: addMinutes(startTime, 30),
       date,
       tags: [],
       archived: false,
@@ -140,8 +164,10 @@ const App = () => {
   };
 
   const updateCalendarEvent = (id: string, updates: Partial<CalendarEvent>) => {
-    setCalendarEvents(calendarEvents.map(e => (e.id === id ? { ...e, ...updates } : e)));
-    saveToApi({ ...calendarEvents.find(e => e.id === id), ...updates }, '/calendar');
+    const updated = calendarEvents.map(e => (e.id === id ? { ...e, ...updates } : e));
+    setCalendarEvents(updated);
+    const event = updated.find(e => e.id === id);
+    if (event) saveToApi(event, '/calendar');
   };
 
   const deleteCalendarEvent = (id: string) => {
@@ -156,8 +182,9 @@ const App = () => {
   };
 
   const updateProject = (id: string, name: string) => {
-    setProjects(projects.map(p => (p.id === id ? { ...p, name } : p)));
-    saveToApi({ id, name }, '/projects');
+    const updated = projects.map(p => (p.id === id ? { ...p, name } : p));
+    setProjects(updated);
+    saveToApi(updated.find(p => p.id === id), '/projects');
   };
 
   const deleteProject = (id: string) => {
@@ -182,8 +209,10 @@ const App = () => {
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks(tasks.map(t => (t.id === id ? { ...t, ...updates } : t)));
-    saveToApi({ ...tasks.find(t => t.id === id), ...updates }, '/tasks');
+    const updated = tasks.map(t => (t.id === id ? { ...t, ...updates } : t));
+    setTasks(updated);
+    const task = updated.find(t => t.id === id);
+    if (task) saveToApi(task, '/tasks');
   };
 
   const deleteTask = (id: string) => {
@@ -191,26 +220,20 @@ const App = () => {
     saveToApi({ id, deleted: true }, '/tasks');
   };
 
+  const archiveTask = (id: string) => {
+    updateTask(id, { archived: true });
+  };
+
   const addSubtask = (taskId: string) => {
-    setTasks(
-      tasks.map(t =>
-        t.id === taskId
-          ? { ...t, subtasks: [...t.subtasks, { id: Date.now().toString(), title: 'New Subtask', completed: false }] }
-          : t
-      )
-    );
-    const task = tasks.find(t => t.id === taskId);
-    if (task) saveToApi(task, '/tasks');
+    updateTask(taskId, {
+      subtasks: [...(tasks.find(t => t.id === taskId)?.subtasks || []), { id: Date.now().toString(), title: 'New Subtask', completed: false }],
+    });
   };
 
   const updateSubtask = (taskId: string, subtaskId: string, updates: Partial<Subtask>) => {
-    setTasks(
-      tasks.map(t =>
-        t.id === taskId ? { ...t, subtasks: t.subtasks.map(s => (s.id === subtaskId ? { ...s, ...updates } : s)) } : t
-      )
-    );
-    const task = tasks.find(t => t.id === taskId);
-    if (task) saveToApi(task, '/tasks');
+    updateTask(taskId, {
+      subtasks: (tasks.find(t => t.id === taskId)?.subtasks || []).map(s => (s.id === subtaskId ? { ...s, ...updates } : s)),
+    });
   };
 
   const addIdea = () => {
@@ -218,8 +241,11 @@ const App = () => {
       id: Date.now().toString(),
       title: 'New Idea',
       tags: [],
-      predefinedQuestions: [{ question: 'Problem', answer: '' }],
-      customQuestions: [],
+      questions: [
+        { question: 'Problem', answer: '' },
+        { question: 'Solution', answer: '' },
+        { question: 'Target Market', answer: '' },
+      ],
       description: '',
       createdAt: new Date().toISOString(),
     };
@@ -228,8 +254,10 @@ const App = () => {
   };
 
   const updateIdea = (id: string, updates: Partial<Idea>) => {
-    setIdeas(ideas.map(i => (i.id === id ? { ...i, ...updates } : i)));
-    saveToApi({ ...ideas.find(i => i.id === id), ...updates }, '/ideas');
+    const updated = ideas.map(i => (i.id === id ? { ...i, ...updates } : i));
+    setIdeas(updated);
+    const idea = updated.find(i => i.id === id);
+    if (idea) saveToApi(idea, '/ideas');
   };
 
   const deleteIdea = (id: string) => {
@@ -242,8 +270,11 @@ const App = () => {
       id: Date.now().toString(),
       title: 'New Goal',
       timeframe: 'weekly',
-      customFields: [],
+      fields: [],
       progress: 0,
+      credit: 0,
+      debit: 0,
+      reflection: '',
       createdAt: new Date().toISOString(),
     };
     setGoals([...goals, newGoal]);
@@ -251,8 +282,10 @@ const App = () => {
   };
 
   const updateGoal = (id: string, updates: Partial<Goal>) => {
-    setGoals(goals.map(g => (g.id === id ? { ...g, ...updates } : g)));
-    saveToApi({ ...goals.find(g => g.id === id), ...updates }, '/goals');
+    const updated = goals.map(g => (g.id === id ? { ...g, ...updates } : g));
+    setGoals(updated);
+    const goal = updated.find(g => g.id === id);
+    if (goal) saveToApi(goal, '/goals');
   };
 
   const deleteGoal = (id: string) => {
@@ -265,21 +298,236 @@ const App = () => {
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(d.setDate(diff));
-    return [
-      new Date(monday.getTime() - 86400000),
-      new Date(monday),
-      new Date(monday.getTime() + 86400000),
-    ];
+    return Array.from({ length: 7 }, (_, i) => new Date(monday.getTime() + i * 86400000));
   };
 
-  const renderCalendar = () => {
+  const getMonthDates = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const dates = [];
+    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+      dates.push(new Date(d));
+    }
+    return dates;
+  };
+
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '18px', color: '#737373' }}>Loading...</div>;
+
+  const renderCalendarDay = () => {
+    const dateStr = formatDate(currentDate);
+    const dayEvents = calendarEvents.filter(e => e.date === dateStr && !e.archived);
+    const now = new Date();
+    const currentDateStr = formatDate(now);
+    const currentTime = formatTime(now);
+
+    return (
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+        <h2 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>{currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px' }}>
+          {TIME_SLOTS.map(time => {
+            const slotEvents = dayEvents.filter(e => e.startTime === time);
+            const isPast = dateStr < currentDateStr || (dateStr === currentDateStr && time < currentTime);
+            return (
+              <React.Fragment key={time}>
+                <div style={{ fontSize: '12px', color: '#737373', paddingTop: '8px' }}>{time}</div>
+                <div
+                  onClick={() => !isPast && addCalendarEvent(dateStr, time, 'task')}
+                  style={{
+                    minHeight: '40px',
+                    border: `1px dashed ${isPast ? '#d4d4d4' : '#a3a3a3'}`,
+                    borderRadius: '4px',
+                    padding: '4px',
+                    backgroundColor: isPast ? '#fafafa' : 'white',
+                    cursor: isPast ? 'default' : 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                  }}
+                  onMouseEnter={(e) => !isPast && (e.currentTarget.style.backgroundColor = '#f0f9ff')}
+                  onMouseLeave={(e) => !isPast && (e.currentTarget.style.backgroundColor = 'white')}
+                >
+                  {slotEvents.map(event => (
+                    <div
+                      key={event.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedEvent(event);
+                      }}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        backgroundColor: TYPE_COLORS[event.type],
+                        color: '#2c2c2c',
+                        cursor: 'pointer',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCalendarWeek = () => {
     const weekDates = getWeekDates(currentDate);
     const now = new Date();
     const currentDateStr = formatDate(now);
-    const isPastEvent = (date: string, endTime: string) => {
-      return date < currentDateStr || (date === currentDateStr && endTime < formatTime(now));
-    };
+    const currentTime = formatTime(now);
 
+    return (
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(7, 1fr)`, gap: '8px', minWidth: '1200px' }}>
+          <div></div>
+          {weekDates.map(date => (
+            <div key={formatDate(date)} style={{ textAlign: 'center', fontSize: '12px', fontWeight: '600', marginBottom: '8px', color: '#2c2c2c' }}>
+              {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </div>
+          ))}
+
+          {TIME_SLOTS.map(time => (
+            <React.Fragment key={time}>
+              <div style={{ fontSize: '12px', color: '#737373', paddingTop: '8px', textAlign: 'right', paddingRight: '8px' }}>{time}</div>
+              {weekDates.map(date => {
+                const dateStr = formatDate(date);
+                const dayEvents = calendarEvents.filter(e => e.date === dateStr && e.startTime === time && !e.archived);
+                const isPast = dateStr < currentDateStr || (dateStr === currentDateStr && time < currentTime);
+                return (
+                  <div
+                    key={dateStr}
+                    onClick={() => !isPast && addCalendarEvent(dateStr, time, 'task')}
+                    style={{
+                      minHeight: '40px',
+                      border: `1px dashed ${isPast ? '#d4d4d4' : '#a3a3a3'}`,
+                      borderRadius: '4px',
+                      padding: '4px',
+                      backgroundColor: isPast ? '#fafafa' : formatDate(date) === currentDateStr ? '#f0f9ff' : 'white',
+                      cursor: isPast ? 'default' : 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={(e) => !isPast && (e.currentTarget.style.backgroundColor = formatDate(date) === currentDateStr ? '#dbeafe' : '#f0f9ff')}
+                    onMouseLeave={(e) => !isPast && (e.currentTarget.style.backgroundColor = formatDate(date) === currentDateStr ? '#f0f9ff' : 'white')}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedEvent) {
+                        updateCalendarEvent(draggedEvent.id, { date: dateStr, startTime: time, endTime: addMinutes(time, 30) });
+                        setDraggedEvent(null);
+                      }
+                    }}
+                  >
+                    {dayEvents.map(event => (
+                      <div
+                        key={event.id}
+                        draggable
+                        onDragStart={() => setDraggedEvent({ id: event.id, startDate: event.date, startTime: event.startTime })}
+                        onDragEnd={() => setDraggedEvent(null)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEvent(event);
+                        }}
+                        style={{
+                          padding: '3px 6px',
+                          borderRadius: '3px',
+                          fontSize: '10px',
+                          backgroundColor: TYPE_COLORS[event.type],
+                          color: '#2c2c2c',
+                          cursor: 'grab',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCalendarMonth = () => {
+    const monthDates = getMonthDates(currentDate);
+    const firstDate = monthDates[0];
+    const startDay = firstDate.getDay() === 0 ? 6 : firstDate.getDay() - 1;
+    const calendarGrid = Array(startDay).fill(null).concat(monthDates);
+    const now = new Date();
+    const currentDateStr = formatDate(now);
+
+    return (
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+            <div key={day} style={{ textAlign: 'center', fontSize: '12px', fontWeight: '600', padding: '8px', color: '#2c2c2c' }}>
+              {day}
+            </div>
+          ))}
+          {calendarGrid.map((date, i) => {
+            if (!date) return <div key={`empty-${i}`} style={{ minHeight: '100px' }} />;
+            const dateStr = formatDate(date);
+            const dayEvents = calendarEvents.filter(e => e.date === dateStr && !e.archived);
+            const isToday = dateStr === currentDateStr;
+            return (
+              <div
+                key={dateStr}
+                style={{
+                  minHeight: '100px',
+                  border: `1px solid ${isToday ? '#0ea5e9' : '#e5e5e5'}`,
+                  borderRadius: '4px',
+                  padding: '8px',
+                  backgroundColor: isToday ? '#f0f9ff' : 'white',
+                }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: isToday ? '#0ea5e9' : '#2c2c2c' }}>{date.getDate()}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {dayEvents.slice(0, 3).map(event => (
+                    <div
+                      key={event.id}
+                      onClick={() => setSelectedEvent(event)}
+                      style={{
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        fontSize: '10px',
+                        backgroundColor: TYPE_COLORS[event.type],
+                        color: '#2c2c2c',
+                        cursor: 'pointer',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                  {dayEvents.length > 3 && <div style={{ fontSize: '10px', color: '#737373' }}>+{dayEvents.length - 3}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCalendar = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px', padding: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -317,80 +565,9 @@ const App = () => {
           </button>
         </div>
 
-        {calendarView === 'week' && (
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-              {weekDates.map(date => {
-                const dateStr = formatDate(date);
-                const dayEvents = calendarEvents.filter(e => e.date === dateStr);
-                const isToday = dateStr === currentDateStr;
-                return (
-                  <div
-                    key={dateStr}
-                    style={{
-                      border: `1px solid ${isToday ? '#dbeafe' : '#e5e5e5'}`,
-                      borderRadius: '4px',
-                      padding: '8px',
-                      backgroundColor: isToday ? '#f0f9ff' : 'white',
-                    }}
-                  >
-                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#737373', marginBottom: '8px' }}>
-                      {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '256px', overflowY: 'auto' }}>
-                      {dayEvents.map(event => (
-                        <div
-                          key={event.id}
-                          onClick={() => setSelectedEvent(event)}
-                          style={{
-                            padding: '8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            backgroundColor: isPastEvent(event.date, event.endTime) ? '#d3d3d3' : TYPE_COLORS[event.type],
-                            color: '#2c2c2c',
-                            transition: 'opacity 0.2s',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
-                          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                        >
-                          <div style={{ fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</div>
-                          <div style={{ color: '#404040' }}>{event.startTime}</div>
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => addCalendarEvent(dateStr, formatTime(new Date()), 'task')}
-                        style={{
-                          marginTop: '8px',
-                          fontSize: '12px',
-                          color: '#737373',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          transition: 'all 0.2s',
-                          width: '100%',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f5f5f5';
-                          e.currentTarget.style.color = '#2c2c2c';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#737373';
-                        }}
-                      >
-                        + Add
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {calendarView === 'day' && renderCalendarDay()}
+        {calendarView === 'week' && renderCalendarWeek()}
+        {calendarView === 'month' && renderCalendarMonth()}
 
         {selectedEvent && (
           <div style={{ border: '1px solid #e5e5e5', borderRadius: '4px', padding: '12px', backgroundColor: 'white', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -406,8 +583,90 @@ const App = () => {
               onChange={e => updateCalendarEvent(selectedEvent.id, { title: e.target.value })}
               style={{ fontSize: '14px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
             />
-            <div style={{ fontSize: '12px', color: '#737373' }}>
-              {selectedEvent.startTime} - {selectedEvent.endTime}
+            <select
+              value={selectedEvent.type}
+              onChange={e => updateCalendarEvent(selectedEvent.id, { type: e.target.value as any })}
+              style={{ fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
+            >
+              <option value="meeting">Meeting</option>
+              <option value="task">Task</option>
+              <option value="rest">Rest</option>
+              <option value="study">Study</option>
+            </select>
+            <input
+              type="time"
+              value={selectedEvent.startTime}
+              onChange={e => updateCalendarEvent(selectedEvent.id, { startTime: e.target.value, endTime: addMinutes(e.target.value, 30) })}
+              style={{ fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="number"
+                min="30"
+                step="30"
+                value={Math.round((TIME_SLOTS.indexOf(selectedEvent.endTime) - TIME_SLOTS.indexOf(selectedEvent.startTime)) * 15)}
+                onChange={e => updateCalendarEvent(selectedEvent.id, { endTime: addMinutes(selectedEvent.startTime, parseInt(e.target.value)) })}
+                placeholder="Duration (min)"
+                style={{ fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none', flex: 1 }}
+              />
+              <button
+                onClick={() => {
+                  const newTask: Task = {
+                    id: Date.now().toString(),
+                    projectId: projects[0]?.id || '',
+                    title: selectedEvent.title,
+                    priority: 3,
+                    tags: selectedEvent.tags,
+                    completed: false,
+                    subtasks: [],
+                    archived: false,
+                  };
+                  setTasks([...tasks, newTask]);
+                  saveToApi(newTask, '/tasks');
+                  setSelectedEvent(null);
+                }}
+                style={{
+                  fontSize: '12px',
+                  padding: '6px 12px',
+                  backgroundColor: '#A8D5BA',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                To Tasks
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {selectedEvent.tags.map(tag => (
+                <span
+                  key={tag}
+                  onClick={() => updateCalendarEvent(selectedEvent.id, { tags: selectedEvent.tags.filter(t => t !== tag) })}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    borderRadius: '4px',
+                    backgroundColor: '#dbeafe',
+                    color: '#1e40af',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {tag} ✕
+                </span>
+              ))}
+              <input
+                type="text"
+                placeholder="Add tag"
+                onKeyPress={e => {
+                  if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
+                    const newTag = (e.target as HTMLInputElement).value;
+                    updateCalendarEvent(selectedEvent.id, { tags: [...selectedEvent.tags, newTag] });
+                    (e.target as HTMLInputElement).value = '';
+                  }
+                }}
+                style={{ fontSize: '12px', padding: '4px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
+              />
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
@@ -440,6 +699,7 @@ const App = () => {
   const renderTasks = () => {
     const activeTasks = tasks.filter(t => !t.completed && !t.archived);
     const completedTasks = tasks.filter(t => t.completed);
+    const archivedTasks = tasks.filter(t => t.archived);
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px', padding: '16px' }}>
@@ -527,12 +787,44 @@ const App = () => {
                             onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
                             onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
                           />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', fontSize: '12px' }}>
+                            <select
+                              value={task.priority}
+                              onChange={e => updateTask(task.id, { priority: parseInt(e.target.value) })}
+                              style={{ padding: '2px 4px', border: '1px solid #e5e5e5', borderRadius: '3px', backgroundColor: '#fafafa', outline: 'none', fontSize: '11px' }}
+                            >
+                              {[1, 2, 3, 4, 5].map(p => <option key={p} value={p}>P{p}</option>)}
+                            </select>
+                          </div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
                             {task.tags.map(tag => (
-                              <span key={tag} style={{ padding: '2px 8px', fontSize: '12px', borderRadius: '4px', backgroundColor: '#dbeafe', color: '#1e40af' }}>
-                                {tag}
+                              <span
+                                key={tag}
+                                onClick={() => updateTask(task.id, { tags: task.tags.filter(t => t !== tag) })}
+                                style={{
+                                  padding: '2px 6px',
+                                  fontSize: '11px',
+                                  borderRadius: '3px',
+                                  backgroundColor: '#dbeafe',
+                                  color: '#1e40af',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {tag} ✕
                               </span>
                             ))}
+                            <input
+                              type="text"
+                              placeholder="tag"
+                              onKeyPress={e => {
+                                if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
+                                  const newTag = (e.target as HTMLInputElement).value;
+                                  updateTask(task.id, { tags: [...task.tags, newTag] });
+                                  (e.target as HTMLInputElement).value = '';
+                                }
+                              }}
+                              style={{ fontSize: '11px', padding: '2px 4px', border: '1px solid #e5e5e5', borderRadius: '3px', backgroundColor: '#fafafa', outline: 'none', width: '60px' }}
+                            />
                           </div>
                           {task.subtasks.length > 0 && (
                             <div style={{ marginTop: '8px', paddingLeft: '8px', borderLeft: '1px solid #d4d4d4', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -567,8 +859,24 @@ const App = () => {
                           )}
                         </div>
                         <button
+                          onClick={() => addSubtask(task.id)}
+                          style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s', fontSize: '12px' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = '#525252')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() => archiveTask(task.id)}
+                          style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = '#525252')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
+                        >
+                          <Archive size={16} />
+                        </button>
+                        <button
                           onClick={() => deleteTask(task.id)}
-                          style={{ color: '#a3a3a3', background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.2s' }}
+                          style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', transition: 'color 0.2s' }}
                           onMouseEnter={(e) => (e.currentTarget.style.color = '#dc2626')}
                           onMouseLeave={(e) => (e.currentTarget.style.color = '#a3a3a3')}
                         >
@@ -609,7 +917,7 @@ const App = () => {
 
         {completedTasks.length > 0 && (
           <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '16px' }}>
-            <h3 style={{ fontWeight: '600', color: '#525252', marginBottom: '8px' }}>Completed</h3>
+            <h3 style={{ fontWeight: '600', color: '#525252', marginBottom: '8px' }}>Completed ({completedTasks.length})</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {completedTasks.map(task => (
                 <div key={task.id} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#f0f0f0', textDecoration: 'line-through', color: '#a3a3a3', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -619,6 +927,25 @@ const App = () => {
                     style={{ fontSize: '12px', color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
                     Undo
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {archivedTasks.length > 0 && (
+          <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '16px' }}>
+            <h3 style={{ fontWeight: '600', color: '#525252', marginBottom: '8px' }}>Archive ({archivedTasks.length})</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {archivedTasks.map(task => (
+                <div key={task.id} style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#f0f0f0', color: '#737373', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>{task.title}</span>
+                  <button
+                    onClick={() => updateTask(task.id, { archived: false })}
+                    style={{ fontSize: '12px', color: '#737373', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    Restore
                   </button>
                 </div>
               ))}
@@ -686,34 +1013,92 @@ const App = () => {
               <textarea
                 value={idea.description}
                 onChange={e => updateIdea(idea.id, { description: e.target.value })}
-                style={{ width: '100%', fontSize: '14px', color: '#404040', backgroundColor: '#fafafa', padding: '8px', borderRadius: '4px', border: '1px solid #e5e5e5', marginBottom: '8px', resize: 'none', height: '80px', outline: 'none' }}
+                style={{ width: '100%', fontSize: '14px', color: '#404040', backgroundColor: '#fafafa', padding: '8px', borderRadius: '4px', border: '1px solid #e5e5e5', marginBottom: '8px', resize: 'none', height: '60px', outline: 'none' }}
                 placeholder="Idea description..."
               />
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {idea.predefinedQuestions.map((q, i) => (
-                  <div key={`pq-${i}`}>
-                    <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373' }}>{q.question}</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+                {idea.questions.map((q, i) => (
+                  <div key={i}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                      <input
+                        type="text"
+                        value={q.question}
+                        onChange={e => {
+                          const updated = [...idea.questions];
+                          updated[i].question = e.target.value;
+                          updateIdea(idea.id, { questions: updated });
+                        }}
+                        style={{ fontSize: '12px', fontWeight: '500', color: '#737373', backgroundColor: 'transparent', border: 'none', borderBottom: '1px solid transparent', outline: 'none', flex: 1 }}
+                        onFocus={(e) => (e.currentTarget.style.borderBottomColor = '#d4d4d4')}
+                        onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'transparent')}
+                      />
+                      <button
+                        onClick={() => updateIdea(idea.id, { questions: idea.questions.filter((_, idx) => idx !== i) })}
+                        style={{ padding: '0', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', fontSize: '12px' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
                     <textarea
                       value={q.answer}
                       onChange={e => {
-                        const updated = [...idea.predefinedQuestions];
+                        const updated = [...idea.questions];
                         updated[i].answer = e.target.value;
-                        updateIdea(idea.id, { predefinedQuestions: updated });
+                        updateIdea(idea.id, { questions: updated });
                       }}
-                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '8px', borderRadius: '4px', border: '1px solid #e5e5e5', resize: 'none', height: '48px', marginTop: '4px', outline: 'none' }}
+                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '6px', borderRadius: '3px', border: '1px solid #e5e5e5', resize: 'none', height: '40px', outline: 'none' }}
                       placeholder="Answer..."
                     />
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
+              <button
+                onClick={() => updateIdea(idea.id, { questions: [...idea.questions, { question: 'New Question', answer: '' }] })}
+                style={{
+                  fontSize: '12px',
+                  color: '#737373',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  marginBottom: '8px',
+                }}
+              >
+                + Add Question
+              </button>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 {idea.tags.map(tag => (
-                  <span key={tag} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', backgroundColor: '#fef3c7', color: '#b45309' }}>
-                    {tag}
+                  <span
+                    key={tag}
+                    onClick={() => updateIdea(idea.id, { tags: idea.tags.filter(t => t !== tag) })}
+                    style={{
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      borderRadius: '4px',
+                      backgroundColor: '#fef3c7',
+                      color: '#b45309',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tag} ✕
                   </span>
                 ))}
+                <input
+                  type="text"
+                  placeholder="tag"
+                  onKeyPress={e => {
+                    if (e.key === 'Enter' && (e.target as HTMLInputElement).value) {
+                      const newTag = (e.target as HTMLInputElement).value;
+                      updateIdea(idea.id, { tags: [...idea.tags, newTag] });
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }}
+                  style={{ fontSize: '12px', padding: '4px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
+                />
               </div>
             </div>
           ))}
@@ -786,43 +1171,89 @@ const App = () => {
                 <option value="yearly">Yearly</option>
               </select>
 
-              <div style={{ marginTop: '8px', marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373' }}>Progress</label>
+              <div style={{ marginBottom: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Credit</label>
+                  <input
+                    type="number"
+                    value={goal.credit}
+                    onChange={e => updateGoal(goal.id, { credit: parseInt(e.target.value) || 0 })}
+                    style={{ width: '100%', fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Debit</label>
+                  <input
+                    type="number"
+                    value={goal.debit}
+                    onChange={e => updateGoal(goal.id, { debit: parseInt(e.target.value) || 0 })}
+                    style={{ width: '100%', fontSize: '12px', padding: '6px 8px', border: '1px solid #e5e5e5', borderRadius: '4px', backgroundColor: '#fafafa', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Progress</label>
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={goal.progress}
                   onChange={e => updateGoal(goal.id, { progress: parseInt(e.target.value) })}
-                  style={{ width: '100%', marginTop: '4px' }}
+                  style={{ width: '100%' }}
                 />
                 <div style={{ fontSize: '12px', color: '#a3a3a3', marginTop: '4px' }}>{goal.progress}%</div>
               </div>
 
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373', display: 'block', marginBottom: '4px' }}>Weekly Reflection</label>
+                <textarea
+                  value={goal.reflection}
+                  onChange={e => updateGoal(goal.id, { reflection: e.target.value })}
+                  style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '6px 8px', borderRadius: '4px', border: '1px solid #e5e5e5', resize: 'none', height: '60px', outline: 'none' }}
+                  placeholder="Your reflection..."
+                />
+              </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {goal.customFields.map((field, i) => (
+                {goal.fields.map((field, i) => (
                   <div key={i}>
-                    <label style={{ fontSize: '12px', fontWeight: '500', color: '#737373' }}>{field.name}</label>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                      <input
+                        type="text"
+                        value={field.name}
+                        onChange={e => {
+                          const updated = [...goal.fields];
+                          updated[i].name = e.target.value;
+                          updateGoal(goal.id, { fields: updated });
+                        }}
+                        placeholder="Field name"
+                        style={{ fontSize: '12px', padding: '4px 8px', border: '1px solid #e5e5e5', borderRadius: '3px', backgroundColor: '#fafafa', outline: 'none', flex: 1 }}
+                      />
+                      <button
+                        onClick={() => updateGoal(goal.id, { fields: goal.fields.filter((_, idx) => idx !== i) })}
+                        style={{ padding: '0', background: 'none', border: 'none', cursor: 'pointer', color: '#a3a3a3', fontSize: '12px' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
                     <input
                       type="text"
                       value={field.value}
                       onChange={e => {
-                        const updated = [...goal.customFields];
+                        const updated = [...goal.fields];
                         updated[i].value = e.target.value;
-                        updateGoal(goal.id, { customFields: updated });
+                        updateGoal(goal.id, { fields: updated });
                       }}
-                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '6px 8px', borderRadius: '4px', border: '1px solid #e5e5e5', marginTop: '4px', outline: 'none' }}
+                      placeholder="Value"
+                      style={{ width: '100%', fontSize: '12px', backgroundColor: '#fafafa', padding: '4px 8px', borderRadius: '3px', border: '1px solid #e5e5e5', outline: 'none' }}
                     />
                   </div>
                 ))}
               </div>
 
               <button
-                onClick={() =>
-                  updateGoal(goal.id, {
-                    customFields: [...goal.customFields, { name: 'New Field', value: '' }],
-                  })
-                }
+                onClick={() => updateGoal(goal.id, { fields: [...goal.fields, { name: 'New Field', value: '' }] })}
                 style={{
                   marginTop: '8px',
                   fontSize: '12px',
@@ -913,8 +1344,8 @@ const App = () => {
                   fontWeight: currentSection === section ? '500' : '400',
                   transition: 'background-color 0.2s',
                 }}
-                onMouseEnter={(e) => !currentSection === section && (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                onMouseLeave={(e) => !currentSection === section && (e.currentTarget.style.backgroundColor = 'transparent')}
+                onMouseEnter={(e) => currentSection !== section && (e.currentTarget.style.backgroundColor = '#f5f5f5')}
+                onMouseLeave={(e) => currentSection !== section && (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 {section}
               </button>
