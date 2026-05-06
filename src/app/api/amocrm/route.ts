@@ -19,6 +19,23 @@ function getNextManagerId(): number {
   return managers[index];
 }
 
+// Интерфейс для UTM-полей
+interface UTMField {
+  field_code: string;
+  values: Array<{ value: string }>;
+}
+
+// Интерфейс для контактных полей
+interface ContactField {
+  field_code?: string;
+  field_id?: number;
+  values: Array<{
+    value: string;
+    enum_code?: string;
+    is_main?: boolean;
+  }>;
+}
+
 // Интерфейс для входящих данных
 interface LeadRequest {
   phone: string;
@@ -26,7 +43,6 @@ interface LeadRequest {
   utm?: Record<string, string>;
   page?: string;
   timestamp?: string;
-  // Поле для тестового режима
   test?: boolean;
 }
 
@@ -39,9 +55,16 @@ interface LeadResponse {
   manager_id?: number;
   lead_id?: number;
   debug?: {
-    request: any;
+    request: {
+      input: LeadRequest;
+      leadData: any[];
+      config: {
+        subdomain: string;
+        tokenExists: boolean;
+      };
+    };
     response?: any;
-    error?: any;
+    error?: string;
   };
 }
 
@@ -83,8 +106,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
       : `Клиент ${data.phone}`
     ).slice(0, 255);
     
-    // Собираем UTM-поля
-    const utmCustomFields = [];
+    // Собираем UTM-поля с явной типизацией
+    const utmCustomFields: UTMField[] = [];
     if (data.utm) {
       const utmMapping = [
         'utm_source', 
@@ -105,6 +128,32 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
       });
     }
     
+    // Формируем контактные поля с явной типизацией
+    const contactFields: ContactField[] = [
+      {
+        field_code: "PHONE",
+        values: [{
+          enum_code: "WORK",
+          value: data.phone,
+          is_main: true
+        }]
+      },
+      {
+        field_id: AMOCRM_CONFIG.FIELD_FULL_NAME,
+        values: [{ value: contactName }]
+      },
+      {
+        field_id: AMOCRM_CONFIG.FIELD_TELEGRAM,
+        values: [{
+          value: data.telegram ? `@${data.telegram}` : ''
+        }]
+      },
+      {
+        field_id: AMOCRM_CONFIG.FIELD_PLATFORM_ID,
+        values: [{ value: platform_id }]
+      }
+    ];
+    
     // Формируем данные для отправки
     const leadData = [{
       name: `Новый лид ${platform_id}`,
@@ -116,30 +165,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
       _embedded: {
         contacts: [{
           first_name: contactName,
-          custom_fields_values: [
-            {
-              field_code: "PHONE",
-              values: [{
-                enum_code: "WORK",
-                value: data.phone,
-                is_main: true
-              }]
-            },
-            {
-              field_id: AMOCRM_CONFIG.FIELD_FULL_NAME,
-              values: [{ value: contactName }]
-            },
-            {
-              field_id: AMOCRM_CONFIG.FIELD_TELEGRAM,
-              values: [{
-                value: data.telegram ? `@${data.telegram}` : ''
-              }]
-            },
-            {
-              field_id: AMOCRM_CONFIG.FIELD_PLATFORM_ID,
-              values: [{ value: platform_id }]
-            }
-          ]
+          custom_fields_values: contactFields
         }]
       }
     }];
@@ -260,7 +286,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
       success: false, 
       error: error instanceof Error ? error.message : 'Internal error',
       debug: process.env.NODE_ENV === 'development' ? {
-        request: undefined,
+        request: {
+          input: data || {} as LeadRequest,
+          leadData: [],
+          config: {
+            subdomain: '',
+            tokenExists: false
+          }
+        },
         error: error instanceof Error ? error.message : 'Unknown error'
       } : undefined
     }, { status: 500 });
