@@ -56,7 +56,7 @@ interface LeadResponse {
   lead_id?: number;
   debug?: {
     request: {
-      input: LeadRequest;
+      input: LeadRequest | Record<string, never>;
       leadData: any[];
       config: {
         subdomain: string;
@@ -69,8 +69,11 @@ interface LeadResponse {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<LeadResponse>> {
+  // Объявляем data вне try/catch для доступа в catch
+  let data: LeadRequest = { phone: '' };
+  
   try {
-    const data: LeadRequest = await request.json();
+    data = await request.json();
     
     // Проверяем тестовый режим
     const isTestMode = data.test === true;
@@ -282,20 +285,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
     
   } catch (error) {
     console.error('❌ AmoCRM API error:', error);
+    
+    // Формируем debug ответ только в development режиме
+    const debugResponse = process.env.NODE_ENV === 'development' ? {
+      request: {
+        input: data,
+        leadData: [],
+        config: {
+          subdomain: process.env.AMOCRM_SUBDOMAIN || '',
+          tokenExists: !!process.env.AMO_TOKEN
+        }
+      },
+      error: error instanceof Error ? error.message : 'Unknown error'
+    } : undefined;
+    
     return NextResponse.json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Internal error',
-      debug: process.env.NODE_ENV === 'development' ? {
-        request: {
-          input: data || {} as LeadRequest,
-          leadData: [],
-          config: {
-            subdomain: '',
-            tokenExists: false
-          }
-        },
-        error: error instanceof Error ? error.message : 'Unknown error'
-      } : undefined
+      debug: debugResponse
     }, { status: 500 });
   }
 }
