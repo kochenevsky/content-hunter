@@ -41,6 +41,8 @@ jobs:
           NEXT_PUBLIC_SERVER_URL: "https://contenthunter.ru"
           NEXT_PUBLIC_SUPABASE_URL: "https://feytgokjblyqzymadfym.supabase.co"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZleXRnb2tqYmx5cXp5bWFkZnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDg3MzksImV4cCI6MjA4NTI4NDczOX0.IjRLp_2URxV43OmkGdHUY2v-Jmb4XynxCgXjRIMqQ-8"
+          AMO_TOKEN: ${{ secrets.AMO_TOKEN }}
+          AMOCRM_SUBDOMAIN: ${{ secrets.AMOCRM_SUBDOMAIN }}
         run: |
           pnpm install --no-frozen-lockfile
           pnpm build
@@ -51,6 +53,8 @@ jobs:
           SSH_HOST: ${{ matrix.server.host }}
           SSH_USER: ${{ matrix.server.user }}
           REMOTE_PATH: ${{ matrix.server.path }}
+          AMO_TOKEN: ${{ secrets.AMO_TOKEN }}
+          AMOCRM_SUBDOMAIN: ${{ secrets.AMOCRM_SUBDOMAIN }}
         continue-on-error: true
         run: |
           if [ -z "$SSH_PASS" ]; then
@@ -81,5 +85,13 @@ jobs:
             pm2 restart content-hunter &&
             pm2 save
           "
+          
+          echo "🔧 Setting up environment variables for PM2 on ${{ matrix.server.name }}..."
+          sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+            $SSH_USER@$SSH_HOST "
+            cd ${REMOTE_PATH} &&
+            pm2 env 0 set AMO_TOKEN='$AMO_TOKEN' 2>/dev/null || true &&
+            pm2 env 0 set AMOCRM_SUBDOMAIN='$AMOCRM_SUBDOMAIN' 2>/dev/null || true
+          " || echo "⚠️ PM2 env set failed, trying alternative method..."
           
           echo "✅ ${{ matrix.server.name }} deploy completed!"
