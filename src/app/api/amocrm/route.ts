@@ -12,6 +12,12 @@ const AMOCRM_CONFIG = {
   FIELD_PLATFORM_ID: 1065303
 };
 
+// Жёстко прописанные креды (замени на свои реальные значения)
+const HARDCODED_CREDENTIALS = {
+  AMO_TOKEN: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjU4OWE4MmFmODNmMmFjM2UxZjcwMTIxN2ZkYzkzZjA2MjRlNzYyY2MwM2RlMjhhMTcxN2VhMDU0ZTU5YzJjMmMzMTgyZDVjOGU4M2YxYTg2In0.eyJhdWQiOiJlZjExMTRiMS1mZWIxLTQxNWUtOWFkZi05ODkwMmNmZGIxZjUiLCJqdGkiOiI1ODlhODJhZjgzZjJhYzNlMWY3MDEyMTdmZGM5M2YwNjI0ZTc2MmNjMDNkZTI4YTE3MTdlYTA1NGU1OWMyYzJjMzE4MmQ1YzhlODNmMWE4NiIsImlhdCI6MTc2Njc0MDA5OSwibmJmIjoxNzY2NzQwMDk5LCJleHAiOjE5MjQ0NzM2MDAsInN1YiI6IjEzMzUxMDIyIiwiZ3JhbnRfdHlwZSI6IiIsImFjY291bnRfaWQiOjMyODI4NTU4LCJiYXNlX2RvbWFpbiI6ImFtb2NybS5ydSIsInZlcnNpb24iOjIsInNjb3BlcyI6WyJjcm0iLCJmaWxlcyIsImZpbGVzX2RlbGV0ZSIsIm5vdGlmaWNhdGlvbnMiLCJwdXNoX25vdGlmaWNhdGlvbnMiXSwiaGFzaF91dWlkIjoiNDJhYWJjOWEtMDFlOC00OGIwLTgwMTctN2Q5ZWQ0Nzg4YmNjIiwidXNlcl9mbGFncyI6MCwiYXBpX2RvbWFpbiI6ImFwaS1iLmFtb2NybS5ydSJ9.RX-o_CIvtnxQTazQTSU7tgiTXSGgVcHiiLuXu3wJKDVjAZsME8PsnPEHd9ULP4mZPI1El8WoTN1U7QszRuga1tj-7EfJMS9m6PqJIRKL-uGw2MXo62PkVby9tFnxyViu7Jd4uFmbjVSbpsW3kdGPDuqQezL1F0DohBPRXLzISRJRxqO_2uXyZZeQJkWaUQz5h6aO0WCLw8WeuUOgU3oLOMnpmmjzW_DtvKEeouEKEuygyJPxMhR5_KOhWkpD1wZgo0VXj5zMQxKReMVcojDqUZFovuSxhOa4RByIqc_wPsIUAaCa0cRr9KzqO7J-WfeWoLS_Dyaj-ngsmROnq3a43A",
+  AMOCRM_SUBDOMAIN: "https://contenthunter.amocrm.ru/"
+};
+
 // Чередование менеджеров на основе времени (для serverless)
 function getNextManagerId(): number {
   const managers = [AMOCRM_CONFIG.MANAGER_1, AMOCRM_CONFIG.MANAGER_2];
@@ -61,6 +67,7 @@ interface LeadResponse {
       config: {
         subdomain: string;
         tokenExists: boolean;
+        tokenSource: string;
       };
     };
     response?: any;
@@ -82,12 +89,36 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
       console.log('🧪 [AMOCRM TEST MODE] Starting test callback');
     }
     
-    // Получаем конфигурацию
-    const amoToken = process.env.AMO_TOKEN;
-    const subdomain = process.env.AMOCRM_SUBDOMAIN;
+    // Получаем конфигурацию: сначала process.env, потом жёстко прописанные
+    const amoToken = process.env.AMO_TOKEN || HARDCODED_CREDENTIALS.AMO_TOKEN;
+    const subdomain = process.env.AMOCRM_SUBDOMAIN || HARDCODED_CREDENTIALS.AMOCRM_SUBDOMAIN;
+    const tokenSource = process.env.AMO_TOKEN ? 'env' : 'hardcoded';
+    
+    // Проверяем, не остались ли заглушки
+    const isPlaceholder = amoToken === "ЗАМЕНИ_НА_СВОЙ_ТОКЕН" || 
+                          subdomain === "ЗАМЕНИ_НА_СВОЙ_СУБДОМЕН";
+    
+    if (isPlaceholder && !isTestMode) {
+      console.warn('⚠️ AmoCRM credentials are placeholder values');
+      return NextResponse.json({ 
+        success: false, 
+        error: 'AmoCRM credentials not configured. Replace placeholder values in code.',
+        debug: {
+          request: {
+            input: data,
+            leadData: [],
+            config: {
+              subdomain: subdomain,
+              tokenExists: false,
+              tokenSource: 'placeholder'
+            }
+          }
+        }
+      }, { status: 500 });
+    }
     
     // Тестовые данные, если credentials не настроены
-    const isTestCredentials = !amoToken || !subdomain;
+    const isTestCredentials = !amoToken || !subdomain || isPlaceholder;
     
     if (isTestCredentials && !isTestMode) {
       console.warn('⚠️ AmoCRM not configured');
@@ -182,7 +213,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
       console.log('📦 Prepared Lead:', JSON.stringify(leadData, null, 2));
       console.log('👤 Manager ID:', manager_id);
       console.log('🆔 Platform ID:', platform_id);
+      console.log('🔑 Token source:', tokenSource);
       console.log('🔑 Token exists:', !!amoToken);
+      console.log('🔑 Token prefix:', amoToken.substring(0, 10) + '...');
       console.log('🌐 Subdomain:', subdomain);
       console.log('📊 UTM Fields:', utmCustomFields.length);
       
@@ -221,9 +254,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
           console.error('❌ [AMOCRM TEST] Request failed:', testError);
         }
       } else {
-        console.log('🧪 [AMOCRM TEST] Skipping real request (no credentials)');
-        console.log('🧪 [AMOCRM TEST] Request would be sent to:', 
-          `https://${subdomain || 'YOUR_SUBDOMAIN'}.amocrm.ru/api/v4/leads/complex`);
+        console.log('🧪 [AMOCRM TEST] Skipping real request (invalid credentials)');
+        console.log('🧪 [AMOCRM TEST] Would send to:', 
+          `https://${subdomain}.amocrm.ru/api/v4/leads/complex`);
       }
       
       console.log('🧪 [AMOCRM TEST MODE] ========================');
@@ -239,8 +272,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
             input: data,
             leadData,
             config: {
-              subdomain: subdomain || 'not_set',
-              tokenExists: !!amoToken
+              subdomain: subdomain,
+              tokenExists: !!amoToken && !isPlaceholder,
+              tokenSource
             }
           }
         }
@@ -292,8 +326,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<LeadRespo
         input: data,
         leadData: [],
         config: {
-          subdomain: process.env.AMOCRM_SUBDOMAIN || '',
-          tokenExists: !!process.env.AMO_TOKEN
+          subdomain: process.env.AMOCRM_SUBDOMAIN || HARDCODED_CREDENTIALS.AMOCRM_SUBDOMAIN,
+          tokenExists: !!(process.env.AMO_TOKEN || HARDCODED_CREDENTIALS.AMO_TOKEN),
+          tokenSource: process.env.AMO_TOKEN ? 'env' : 'hardcoded'
         }
       },
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -312,11 +347,19 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const testMode = searchParams.get('test') === 'true';
   
+  const amoToken = process.env.AMO_TOKEN || HARDCODED_CREDENTIALS.AMO_TOKEN;
+  const subdomain = process.env.AMOCRM_SUBDOMAIN || HARDCODED_CREDENTIALS.AMOCRM_SUBDOMAIN;
+  const tokenSource = process.env.AMO_TOKEN ? 'env' : 'hardcoded';
+  const isPlaceholder = amoToken === "ЗАМЕНИ_НА_СВОЙ_ТОКЕН" || 
+                        subdomain === "ЗАМЕНИ_НА_СВОЙ_СУБДОМЕН";
+  
   if (testMode) {
     console.log('🧪 [AMOCRM TEST] GET health check with test mode');
     console.log('🧪 [AMOCRM TEST] Config:', {
-      subdomain: process.env.AMOCRM_SUBDOMAIN || 'not_set',
-      tokenExists: !!process.env.AMO_TOKEN,
+      subdomain,
+      tokenExists: !!amoToken && !isPlaceholder,
+      tokenSource,
+      isPlaceholder,
       managers: [AMOCRM_CONFIG.MANAGER_1, AMOCRM_CONFIG.MANAGER_2],
       currentManager: getNextManagerId()
     });
@@ -326,8 +369,10 @@ export async function GET(request: NextRequest) {
     status: 'ok',
     test: testMode,
     config: testMode ? {
-      subdomain: process.env.AMOCRM_SUBDOMAIN || 'not_set',
-      tokenConfigured: !!process.env.AMO_TOKEN,
+      subdomain,
+      tokenConfigured: !!amoToken && !isPlaceholder,
+      tokenSource,
+      isPlaceholder,
       managerRotation: {
         manager1: AMOCRM_CONFIG.MANAGER_1,
         manager2: AMOCRM_CONFIG.MANAGER_2,
