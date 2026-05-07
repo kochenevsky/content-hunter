@@ -321,7 +321,7 @@ export default function CrazyNinaPage() {
   const fmt = (v: number) => (v ? `${sym} ${v.toLocaleString("ru")}` : "");
 
     // 👇 ДОБАВИТЬ СЮДА - ref для отслеживания первого рендера
-  const isFirstRender = useRef(true);
+  const [synced, setSynced] = useState(false);
   
   // 👇 ДОБАВИТЬ СЮДА - ref для отслеживания изменений trips
   const prevTripsRef = useRef(appState.trips);
@@ -351,19 +351,6 @@ useEffect(() => {
   document.addEventListener('mousedown', handleClickOutside);
   return () => document.removeEventListener('mousedown', handleClickOutside);
 }, [appState.aiOpen]);
-    
-useEffect(() => {
-  if (!appState.username && appState.trips.length > 0) {
-    const hasRealData = appState.trips.some(t => t.name !== "" || t.days.length > 0);
-    if (hasRealData) {
-      setAppState({
-        ...appState,
-        trips: [createEmptyTrip()],
-        currentTrip: 0,
-      });
-    }
-  }
-}, []);
     
   // Apply dark/light mode whenever darkMode changes
   useEffect(() => {
@@ -419,53 +406,30 @@ root.style.setProperty("--border", c.border);
 root.style.setProperty("--sun", c.sun);
 root.style.setProperty("--sun2", c.sun2);
   }, [trip]);
-// 👇 ДОБАВИТЬ СЮДА - загрузка данных при входе
+    
 useEffect(() => {
   const loadData = async () => {
-    if (appState.username && isFirstRender.current) {
-      isFirstRender.current = false;
-      
+    if (appState.username && !synced) {
       const workerTrips = await loadTripsFromWorker(appState.username);
-      
       if (workerTrips) {
-        // Данные есть в Worker - используем их
-        setAppState({
-          ...appState,
-          trips: workerTrips,
-          currentTrip: 0,
-        });
+        prevTripsRef.current = workerTrips; // ← добавить эту строку
+        setAppState(prev => ({ ...prev, trips: workerTrips, currentTrip: 0 }));
         showToast(`Синхронизировано с облаком 🦜`);
-      } else if (appState.trips.length === 1 && appState.trips[0].name === "") {
-        // Пустой трип - отправляем в Worker
-        await saveTripsToWorker(appState.username, appState.trips);
       }
+      setSynced(true);
     }
   };
-  
   loadData();
-}, [appState.username]);
+}, [appState.username, synced]);
 
-// 👇 ДОБАВИТЬ СЮДА - синхронизация при изменении trips
 useEffect(() => {
-  const syncData = async () => {
-    // Пропускаем первый рендер (уже обработан выше)
-    if (isFirstRender.current) return;
-    
-    // Проверяем, что trips реально изменились
-    if (JSON.stringify(prevTripsRef.current) === JSON.stringify(appState.trips)) return;
-    
-    prevTripsRef.current = appState.trips;
-    
-    if (appState.username) {
-      const success = await saveTripsToWorker(appState.username, appState.trips);
-      if (success) {
-        console.log("🦜 Synced to worker");
-      }
-    }
-  };
+  if (!synced) return; // ❌ не пишем пока не загрузили
+  if (!appState.username) return;
+  if (JSON.stringify(prevTripsRef.current) === JSON.stringify(appState.trips)) return;
   
-  syncData();
-}, [appState.trips, appState.username]);
+  prevTripsRef.current = appState.trips;
+  saveTripsToWorker(appState.username, appState.trips);
+}, [appState.trips, appState.username, synced]);
     
   // ==========================================================================
   // Username
@@ -476,27 +440,24 @@ useEffect(() => {
   if (/^[a-zA-Z0-9_-]{3,30}$/.test(trimmed)) {
     setShowUsernamePrompt(false);
     
-    // 👇 Сначала ставим пустой трип из LocalStorage (мгновенно)
-    const emptyTrip = createEmptyTrip();
-    setAppState({
-      ...appState,
-      username: trimmed,
-      trips: [emptyTrip],
-      currentTrip: 0,
-    });
-    
-    // 👇 Потом в фоне пробуем загрузить из Worker
     const workerTrips = await loadTripsFromWorker(trimmed);
     
     if (workerTrips) {
-      // Обновляем UI данными из облака
       setAppState({
         ...appState,
+        username: trimmed,
         trips: workerTrips,
+        currentTrip: 0,
       });
       showToast(`С возвращением, @${trimmed}! 🦜`);
     } else {
-      // Сохраняем пустой трип в Worker
+      const emptyTrip = createEmptyTrip();
+      setAppState({
+        ...appState,
+        username: trimmed,
+        trips: [emptyTrip],
+        currentTrip: 0,
+      });
       await saveTripsToWorker(trimmed, [emptyTrip]);
       showToast(`Привет, @${trimmed}! 🦜`);
     }
