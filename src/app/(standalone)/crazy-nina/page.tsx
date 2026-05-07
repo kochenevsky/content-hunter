@@ -413,7 +413,7 @@ useEffect(() => {
       const workerTrips = await loadTripsFromWorker(appState.username);
       if (workerTrips) {
         prevTripsRef.current = workerTrips; // ← добавить эту строку
-        setAppState(prev => ({ ...prev, trips: workerTrips, currentTrip: 0 }));
+        setAppState({ ...appState, trips: workerTrips, currentTrip: 0 });
         showToast(`Синхронизировано с облаком 🦜`);
       }
       setSynced(true);
