@@ -7,19 +7,6 @@ import { useState } from 'react';
 
 const tariffData = [
   {
-    name: 'Быстрый тест',
-    phones: '1',
-    accounts: '10',
-    rent: '₽0',
-    days: '10',
-    posts: '200',
-    price: '₽36 000',
-    views: '60 000',
-    forecast: '300 000',
-    costPerPost: '₽180',
-    costPerView: '₽0,12'
-  },
-  {
     name: 'Мини блог',
     phones: '3',
     accounts: '30',
