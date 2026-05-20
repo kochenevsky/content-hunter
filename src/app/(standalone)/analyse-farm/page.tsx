@@ -1,4 +1,3 @@
-import { StickyCta } from './_components/StickyCta';
 import { ClientMetricsWrapper } from './_components/ClientMetricsWrapper';
 
 export const dynamic = 'force-dynamic';
