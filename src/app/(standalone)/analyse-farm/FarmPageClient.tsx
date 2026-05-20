@@ -100,10 +100,10 @@ export default function FarmPageClient() {
   // Exit intent — desktop
   useEffect(() => {
     const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY < 10 && !exitShown && currentQ > 0 && step === 'quiz') {
-        setExitShown(true);
-        setShowExitPopup(true);
-      }
+      if (e.clientY <= 0 && e.clientX <= 0 && e.clientX >= window.innerWidth && !exitShown && currentQ > 0 && step === 'quiz') {
+    setExitShown(true);
+    setShowExitPopup(true);
+  }
     };
     document.addEventListener('mouseleave', handleMouseLeave);
     return () => document.removeEventListener('mouseleave', handleMouseLeave);
@@ -400,7 +400,7 @@ export default function FarmPageClient() {
         .form-hint { color: #64748b; font-size: 12px; margin-top: 5px; }
         .input-prefix-wrap { position: relative; display: flex; align-items: center; }
         .input-prefix {
-          position: absolute; left: 16px; color: #64748b;
+          position: absolute; left: 16px; color: #fff;
           font-size: 16px; pointer-events: none; z-index: 1;
         }
         .form-input.prefixed { padding-left: 30px; }
@@ -479,6 +479,7 @@ export default function FarmPageClient() {
           background: rgba(0,0,0,0.85);
           z-index: 9999; display: flex;
           align-items: flex-end; justify-content: center;
+          padding: 0 16px;
         }
         .exit-popup {
           background: #0f1828;
@@ -487,6 +488,7 @@ export default function FarmPageClient() {
           padding: 32px 24px 44px;
           max-width: 600px; width: 100%;
           animation: slideUp .25s ease;
+          box-sizing: border-box;
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .exit-popup h3 {
@@ -503,6 +505,8 @@ export default function FarmPageClient() {
           border: none; border-radius: 14px; cursor: pointer;
           text-decoration: none; margin-bottom: 10px;
           box-shadow: 0 8px 24px rgba(34,197,94,0.2);
+          box-sizing: border-box;
+          word-break: break-word;
         }
         .exit-close {
           display: block; width: 100%; padding: 12px;
@@ -640,11 +644,11 @@ export default function FarmPageClient() {
         </div>
 
         {/* BOT CTA */}
-        <div className="bot-cta">
-          <a href={getBotLink()} className="bot-btn" target="_blank" rel="noopener noreferrer">
-            <TgIcon /> Получить экскурсию на ферму в Telegram
-          </a>
-        </div>
+        <div className="bot-cta" style={{ padding: '12px 20px 40px' }}>
+  <a href={getBotLink()} className="bot-btn" target="_blank" rel="noopener noreferrer">
+    <TgIcon /> Перейти в Telegram-бот — бесплатная экскурсия на ферму и расчёт охватов за 2 минуты
+  </a>
+</div>
       </div>
     </>
   );
@@ -667,21 +671,6 @@ function ContactForm({
   const [tg, setTg] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [telegramBlocked, setTelegramBlocked] = useState(false);
-
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const ctrl = new AbortController();
-        setTimeout(() => ctrl.abort(), 2000);
-        await fetch('https://t.me/', { mode: 'no-cors', signal: ctrl.signal });
-        setTelegramBlocked(false);
-      } catch {
-        setTelegramBlocked(true);
-      }
-    };
-    check();
-  }, []);
 
   const formatPhone = (value: string): string => {
     const hasPlus = value.startsWith('+');
@@ -769,9 +758,6 @@ function ContactForm({
         </div>
         <div className="form-hint">Необязательно</div>
       </div>
-
-      <p className="form-note">Никакого спама. Только результат теста и персональный расчёт.</p>
-
       <button className="submit-btn" onClick={handleSubmit} disabled={isSubmitting}>
         {isSubmitting ? <><span className="spinner" /> Отправляем...</> : 'Получить мой анализ →'}
       </button>
@@ -780,18 +766,11 @@ function ContactForm({
       <hr className="tg-divider" />
       <div className="tg-section-label">Или сразу в Telegram</div>
       <p className="tg-section-text">
-        {telegramBlocked
-          ? 'Telegram может быть заблокирован в вашей сети. Оставьте телефон выше — мы свяжемся сами и проведём экскурсию по ферме.'
-          : 'Если у вас работает Telegram — перейдите в наш бот. Там получите бесплатную экскурсию на контент-ферму, калькулятор охватов и ответы на вопросы.'}
-      </p>
+  Если у вас работает Telegram — перейдите в наш бот. Там получите бесплатную экскурсию на контент-ферму, калькулятор охватов и ответы на вопросы.
+</p>
       <a href={getBotLink()} target="_blank" rel="noopener noreferrer" className="tg-open-btn">
         <TgIcon /> Открыть бот в Telegram
       </a>
-      {telegramBlocked && (
-        <div className="tg-blocked-note">
-          ⚠️ Telegram может быть недоступен в вашей сети. Оставьте телефон выше — мы напишем сами.
-        </div>
-      )}
     </div>
   );
 }
