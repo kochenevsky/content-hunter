@@ -1,6 +1,5 @@
 'use client';
 
-import { ConsultModal } from './_components/ConsultModal';
 import { useState, useEffect, useRef } from 'react';
 
 const QUESTIONS = [
@@ -72,11 +71,11 @@ export default function FarmPageClient() {
   const [step, setStep] = useState<QuizStep>('quiz');
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [pendingInsight, setPendingInsight] = useState<string | null>(null);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [visibleInsight, setVisibleInsight] = useState<string | null>(null);
+  const [isAnswering, setIsAnswering] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [exitShown, setExitShown] = useState(false);
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [utmParams, setUtmParams] = useState<Record<string, string>>({});
@@ -97,13 +96,13 @@ export default function FarmPageClient() {
     setUtmParams(utm);
   }, []);
 
-  // Exit intent — desktop
+  // Exit intent — desktop: only check clientY
   useEffect(() => {
     const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && e.clientX <= 0 && e.clientX >= window.innerWidth && !exitShown && currentQ > 0 && step === 'quiz') {
-    setExitShown(true);
-    setShowExitPopup(true);
-  }
+      if (e.clientY <= 0 && !exitShown && currentQ > 0 && step === 'quiz') {
+        setExitShown(true);
+        setShowExitPopup(true);
+      }
     };
     document.addEventListener('mouseleave', handleMouseLeave);
     return () => document.removeEventListener('mouseleave', handleMouseLeave);
@@ -130,18 +129,24 @@ export default function FarmPageClient() {
   };
 
   const selectOption = (idx: number) => {
+    if (isAnswering) return; // prevent double-tap
+    setIsAnswering(true);
+    setSelectedIdx(idx);
+
     const q = QUESTIONS[currentQ];
     const opt = q.options[idx];
-    setAnswers(prev => ({ ...prev, [q.id]: opt.label }));
-    setPendingInsight(opt.insight);
+    const newAnswers = { ...answers, [q.id]: opt.label };
+    setAnswers(newAnswers);
+
+    // Show insight immediately, then advance after short delay
+    setVisibleInsight(opt.insight);
 
     setTimeout(() => {
       const next = currentQ + 1;
-      setVisibleInsight(opt.insight);
-      setPendingInsight(null);
       if (next < QUESTIONS.length) {
         setCurrentQ(next);
-        // re-trigger card animation
+        setSelectedIdx(null);
+        setIsAnswering(false);
         if (cardRef.current) {
           cardRef.current.classList.remove('q-animate');
           void cardRef.current.offsetWidth;
@@ -151,7 +156,7 @@ export default function FarmPageClient() {
         setStep('loading');
         startLoading();
       }
-    }, 1100);
+    }, 500); // reduced from 1100ms to 500ms
   };
 
   const startLoading = () => {
@@ -176,8 +181,6 @@ export default function FarmPageClient() {
 
   return (
     <>
-      <ConsultModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
       {/* EXIT POPUP */}
       {showExitPopup && (
         <div className="exit-overlay" onClick={() => setShowExitPopup(false)}>
@@ -196,6 +199,7 @@ export default function FarmPageClient() {
 
       <style>{`
         html, body { margin: 0; padding: 0; overflow-x: hidden; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
         .quiz-root {
           background: #080e1a;
@@ -204,15 +208,13 @@ export default function FarmPageClient() {
           color: #f1f5f9;
           overflow-x: hidden;
           -webkit-text-size-adjust: 100%;
-          -webkit-tap-highlight-color: transparent;
         }
 
         .quiz-container {
           max-width: 600px;
           margin: 0 auto;
-          padding: 0 20px 120px;
+          padding: 0 20px 60px;
           width: 100%;
-          box-sizing: border-box;
         }
 
         /* HEADER */
@@ -265,13 +267,8 @@ export default function FarmPageClient() {
           line-height: 1.65; margin-bottom: 24px;
         }
         .quiz-hero-arrow { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 4px; }
-        .quiz-hero-bounce {
-          display: block; font-size: 18px; color: #22c55e; line-height: 1;
-          animation: bounce .8s ease-in-out infinite alternate;
-        }
-        @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(5px); } }
 
-        /* PROGRESS */
+        /* PROGRESS — only shown during quiz */
         .progress-label {
           font-size: 12px; color: #64748b;
           margin-bottom: 10px;
@@ -327,7 +324,7 @@ export default function FarmPageClient() {
           font-family: inherit; display: flex; align-items: center; gap: 12px;
           width: 100%;
         }
-        .opt:hover {
+        .opt:hover:not(:disabled) {
           border-color: rgba(34,197,94,0.35); color: #fff;
           background: rgba(34,197,94,0.06);
         }
@@ -335,15 +332,26 @@ export default function FarmPageClient() {
           border-color: #22c55e;
           background: rgba(34,197,94,0.12); color: #fff;
         }
+        .opt:disabled { cursor: default; }
+        /* Radio circle — no text inside, purely visual */
         .opt-icon {
           width: 20px; height: 20px; border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.15);
-          flex-shrink: 0; display: flex; align-items: center;
-          justify-content: center; font-size: 10px; color: transparent;
+          border: 2px solid rgba(255,255,255,0.2);
+          flex-shrink: 0;
           transition: all .15s;
+          position: relative;
         }
         .opt.selected .opt-icon {
-          background: #22c55e; border-color: #22c55e; color: #fff;
+          background: #22c55e; border-color: #22c55e;
+        }
+        .opt.selected .opt-icon::after {
+          content: '';
+          position: absolute;
+          top: 3px; left: 6px;
+          width: 4px; height: 7px;
+          border: 2px solid #fff;
+          border-top: none; border-left: none;
+          transform: rotate(45deg);
         }
 
         /* LOADING */
@@ -391,20 +399,22 @@ export default function FarmPageClient() {
           border: 1px solid rgba(255,255,255,0.07);
           border-radius: 12px; padding: 14px 16px;
           font-size: 15px; color: #fff; font-family: inherit;
-          outline: none; transition: border-color .15s; box-sizing: border-box;
+          outline: none; transition: border-color .15s;
         }
         .form-input:focus { border-color: rgba(34,197,94,0.4); }
         .form-input::placeholder { color: #64748b; }
         .form-input.has-error { border-color: #ef4444; }
         .form-error { color: #ef4444; font-size: 13px; margin-top: 5px; }
         .form-hint { color: #64748b; font-size: 12px; margin-top: 5px; }
+        /* Username prefix — fix white icon, keep it muted */
         .input-prefix-wrap { position: relative; display: flex; align-items: center; }
         .input-prefix {
-          position: absolute; left: 16px; color: #fff;
+          position: absolute; left: 16px; color: #64748b;
           font-size: 16px; pointer-events: none; z-index: 1;
+          transition: color .15s;
         }
+        .input-prefix-wrap:focus-within .input-prefix { color: #94a3b8; }
         .form-input.prefixed { padding-left: 30px; }
-        .form-note { font-size: 12px; color: #64748b; margin-top: 10px; line-height: 1.5; }
         .submit-btn {
           width: 100%; padding: 17px;
           background: linear-gradient(135deg, #22c55e, #16a34a);
@@ -421,57 +431,50 @@ export default function FarmPageClient() {
           width: 16px; height: 16px; border-radius: 50%;
           border: 2px solid rgba(255,255,255,0.3);
           border-top-color: #fff; animation: spin 1s linear infinite;
+          flex-shrink: 0;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .form-agreement { font-size: 11px; color: #64748b; text-align: center; margin-top: 10px; line-height: 1.5; }
 
-        /* TG SECTION */
+        /* TG SECTION inside form */
         .tg-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 24px 0; }
         .tg-section-label {
           font-size: 11px; font-weight: 700; color: #64748b;
           text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px;
         }
         .tg-section-text { font-size: 14px; color: #94a3b8; line-height: 1.55; margin-bottom: 16px; }
+        /* Fixed TG button — was overflowing on mobile */
         .tg-open-btn {
           display: flex; align-items: center; justify-content: center; gap: 10px;
-          width: 100%; padding: 14px;
+          width: 100%; padding: 14px 16px;
           border: 1px solid rgba(34,197,94,0.25);
           border-radius: 14px; background: rgba(34,197,94,0.12);
           color: #22c55e; font-family: inherit; font-size: 14px; font-weight: 600;
           cursor: pointer; text-decoration: none; transition: all .15s;
+          word-break: break-word; text-align: center;
         }
         .tg-open-btn:hover { background: rgba(34,197,94,0.18); border-color: #22c55e; }
-        .tg-blocked-note {
-          font-size: 13px; color: #64748b; text-align: center;
-          margin-top: 10px; padding: 10px;
-          background: rgba(255,255,255,0.03);
-          border-radius: 10px; line-height: 1.5;
-        }
 
-        /* SUCCESS */
-        .success-wrap { text-align: center; padding: 32px 0; animation: fadeUp .3s ease; }
-        .success-icon { font-size: 48px; margin-bottom: 16px; }
-        .success-title { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 8px; }
-        .success-sub { font-size: 14px; color: #94a3b8; margin-bottom: 28px; line-height: 1.55; }
+        /* SUCCESS — full-page replacement, hides header/hero */
+        .success-page {
+          min-height: 100vh;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          padding: 40px 24px;
+          animation: fadeUp .4s ease;
+          text-align: center;
+        }
+        .success-icon { font-size: 52px; margin-bottom: 20px; }
+        .success-title { font-size: clamp(22px, 5vw, 32px); font-weight: 900; color: #fff; margin-bottom: 12px; }
+        .success-sub { font-size: 15px; color: #94a3b8; margin-bottom: 32px; line-height: 1.6; max-width: 420px; }
         .success-tg-btn {
-          display: inline-flex; align-items: center; gap: 8px;
-          padding: 15px 28px;
+          display: inline-flex; align-items: center; gap: 10px;
+          padding: 16px 28px;
           background: linear-gradient(135deg, #22c55e, #16a34a);
           color: #fff; border-radius: 14px; text-decoration: none;
-          font-size: 14px; font-weight: 700;
+          font-size: 15px; font-weight: 700;
           box-shadow: 0 8px 24px rgba(34,197,94,0.25);
         }
-
-        /* BOT CTA */
-        .bot-cta { max-width: 600px; margin: 0 auto; padding: 20px 20px 40px; text-align: center; }
-        .bot-btn {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: #0f1828;
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 14px; padding: 13px 20px;
-          font-size: 14px; color: #94a3b8; text-decoration: none; transition: all .15s;
-        }
-        .bot-btn:hover { border-color: rgba(255,255,255,0.15); color: #fff; }
 
         /* EXIT POPUP */
         .exit-overlay {
@@ -488,7 +491,6 @@ export default function FarmPageClient() {
           padding: 32px 24px 44px;
           max-width: 600px; width: 100%;
           animation: slideUp .25s ease;
-          box-sizing: border-box;
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .exit-popup h3 {
@@ -505,8 +507,6 @@ export default function FarmPageClient() {
           border: none; border-radius: 14px; cursor: pointer;
           text-decoration: none; margin-bottom: 10px;
           box-shadow: 0 8px 24px rgba(34,197,94,0.2);
-          box-sizing: border-box;
-          word-break: break-word;
         }
         .exit-close {
           display: block; width: 100%; padding: 12px;
@@ -525,130 +525,120 @@ export default function FarmPageClient() {
       `}</style>
 
       <div className="quiz-root">
-        {/* HEADER */}
-        <div className="quiz-header">
-          <div className="header-left">
-            <div className="logo-dot" />
-            <span className="logo-name">Content Hunter</span>
+        {/* SUCCESS replaces entire page */}
+        {step === 'success' ? (
+          <div className="success-page">
+            <div className="success-icon">✅</div>
+            <div className="success-title">Заявка отправлена!</div>
+            <p className="success-sub">
+              Менеджер свяжется с вами в течение часа.<br />
+              А пока — переходите в бот: там экскурсия на ферму и расчёт охватов.
+            </p>
+            <a href={getBotLink()} target="_blank" rel="noopener noreferrer" className="success-tg-btn">
+              <TgIcon /> Перейти в Telegram бот
+            </a>
           </div>
-          <div className="header-badge">⚡ Бесплатный анализ</div>
-        </div>
-
-        {/* HERO */}
-        <div className="quiz-hero">
-          <h1>
-            Узнайте, сколько просмотров теряет ваш контент{' '}
-            <span>прямо сейчас</span>
-          </h1>
-          <p className="quiz-hero-sub">
-            Ответьте на 6 вопросов — получите персональный расчёт охвата с контент-фермой в вашей нише.
-          </p>
-          <div className="quiz-hero-arrow">
-            ↓ Пройдите тест за 2 минуты
-          </div>
-        </div>
-
-        {/* QUIZ BODY */}
-        <div className="quiz-container">
-          {/* Progress */}
-          {step !== 'success' && (
-            <>
-              <div className="progress-label">
-                <span>
-                  {step === 'contact' ? 'Последний шаг' : step === 'loading' ? 'Анализ...' : `Вопрос ${currentQ + 1} из ${QUESTIONS.length}`}
-                </span>
-                <span>{step === 'contact' || step === 'loading' ? '100%' : `${progressPct}%`}</span>
+        ) : (
+          <>
+            {/* HEADER */}
+            <div className="quiz-header">
+              <div className="header-left">
+                <div className="logo-dot" />
+                <span className="logo-name">Content Hunter</span>
               </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: step === 'contact' || step === 'loading' ? '100%' : `${progressPct}%` }}
-                />
-              </div>
-            </>
-          )}
-
-          {/* Insight */}
-          {visibleInsight && step === 'quiz' && (
-            <div className="insight-box">
-              <div className="insight-label">💡 Для вас</div>
-              <div className="insight-text" dangerouslySetInnerHTML={{ __html: visibleInsight }} />
+              <div className="header-badge">⚡ Бесплатный анализ</div>
             </div>
-          )}
 
-          {/* QUIZ */}
-          {step === 'quiz' && (
-            <div className="q-card q-animate" ref={cardRef}>
-              <div className="q-number">Вопрос {currentQ + 1}</div>
-              <div className="q-text">{q.text}</div>
-              <div className="options">
-                {q.options.map((opt, i) => (
-                  <button
-                    key={i}
-                    className={`opt${answers[q.id] === opt.label ? ' selected' : ''}`}
-                    onClick={() => selectOption(i)}
-                  >
-                    <span className="opt-icon">✓</span>
-                    {opt.label}
-                  </button>
-                ))}
+            {/* HERO — hide on contact step to reduce clutter */}
+            {step === 'quiz' && (
+              <div className="quiz-hero">
+                <h1>
+                  Узнайте, сколько просмотров теряет ваш контент{' '}
+                  <span>прямо сейчас</span>
+                </h1>
+                <p className="quiz-hero-sub">
+                  Ответьте на 6 вопросов — получите персональный расчёт охвата с контент-фермой в вашей нише.
+                </p>
+                <div className="quiz-hero-arrow">↓ Пройдите тест за 2 минуты</div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* LOADING */}
-          {step === 'loading' && (
-            <div className="loading-wrap">
-              <div className="loading-title">Готовим ваш анализ</div>
-              <div className="loading-sub">Считаем потенциал под вашу нишу...</div>
-              <div className="loading-bar-wrap">
-                <div className="loading-bar" style={{ width: `${loadingProgress}%` }} />
-              </div>
-              <div className="loading-steps">
-                {LOADING_STEPS.map((s, i) => (
-                  <div
-                    key={i}
-                    className={`ls${loadingStep === i + 1 ? ' active' : ''}${loadingStep > i + 1 ? ' done' : ''}`}
-                  >
-                    {s}
+            <div className="quiz-container">
+              {/* Progress bar — only during quiz, not on loading/contact */}
+              {step === 'quiz' && (
+                <>
+                  <div className="progress-label">
+                    <span>Вопрос {currentQ + 1} из {QUESTIONS.length}</span>
+                    <span>{progressPct}%</span>
                   </div>
-                ))}
-              </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: `${progressPct}%` }} />
+                  </div>
+                </>
+              )}
+
+              {/* Insight — only during quiz */}
+              {visibleInsight && step === 'quiz' && (
+                <div className="insight-box">
+                  <div className="insight-label">💡 Для вас</div>
+                  <div className="insight-text" dangerouslySetInnerHTML={{ __html: visibleInsight }} />
+                </div>
+              )}
+
+              {/* QUIZ */}
+              {step === 'quiz' && (
+                <div className="q-card q-animate" ref={cardRef}>
+                  <div className="q-number">Вопрос {currentQ + 1}</div>
+                  <div className="q-text">{q.text}</div>
+                  <div className="options">
+                    {q.options.map((opt, i) => (
+                      <button
+                        key={i}
+                        className={`opt${selectedIdx === i ? ' selected' : ''}`}
+                        onClick={() => selectOption(i)}
+                        disabled={isAnswering}
+                      >
+                        <span className="opt-icon" />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* LOADING */}
+              {step === 'loading' && (
+                <div className="loading-wrap">
+                  <div className="loading-title">Готовим ваш анализ</div>
+                  <div className="loading-sub">Считаем потенциал под вашу нишу...</div>
+                  <div className="loading-bar-wrap">
+                    <div className="loading-bar" style={{ width: `${loadingProgress}%` }} />
+                  </div>
+                  <div className="loading-steps">
+                    {LOADING_STEPS.map((s, i) => (
+                      <div
+                        key={i}
+                        className={`ls${loadingStep === i + 1 ? ' active' : ''}${loadingStep > i + 1 ? ' done' : ''}`}
+                      >
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* CONTACT */}
+              {step === 'contact' && (
+                <ContactForm
+                  answers={answers}
+                  utmParams={utmParams}
+                  onSuccess={() => setStep('success')}
+                  getBotLink={getBotLink}
+                />
+              )}
             </div>
-          )}
-
-          {/* CONTACT */}
-          {step === 'contact' && (
-            <ContactForm
-              answers={answers}
-              utmParams={utmParams}
-              onSuccess={() => setStep('success')}
-              getBotLink={getBotLink}
-            />
-          )}
-
-          {/* SUCCESS */}
-          {step === 'success' && (
-            <div className="success-wrap">
-              <div className="success-icon">✅</div>
-              <div className="success-title">Заявка отправлена!</div>
-              <p className="success-sub">
-                Менеджер свяжется с вами в течение часа.<br />
-                А пока — переходите в бот: там экскурсия на ферму и расчёт охватов.
-              </p>
-              <a href={getBotLink()} target="_blank" rel="noopener noreferrer" className="success-tg-btn">
-                <TgIcon /> Перейти в Telegram бот
-              </a>
-            </div>
-          )}
-        </div>
-
-        {/* BOT CTA */}
-        <div className="bot-cta" style={{ padding: '12px 20px 40px' }}>
-  <a href={getBotLink()} className="bot-btn" target="_blank" rel="noopener noreferrer">
-    <TgIcon /> Перейти в Telegram-бот — бесплатная экскурсия на ферму и расчёт охватов за 2 минуты
-  </a>
-</div>
+          </>
+        )}
       </div>
     </>
   );
@@ -701,11 +691,18 @@ function ContactForm({
       timestamp: new Date().toISOString(),
     };
 
-    await Promise.allSettled([
+    // Send all three in parallel; each awaited individually so errors are isolated
+    const results = await Promise.allSettled([
       fetch('/api/telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: formattedPhone, telegram: cleanTg, page: '/farm2', utm: utmParams }),
+        body: JSON.stringify({
+          phone: formattedPhone,
+          telegram: cleanTg || null,
+          page: '/farm2',
+          utm: utmParams,
+          answers,
+        }),
       }),
       fetch('/api/google-sheets', {
         method: 'POST',
@@ -718,6 +715,16 @@ function ContactForm({
         body: JSON.stringify(payload),
       }),
     ]);
+
+    // Log failures to console for debugging — doesn't block success screen
+    results.forEach((r, i) => {
+      const names = ['telegram', 'google-sheets', 'amocrm'];
+      if (r.status === 'rejected') {
+        console.error(`[submit] ${names[i]} failed:`, r.reason);
+      } else if (!r.value.ok) {
+        r.value.text().then(t => console.error(`[submit] ${names[i]} HTTP ${r.value.status}:`, t));
+      }
+    });
 
     setIsSubmitting(false);
     onSuccess();
@@ -745,7 +752,7 @@ function ContactForm({
       </div>
 
       <div className="form-group">
-        <label className="form-label">Telegram username</label>
+        <label className="form-label">Telegram username <span style={{ color: '#64748b', fontWeight: 400, textTransform: 'none', fontSize: '11px' }}>— необязательно</span></label>
         <div className="input-prefix-wrap">
           <span className="input-prefix">@</span>
           <input
@@ -756,8 +763,8 @@ function ContactForm({
             onChange={e => { let v = e.target.value; if (v.startsWith('@')) v = v.slice(1); setTg(v); }}
           />
         </div>
-        <div className="form-hint">Необязательно</div>
       </div>
+
       <button className="submit-btn" onClick={handleSubmit} disabled={isSubmitting}>
         {isSubmitting ? <><span className="spinner" /> Отправляем...</> : 'Получить мой анализ →'}
       </button>
@@ -766,8 +773,8 @@ function ContactForm({
       <hr className="tg-divider" />
       <div className="tg-section-label">Или сразу в Telegram</div>
       <p className="tg-section-text">
-  Если у вас работает Telegram — перейдите в наш бот. Там получите бесплатную экскурсию на контент-ферму, калькулятор охватов и ответы на вопросы.
-</p>
+        Перейдите в наш бот — там бесплатная экскурсия на контент-ферму, калькулятор охватов и ответы на вопросы.
+      </p>
       <a href={getBotLink()} target="_blank" rel="noopener noreferrer" className="tg-open-btn">
         <TgIcon /> Открыть бот в Telegram
       </a>
