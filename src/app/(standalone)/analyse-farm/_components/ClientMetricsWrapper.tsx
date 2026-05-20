@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const MetricsProvider = dynamic(
-  () => import('../providers/MetricsProvider').then(mod => mod.MetricsProvider),
+  () => import('../../providers/MetricsProvider').then(mod => mod.MetricsProvider),
   { ssr: false }
 );
 
