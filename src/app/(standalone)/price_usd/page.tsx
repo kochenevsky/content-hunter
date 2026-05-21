@@ -13,10 +13,10 @@ const tariffData = [
     rent: '$0',
     days: '10',
     posts: '400',
-    price: '$620',
+    price: '$655',
     views: '120 000',
     forecast: '600 000',
-    costPerPost: '$1,55',
+    costPerPost: '$1,64',
     costPerView: '$0,0010'
   },
   {
@@ -26,10 +26,10 @@ const tariffData = [
     rent: '$0',
     days: '10',
     posts: '600',
-    price: '$810',
+    price: '$855',
     views: '180 000',
     forecast: '900 000',
-    costPerPost: '$1,35',
+    costPerPost: '$1,42',
     costPerView: '$0,0009'
   },
   {
@@ -39,10 +39,10 @@ const tariffData = [
     rent: '$0',
     days: '10',
     posts: '1 000',
-    price: '$1215',
+    price: '$1285',
     views: '300 000',
     forecast: '1 500 000',
-    costPerPost: '$1,21',
+    costPerPost: '$1,28',
     costPerView: '$0,0008'
   }
 ];
