@@ -673,62 +673,75 @@ function ContactForm({
     return `+${cleaned[0]} (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9, 11)}`;
   };
 
-  const handleSubmit = async () => {
-    const cleaned = phone.replace(/\D/g, '');
-    if (!cleaned) { setPhoneError('Введите номер телефона'); return; }
-    if (cleaned.length < 10 || cleaned.length > 12) { setPhoneError('Введите корректный номер'); return; }
-    setPhoneError('');
-    setIsSubmitting(true);
+  // Внутри ContactForm компонента, в handleSubmit, после успешных запросов:
 
-    const formattedPhone = `+${cleaned}`;
-    const cleanTg = tg.replace(/^@/, '');
-    const payload = {
-      phone: formattedPhone,
-      telegram: cleanTg || null,
-      utm: utmParams,
-      answers,
-      page: '/farm2',
-      timestamp: new Date().toISOString(),
-    };
+const handleSubmit = async () => {
+  const cleaned = phone.replace(/\D/g, '');
+  if (!cleaned) { setPhoneError('Введите номер телефона'); return; }
+  if (cleaned.length < 10 || cleaned.length > 12) { setPhoneError('Введите корректный номер'); return; }
+  setPhoneError('');
+  setIsSubmitting(true);
 
-    // Send all three in parallel; each awaited individually so errors are isolated
-    const results = await Promise.allSettled([
-      fetch('/api/telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: formattedPhone,
-          telegram: cleanTg || null,
-          page: '/farm2',
-          utm: utmParams,
-          answers,
-        }),
-      }),
-      fetch('/api/google-sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      }),
-      fetch('/api/amocrm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      }),
-    ]);
+  const formattedPhone = `+${cleaned}`;
+  const cleanTg = tg.replace(/^@/, '');
+  const payload = {
+    phone: formattedPhone,
+    telegram: cleanTg || null,
+    utm: utmParams,
+    answers,
+    page: '/farm2',
+    timestamp: new Date().toISOString(),
+  };
 
-    // Log failures to console for debugging — doesn't block success screen
-    results.forEach((r, i) => {
-      const names = ['telegram', 'google-sheets', 'amocrm'];
-      if (r.status === 'rejected') {
-        console.error(`[submit] ${names[i]} failed:`, r.reason);
-      } else if (!r.value.ok) {
-        r.value.text().then(t => console.error(`[submit] ${names[i]} HTTP ${r.value.status}:`, t));
+  const results = await Promise.allSettled([
+    fetch('/api/telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: formattedPhone,
+        telegram: cleanTg || null,
+        page: '/farm2',
+        utm: utmParams,
+        answers,
+      }),
+    }),
+    fetch('/api/google-sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+    fetch('/api/amocrm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+  ]);
+
+  results.forEach((r, i) => {
+    const names = ['telegram', 'google-sheets', 'amocrm'];
+    if (r.status === 'rejected') {
+      console.error(`[submit] ${names[i]} failed:`, r.reason);
+    } else if (!r.value.ok) {
+      r.value.text().then(t => console.error(`[submit] ${names[i]} HTTP ${r.value.status}:`, t));
+    }
+  });
+
+  // ✅ ДОБАВЬТЕ ЭТОТ БЛОК:
+  // Отправляем событие в Google Tag Manager
+  if (typeof window !== 'undefined' && (window as any).dataLayer) {
+    (window as any).dataLayer.push({
+      event: 'form_success',
+      formType: 'farm_page_contact',
+      formData: {
+        phone: formattedPhone,
+        hasTelegram: !!cleanTg,
       }
     });
+  }
 
-    setIsSubmitting(false);
-    onSuccess();
-  };
+  setIsSubmitting(false);
+  onSuccess();
+};
 
   return (
     <div className="contact-card">
