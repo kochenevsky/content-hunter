@@ -67,47 +67,63 @@ export function ConsultModal({ isOpen, onClose }: ConsultModalProps) {
     return url.toString();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitError(null);
-    const cleanPhone = formData.phone.replace(/\D/g, '');
-    if (!cleanPhone) { setErrors({ phone: 'Номер телефона обязателен' }); return; }
-    if (cleanPhone.length < 10 || cleanPhone.length > 12) { setErrors({ phone: 'Введите корректный номер телефона' }); return; }
+  // Внутри ConsultModal компонента, в handleSubmit:
 
-    setIsSubmitting(true);
-    try {
-      const formattedForApi = `+${cleanPhone}`;
-      const leadData = {
-        phone: formattedForApi,
-        telegram: formData.telegram || null,
-        utm: utmParams,
-        page: '/farm2',
-        timestamp: new Date().toISOString(),
-      };
-      await Promise.allSettled([
-        fetch('/api/telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: formattedForApi, telegram: formData.telegram, page: '/farm2', utm: utmParams }),
-        }),
-        fetch('/api/google-sheets', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(leadData),
-        }),
-        fetch('/api/amocrm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(leadData),
-        }),
-      ]);
-      setIsSubmitted(true);
-    } catch {
-      setSubmitError('Произошла ошибка. Попробуйте позже.');
-    } finally {
-      setIsSubmitting(false);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setSubmitError(null);
+  const cleanPhone = formData.phone.replace(/\D/g, '');
+  if (!cleanPhone) { setErrors({ phone: 'Номер телефона обязателен' }); return; }
+  if (cleanPhone.length < 10 || cleanPhone.length > 12) { setErrors({ phone: 'Введите корректный номер телефона' }); return; }
+
+  setIsSubmitting(true);
+  try {
+    const formattedForApi = `+${cleanPhone}`;
+    const leadData = {
+      phone: formattedForApi,
+      telegram: formData.telegram || null,
+      utm: utmParams,
+      page: '/farm2',
+      timestamp: new Date().toISOString(),
+    };
+    await Promise.allSettled([
+      fetch('/api/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: formattedForApi, telegram: formData.telegram, page: '/farm2', utm: utmParams }),
+      }),
+      fetch('/api/google-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(leadData),
+      }),
+      fetch('/api/amocrm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(leadData),
+      }),
+    ]);
+    
+    // ✅ ДОБАВЬТЕ ЭТОТ БЛОК:
+    // Отправляем событие в Google Tag Manager
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
+        event: 'form_success',
+        formType: 'consult_modal',
+        formData: {
+          phone: formattedForApi,
+          hasTelegram: !!formData.telegram,
+        }
+      });
     }
-  };
+    
+    setIsSubmitted(true);
+  } catch {
+    setSubmitError('Произошла ошибка. Попробуйте позже.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (!isOpen) return null;
 
