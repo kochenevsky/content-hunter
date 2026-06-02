@@ -76,7 +76,6 @@ export default function FarmPageClient() {
   const [isAnswering, setIsAnswering] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [exitShown, setExitShown] = useState(false);
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [utmParams, setUtmParams] = useState<Record<string, string>>({});
   const lastScrollY = useRef(0);
@@ -96,31 +95,22 @@ export default function FarmPageClient() {
     setUtmParams(utm);
   }, []);
 
-  // Exit intent — desktop: only check clientY
-  useEffect(() => {
-    const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !exitShown && currentQ > 0 && step === 'quiz') {
-        setExitShown(true);
-        setShowExitPopup(true);
-      }
-    };
-    document.addEventListener('mouseleave', handleMouseLeave);
-    return () => document.removeEventListener('mouseleave', handleMouseLeave);
-  }, [exitShown, currentQ, step]);
-
-  // Exit intent — mobile scroll up
-  useEffect(() => {
-    const handleScroll = () => {
-      const sy = window.scrollY;
-      if (lastScrollY.current - sy > 60 && !exitShown && currentQ > 1 && step === 'quiz') {
-        setExitShown(true);
-        setShowExitPopup(true);
-      }
-      lastScrollY.current = sy;
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [exitShown, currentQ, step]);
+useEffect(() => {
+  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    // Проверяем: есть ли ответы на вопросы (анкета не пустая) и мы не на финальном success-экране
+    const hasAnswers = Object.keys(answers).length > 0;
+    const isNotSuccess = step !== 'success';
+    
+    if (hasAnswers && isNotSuccess) {
+      e.preventDefault();
+      e.returnValue = 'Анкета не сохранена. Уверены, что хотите покинуть страницу?';
+      return e.returnValue;
+    }
+  };
+  
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+}, [answers, step]);
 
   const getBotLink = () => {
     const url = new URL('https://sbsite.pro/ru_site_ch_1');
@@ -181,22 +171,6 @@ export default function FarmPageClient() {
 
   return (
     <>
-      {/* EXIT POPUP */}
-      {showExitPopup && (
-        <div className="exit-overlay" onClick={() => setShowExitPopup(false)}>
-          <div className="exit-popup" onClick={e => e.stopPropagation()}>
-            <h3>Уходите? <span>Подождите.</span></h3>
-            <p>Перейдите в Telegram-бот — там бесплатная экскурсия на контент-ферму и расчёт охватов для вашей ниши. Занимает 2 минуты.</p>
-            <a href={getBotLink()} target="_blank" rel="noopener noreferrer" className="exit-tg-btn">
-              <TgIcon /> Перейти в бота →
-            </a>
-            <button className="exit-close" onClick={() => setShowExitPopup(false)}>
-              Нет, я сам разберусь
-            </button>
-          </div>
-        </div>
-      )}
-
       <style>{`
         html, body { margin: 0; padding: 0; overflow-x: hidden; }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
@@ -475,46 +449,6 @@ export default function FarmPageClient() {
           font-size: 15px; font-weight: 700;
           box-shadow: 0 8px 24px rgba(34,197,94,0.25);
         }
-
-        /* EXIT POPUP */
-        .exit-overlay {
-          position: fixed; inset: 0;
-          background: rgba(0,0,0,0.85);
-          z-index: 9999; display: flex;
-          align-items: flex-end; justify-content: center;
-          padding: 0 16px;
-        }
-        .exit-popup {
-          background: #0f1828;
-          border-top: 1px solid rgba(255,255,255,0.07);
-          border-radius: 24px 24px 0 0;
-          padding: 32px 24px 44px;
-          max-width: 600px; width: 100%;
-          animation: slideUp .25s ease;
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .exit-popup h3 {
-          font-size: 18px; font-weight: 900; color: #fff;
-          margin-bottom: 8px; line-height: 1.2;
-        }
-        .exit-popup h3 span { color: #22c55e; }
-        .exit-popup p { font-size: 14px; color: #94a3b8; margin-bottom: 20px; line-height: 1.55; }
-        .exit-tg-btn {
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          width: 100%; padding: 16px;
-          background: linear-gradient(135deg, #22c55e, #16a34a);
-          color: #fff; font-size: 13px; font-weight: 700; font-family: inherit;
-          border: none; border-radius: 14px; cursor: pointer;
-          text-decoration: none; margin-bottom: 10px;
-          box-shadow: 0 8px 24px rgba(34,197,94,0.2);
-        }
-        .exit-close {
-          display: block; width: 100%; padding: 12px;
-          background: transparent; color: #64748b;
-          font-family: inherit; font-size: 14px;
-          border: none; cursor: pointer; text-align: center;
-        }
-
         /* TG ICON */
         .tg-icon {
           width: 22px; height: 22px; background: #2AABEE;
@@ -782,15 +716,6 @@ const handleSubmit = async () => {
         {isSubmitting ? <><span className="spinner" /> Отправляем...</> : 'Получить мой анализ →'}
       </button>
       <p className="form-agreement">Нажимая кнопку, вы соглашаетесь с обработкой персональных данных</p>
-
-      <hr className="tg-divider" />
-      <div className="tg-section-label">Или сразу в Telegram</div>
-      <p className="tg-section-text">
-        Перейдите в наш бот — там бесплатная экскурсия на контент-ферму, калькулятор охватов и ответы на вопросы.
-      </p>
-      <a href={getBotLink()} target="_blank" rel="noopener noreferrer" className="tg-open-btn">
-        <TgIcon /> Открыть бот в Telegram
-      </a>
     </div>
   );
 }
