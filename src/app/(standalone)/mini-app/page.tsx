@@ -27,7 +27,6 @@ const AVG_CHECKS = [
 ];
 
 const PLANS = [
-  { id: "test",  name: "Быстрый тест",  pubs: 200,  phones: 1, accounts: 10, rent: 25000, warmup: 10, views: 60000,  pricePerPub: 125 },
   { id: "mini",  name: "Мини блог",     pubs: 400,  phones: 2, accounts: 20, rent: 46000, warmup: 10, views: 120000, pricePerPub: 115 },
   { id: "biz",   name: "Бизнес",        pubs: 600,  phones: 3, accounts: 30, rent: 60000, warmup: 10, views: 180000, pricePerPub: 100 },
   { id: "prime", name: "Оптимус прайм", pubs: 1000, phones: 5, accounts: 50, rent: 90000, warmup: 10, views: 300000, pricePerPub: 90  },
