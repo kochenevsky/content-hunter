@@ -122,7 +122,7 @@ export default function ExcursionPage() {
           </h2>
           <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, marginBottom: 20 }}>
             Построить такую ферму самостоятельно — ~20 000 000 ₽.<br />
-            Аренда в Content Hunter — от 25 000 ₽ в месяц.<br />
+            Аренда в Content Hunter — от 46 000 ₽ в месяц.<br />
             Первичные вложения — 0 ₽.
           </p>
           <a
