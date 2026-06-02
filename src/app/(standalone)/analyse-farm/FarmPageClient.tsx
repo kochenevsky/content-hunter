@@ -354,6 +354,7 @@ useEffect(() => {
           border: 1px solid rgba(255,255,255,0.07);
           border-radius: 20px; padding: 28px 24px;
           animation: fadeUp .3s ease;
+           margin-top: 20px;
         }
         .contact-title {
           font-size: clamp(18px, 4vw, 24px);
