@@ -97,11 +97,10 @@ export default function FarmPageClient() {
 
 useEffect(() => {
   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-    // Проверяем: есть ли ответы на вопросы (анкета не пустая) и мы не на финальном success-экране
-    const hasAnswers = Object.keys(answers).length > 0;
+    const hasStartedQuiz = Object.keys(answers).length > 0;
+    const isAtContactOrLoading = step === 'contact' || step === 'loading';
     const isNotSuccess = step !== 'success';
-    
-    if (hasAnswers && isNotSuccess) {
+    if (isNotSuccess && (hasStartedQuiz || isAtContactOrLoading)) {
       e.preventDefault();
       e.returnValue = 'Анкета не сохранена. Уверены, что хотите покинуть страницу?';
       return e.returnValue;
@@ -189,6 +188,7 @@ useEffect(() => {
           margin: 0 auto;
           padding: 0 20px 60px;
           width: 100%;
+          padding-top: 20px;
         }
 
         /* HEADER */
