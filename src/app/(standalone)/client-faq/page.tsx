@@ -107,6 +107,7 @@ export default function KnowledgeBase() {
     --muted: #94a3b8;
     --muted2: #64748b;
     --radius: 20px;
+    --max-width: 960px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -128,10 +129,11 @@ export default function KnowledgeBase() {
     background: rgba(8, 14, 26, 0.92);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
-    padding: 0 20px;
+    padding: 0 24px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 6px;
     height: 56px;
     overflow-x: auto;
     scrollbar-width: none;
@@ -144,9 +146,19 @@ export default function KnowledgeBase() {
     letter-spacing: -0.02em;
     color: var(--accent);
     white-space: nowrap;
-    margin-right: 16px;
+    margin-right: 24px;
     flex-shrink: 0;
     text-transform: uppercase;
+    position: absolute;
+    left: 24px;
+  }
+
+  .ch-nav-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .ch-nav-btn {
@@ -156,7 +168,7 @@ export default function KnowledgeBase() {
     font-family: inherit;
     font-size: 13px;
     font-weight: 600;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 8px;
     cursor: pointer;
     white-space: nowrap;
@@ -172,8 +184,8 @@ export default function KnowledgeBase() {
 
   /* HERO */
   .ch-hero {
-    padding: 32px 24px 20px;
-    max-width: 720px;
+    padding: 48px 24px 32px;
+    max-width: var(--max-width);
     margin: 0 auto;
   }
 
@@ -194,12 +206,12 @@ export default function KnowledgeBase() {
   }
 
   .ch-hero h1 {
-    font-size: clamp(22px, 5.5vw, 36px);
+    font-size: clamp(28px, 5vw, 48px);
     font-weight: 900;
     line-height: 1.05;
     letter-spacing: -0.02em;
     color: #fff;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
   .ch-hero h1 span {
@@ -207,11 +219,11 @@ export default function KnowledgeBase() {
   }
 
   .ch-hero p {
-    font-size: 15px;
+    font-size: 16px;
     color: var(--muted);
     line-height: 1.65;
-    max-width: 520px;
-    margin-bottom: 24px;
+    max-width: 620px;
+    margin-bottom: 28px;
   }
 
   .ch-hero-actions {
@@ -261,9 +273,9 @@ export default function KnowledgeBase() {
 
   /* SECTION */
   .ch-section {
-    max-width: 720px;
+    max-width: var(--max-width);
     margin: 0 auto;
-    padding: 0 24px 48px;
+    padding: 0 24px 56px;
     scroll-margin-top: 72px;
   }
 
@@ -277,11 +289,11 @@ export default function KnowledgeBase() {
   }
 
   .ch-section h2 {
-    font-size: clamp(20px, 5vw, 30px);
+    font-size: clamp(24px, 4.5vw, 36px);
     font-weight: 900;
     letter-spacing: -0.02em;
     line-height: 1.1;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     color: #fff;
   }
 
@@ -301,10 +313,12 @@ export default function KnowledgeBase() {
   }
   .ch-grid-2 { grid-template-columns: repeat(2, 1fr); }
 
-  @media (max-width: 540px) {
+  @media (max-width: 640px) {
     .ch-grid-2 { grid-template-columns: 1fr; }
-    .ch-hero { padding: 24px 20px 16px; }
-    .ch-section { padding: 0 20px 32px; }
+    .ch-hero { padding: 32px 20px 24px; }
+    .ch-section { padding: 0 20px 40px; }
+    .ch-logo { position: static; }
+    .ch-nav { justify-content: flex-start; }
   }
 
   /* STAT CARDS */
@@ -390,9 +404,9 @@ export default function KnowledgeBase() {
   }
 
   .ch-step-content h3 {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     letter-spacing: -0.01em;
   }
 
@@ -495,7 +509,7 @@ export default function KnowledgeBase() {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
-  @media (max-width: 400px) {
+  @media (max-width: 500px) {
     .ch-who-grid { grid-template-columns: 1fr; }
   }
 
@@ -503,7 +517,7 @@ export default function KnowledgeBase() {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 14px 16px;
+    padding: 16px 18px;
     font-size: 14px;
     font-weight: 500;
     display: flex;
@@ -526,7 +540,7 @@ export default function KnowledgeBase() {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 20px;
+    padding: 20px 24px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -546,14 +560,14 @@ export default function KnowledgeBase() {
     background: rgba(34,197,94,0.08);
     border: 1px solid rgba(34,197,94,0.25);
     border-radius: 14px;
-    padding: 24px;
+    padding: 28px;
     text-align: center;
     margin-bottom: 12px;
   }
 
   .ch-formula-math {
     font-family: 'Inter', monospace;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--accent);
     letter-spacing: -0.02em;
@@ -599,8 +613,8 @@ export default function KnowledgeBase() {
   .ch-divider {
     height: 1px;
     background: var(--border);
-    max-width: 720px;
-    margin: 0 auto 48px;
+    max-width: var(--max-width);
+    margin: 0 auto 56px;
   }
 
   /* PLATFORM INFO */
@@ -613,8 +627,8 @@ export default function KnowledgeBase() {
   .ch-info-row {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
+    gap: 14px;
+    padding: 18px 20px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -623,14 +637,14 @@ export default function KnowledgeBase() {
   }
 
   .ch-info-icon {
-    font-size: 18px;
+    font-size: 20px;
     flex-shrink: 0;
     margin-top: 1px;
   }
 
   .ch-info-row strong {
     display: block;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     margin-bottom: 2px;
     color: #fff;
