@@ -61,7 +61,7 @@ export default async function RootLayout({
         <LivePreviewListener />
         <Header data={headerData as any} />
         <main className="min-h-screen">{children}</main>
-        <Footer data={footerData as any} />
+        <Footer />
         <StickyMobileCta />
       </body>
     </html>
