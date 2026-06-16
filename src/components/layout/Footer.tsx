@@ -1,67 +1,18 @@
 import Link from 'next/link'
 import { UtmLink } from '@/components/ui/UtmLink'
-import { MessageCircle, Send, ExternalLink, FileSpreadsheet, Presentation, Instagram, Youtube } from 'lucide-react'
+import { Send, ExternalLink, FileSpreadsheet, Presentation, Instagram, Youtube } from 'lucide-react'
 
-const defaultNavigation = [
-  { name: 'Услуги', href: '/services' },
-  { name: 'Кейсы', href: '/cases' },
-  { name: 'Тарифы', href: '/pricing' },
-  { name: 'Блог', href: '/blog' },
-  { name: 'О нас', href: '/about' },
-  { name: 'FAQ', href: '/faq' },
-]
-
-// Фоллбэк для материалов
-const defaultMaterials = [
-  { name: 'Презентация', href: 'https://gamma.app/docs/Content-Hunter-20-ta6xnap4ulyonku?mode=doc', icon: Presentation },
-  { name: 'Прайс и кейсы', href: 'https://docs.google.com/spreadsheets/d/1axwH_4ByTRGrBneCOP18ARJgsJNqXnzzxBXLdTFph9s/edit?gid=1037848601', icon: FileSpreadsheet },
-]
-
-const socialIcons: Record<string, typeof Send> = {
-  telegram: Send,
-  whatsapp: MessageCircle,
-  instagram: Instagram,
-  youtube: Youtube,
-}
-
-interface FooterProps {
-  data?: {
-    description?: string
-    navigation?: Array<{ label: string; link: string }>
-    materials?: Array<{ label: string; link: string }>
-    social?: Array<{ platform: string; url: string }>
-    copyright?: string
-  } | null
-}
-
-export function Footer({ data }: FooterProps) {
-  // Используем данные из БД или фоллбэк
-  const navigation = data?.navigation?.length
-    ? data.navigation.map(item => ({ name: item.label, href: item.link }))
-    : defaultNavigation
-
-  const description = data?.description || 'Контент-завод под ключ. Масштабируем охваты через сетку аккаунтов.'
-
-  const social = data?.social?.length
-    ? data.social.map(item => ({
-        name: item.platform,
-        href: item.url || '#',
-        icon: socialIcons[item.platform] || Send,
-      }))
-    : [
-        { name: 'Telegram', href: '#', icon: Send },
-        { name: 'WhatsApp', href: '#', icon: MessageCircle },
-      ]
-
+export function Footer() {
+  // ВСЁ ЗАХАРДКОЖЕНО - данные из админки НЕ ИСПОЛЬЗУЮТСЯ
   return (
     <footer className="bg-neutral-950 text-white">
       <div className="container py-16 md:py-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Brand */}
+          {/* Brand - Content Hunter */}
           <div>
             <h3 className="text-xl font-bold mb-4">Content Hunter</h3>
             <p className="text-neutral-400 max-w-xs">
-              {description}
+              Контент-ферма в аренду. Система автоматического и массового распространения контента в соцсетях.
             </p>
           </div>
 
@@ -71,77 +22,105 @@ export function Footer({ data }: FooterProps) {
               Навигация
             </h4>
             <ul className="space-y-3">
-              {navigation.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className="text-neutral-300 hover:text-white transition-colors"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <a className="text-neutral-300 hover:text-white transition-colors" href="/#video-examples">
+                  Кейсы
+                </a>
+              </li>
+              <li>
+                <a className="text-neutral-300 hover:text-white transition-colors" href="/#comparison">
+                  О нас
+                </a>
+              </li>
+              <li>
+                <a className="text-neutral-300 hover:text-white transition-colors" href="/#pricing">
+                  Тарифы
+                </a>
+              </li>
+              <li>
+                <a className="text-neutral-300 hover:text-white transition-colors" href="/faq">
+                  FAQ
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Материалы (из админки или фоллбэк) */}
+          {/* Materials */}
           <div>
             <h4 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">
               Материалы
             </h4>
             <ul className="space-y-3">
-              {(data?.materials?.length ? data.materials.map((item, i) => ({
-                name: item.label,
-                href: item.link,
-                icon: defaultMaterials[i]?.icon ?? FileSpreadsheet,
-              })) : defaultMaterials).map((item) => {
-                const Icon = item.icon
-                return (
-                  <li key={item.name}>
-                    <UtmLink
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
-                    >
-                      <Icon className="w-4 h-4 flex-shrink-0" />
-                      <span>{item.name}</span>
-                      <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-                    </UtmLink>
-                  </li>
-                )
-              })}
+              <li>
+                <a
+                  href="https://contenthunter.ru/farm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
+                >
+                  <Presentation className="w-4 h-4 flex-shrink-0" />
+                  <span>Экскурсия</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://sbsite.pro//ru_site_ch_1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4 flex-shrink-0" />
+                  <span>Калькулятор стоимости</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Contacts */}
+          {/* Social */}
           <div>
             <h4 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">
               Соц сети
             </h4>
             <div className="flex gap-4">
-              {social.map((item) => {
-                const Icon = item.icon
-                return (
-                  <UtmLink
-                    key={item.name}
-                    href={item.href}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700 transition-colors"
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="sr-only">{item.name}</span>
-                  </UtmLink>
-                )
-              })}
+              <a
+                href="https://t.me/baristasss"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700 transition-colors"
+              >
+                <Send className="w-5 h-5" />
+                <span className="sr-only">telegram</span>
+              </a>
+              <a
+                href="https://www.instagram.com/popov__kirilll/"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700 transition-colors"
+              >
+                <Instagram className="w-5 h-5" />
+                <span className="sr-only">instagram</span>
+              </a>
+              <a
+                href="https://www.youtube.com/@Content_Hunter_global/"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-neutral-800 hover:bg-neutral-700 transition-colors"
+              >
+                <Youtube className="w-5 h-5" />
+                <span className="sr-only">youtube</span>
+              </a>
             </div>
           </div>
         </div>
-
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-neutral-500 text-sm">
-            {data?.copyright || `© ${new Date().getFullYear()} Content Hunter. Все права защищены.`}
+            © 2026 Content Hunter. Все права защищены.
           </p>
+          <a
+            href="https://contenthunter.ru/offer"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-neutral-500 hover:text-white text-sm transition-colors"
+          >
+            Оферта
+          </a>
         </div>
       </div>
     </footer>
